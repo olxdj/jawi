@@ -183,16 +183,22 @@
       "value": "inbox"
     }, 
 
-    "ADMIN_EVENTS": {
+    "ADMIN_ACTION": {
       "description": "make it true if want know who promote or demote a member .",
       "required": false,
       "value": "false"
     },
 
     "WELCOME": {
-      "description": "make it true if want goodbye and welcome message in groups.",
+      "description": "make it true if want welcome message in groups.",
       "required": false,
-      "value": "true"
+      "value": "false"
+    },
+
+    "GOODBYE": {
+      "description": "make it true if want goodbye message in groups.",
+      "required": false,
+      "value": "false"
     },
 
     "READ_MESSAGE": {
