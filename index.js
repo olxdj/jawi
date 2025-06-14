@@ -43,7 +43,7 @@ const {
   const Crypto = require('crypto')
   const path = require('path')
   const prefix = config.PREFIX
-  // const { commands } = require('./command');
+  const { getConfig } = require("./lib/configdb");
   const ownerNumber = ['923427582273']
 
   //=============================================
