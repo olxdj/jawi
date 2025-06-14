@@ -182,7 +182,7 @@ async function connectToWA() {
 ╭──〔 🔗 *Information* 〕  
 ├─ 🧩 *Prefix:* = ${prefix}
 ├─ 📢 *Join Channel:*  
-│    https://whatsapp.com/channel/0029VatOy2EAzNc2WcShQwto  
+│    https://whatsapp.com/channel/0029VatOy2EAzNc2WcShQw1j  
 ├─ 🌟 *Star the Repo:*  
 │    https://github.com/JawadYT36/KHAN-MD  
 ╰─🚀 *Powered by JawadTechX*`;
