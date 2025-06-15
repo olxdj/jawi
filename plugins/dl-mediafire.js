@@ -25,7 +25,7 @@ cmd({
       return reply("❌ Failed to fetch file info. Invalid URL or API error.");
     }
 
-    await reply(`📥 Downloading *${data.fileName}* (${data.size})...`);
+    await reply(`📥 Downloading File (${data.size})...`);
 
     const fileResponse = await axios.get(data.downloadLink, { responseType: 'arraybuffer' });
     const fileBuffer = Buffer.from(fileResponse.data);
@@ -34,7 +34,7 @@ cmd({
       document: fileBuffer,
       fileName: data.fileName,
       mimetype: data.mimeType,
-      caption: `*MediaFire Download*\n\n📄 *Filename:* ${data.fileName}\n📦 *Size:* ${data.size}\n\nPowered by KHAN-MD`
+      caption: `*MediaFire Download*\n\n📄 *Size:* ${data.size}\n\nPowered by KHAN-MD`
     };
 
     await conn.sendMessage(from, messageOptions, { quoted: mek });
