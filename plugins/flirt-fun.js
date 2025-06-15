@@ -3,7 +3,7 @@ const { cmd } = require('../command');
 
 cmd({
     pattern: "flirt",
-    alias: ["flirty", "pickup"],
+    alias: ["line"],
     desc: "Get a random flirty message",
     react: "😘",
     category: "fun",
