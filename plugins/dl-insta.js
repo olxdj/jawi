@@ -1,7 +1,5 @@
 const axios = require("axios");
 const { cmd } = require('../command');
-const axios = require("axios");
-const { cmd } = require("../command");
 
 cmd({
   pattern: "igdl",
@@ -83,7 +81,6 @@ cmd({
     await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
   }
 });
-
 
 cmd({
   pattern: "ig2",
