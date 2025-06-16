@@ -87,6 +87,51 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 });
 
 cmd({
+    pattern: 'audiomenu',
+    desc: 'Show all audio effects commands',
+    category: 'audio',
+    react: '🎧',
+    filename: __filename
+}, async (client, match, message, { from }) => {
+    const audioMenu = `
+╭━━〔 *Audio Effects Menu* 〕━━┈⊷
+┃◈╭─────────────·๏
+┃◈┃• .bass - Add heavy bass boost
+┃◈┃• .slow - Slow down audio (0.7x)
+┃◈┃• .fast - Speed up audio (1.63x)
+┃◈┃• .reverse - Reverse audio
+┃◈┃• .baby - High-pitched baby voice
+┃◈┃• .demon - Deep demonic voice
+┃◈┃• .earrape - Max volume (careful!)
+┃◈┃• .nightcore - Nightcore effect
+┃◈┃• .robot - Robotic voice effect
+┃◈┃• .chipmunk - Chipmunk voice
+┃◈┃• .radio - Old radio effect
+┃◈┃• .blown - Distorted blown out effect
+┃◈┃• .tupai - Special tupai effect
+┃◈┃• .fat - Extra bassy/fat sound
+┃◈┃• .smooth - Smooth audio
+┃◈┃• .deep - Deepen voice
+┃◈┃
+┃◈┃*Usage:* Reply to an audio/video with command
+┃◈┃Example: .bass (reply to audio)
+┃◈└───────────┈⊷
+╰──────────────┈⊷
+🎧 *Powered by ${config.BOT_NAME}*`;
+
+    await client.sendMessage(from, {
+        image: { url: config.MENU_IMAGE_URL || 'https://files.catbox.moe/7zfdcq.jpg' },
+        caption: audioMenu,
+        contextInfo: {
+            mentionedJid: [message.sender],
+            forwardingScore: 999,
+            isForwarded: true
+        }
+    }, { quoted: message });
+});
+
+
+cmd({
     pattern: "logo",
     alias: ["logomenu"],
     desc: "menu the bot",
