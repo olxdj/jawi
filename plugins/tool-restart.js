@@ -3,9 +3,10 @@ const { sleep } = require("../lib/functions");
 
 cmd({
     pattern: "restart",
+    alias: ["rest", "reboot"], 
     desc: "Restart KHAN-MD",
     category: "owner",
-    react: "🔄",
+    react: "📶",
     filename: __filename
 },
 async (conn, mek, m, { from, reply, isCreator }) => {
