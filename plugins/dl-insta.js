@@ -4,63 +4,7 @@ const { cmd } = require('../command');
 cmd({
   pattern: "igdl",
   alias: ["instagram", "insta", "ig", "igvideo"],
-  react: '📥',
-  desc: "Download videos from Instagram (API 1)",
-  category: "download",
-  use: ".igdl <Instagram URL>",
-  filename: __filename
-}, async (conn, mek, m, { from, reply, args }) => {
-  try {
-    const igUrl = args[0];
-    if (!igUrl || !igUrl.includes("instagram.com")) {
-      return reply('Please provide a valid Instagram URL. Example: `.igdl https://instagram.com/...`');
-    }
-
-    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
-
-    const apiUrl = `https://api.agatz.xyz/api/instagram?url=${encodeURIComponent(igUrl)}`;
-    const response = await axios.get(apiUrl);
-
-    if (!response.data?.status === 200 || !response.data?.data?.videoLinks?.length) {
-      return reply('❌ Unable to fetch the video from API 1. Try .igdl2 for alternative download.');
-    }
-
-    const videoData = response.data.data;
-    const title = videoData.title || "Instagram Video";
-    const hdVideo = videoData.videoLinks.find(v => v.quality.includes("download ("));
-    const videoUrl = hdVideo?.url || videoData.videoLinks[0].url;
-    const quality = hdVideo?.quality || videoData.videoLinks[0].quality;
-
-    await reply('```Downloading video from API 1... Please wait.📥```');
-
-    const videoResponse = await axios.get(videoUrl, { responseType: 'arraybuffer' });
-    if (!videoResponse.data) {
-      return reply('❌ Failed to download the video. Please try again later.');
-    }
-
-    const videoBuffer = Buffer.from(videoResponse.data, 'binary');
-
-    await conn.sendMessage(from, {
-      video: videoBuffer,
-      caption: `📥 *Instagram Downloader*\n\n` +
-        `🔖 *Title*: ${title}\n` +
-        `📏 *Quality*: ${quality}\n\n` +
-        `> © Powered by JawadTechXD 💗`,
-    }, { quoted: mek });
-
-    await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
-  } catch (error) {
-    console.error('Error downloading video:', error);
-    reply('❌ API 1 failed. Try .igdl2 for alternative download.');
-    await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-  }
-});
-
-
-cmd({
-  pattern: "igdl3",
-  alias: ["instagram3", "ig3", "insta3", "igvideo3"],
-  react: '📥',
+  react: '📶',
   desc: "Download videos from Instagram (Alternative API)",
   category: "download",
   use: ".igdl2 <Instagram URL>",
@@ -78,11 +22,11 @@ cmd({
     const response = await axios.get(apiUrl);
 
     if (!response.data?.status || !response.data?.BK9?.[0]?.url) {
-      return reply('❌ Unable to fetch the video from API 2. Try .igdl for primary download.');
+      return reply('❌ Unable to fetch the video. Try .igdl2 for primary download.');
     }
 
     const videoUrl = response.data.BK9[0].url;
-    await reply('```Downloading video from API 2... Please wait.📥```');
+    await reply('```Downloading video Please wait 🚀```');
 
     const videoResponse = await axios.get(videoUrl, { responseType: 'arraybuffer' });
     if (!videoResponse.data) {
@@ -93,7 +37,7 @@ cmd({
 
     await conn.sendMessage(from, {
       video: videoBuffer,
-      caption: `📥 *Instagram Video*\n\n` +
+      caption: `📥 *Instagram Downloader*\n\n` +
         `📏 *Quality*: HD\n\n` +
         `> © Powered by JawadTechXD 🔪`,
     }, { quoted: mek });
@@ -106,9 +50,72 @@ cmd({
   }
 });
 
+const axios = require("axios");
+const { cmd } = require("../command");
+
 cmd({
   pattern: "ig2",
   alias: ["insta2", "igdl2", "instagram2"],
+  react: '📥',
+  desc: "Download videos from Instagram",
+  category: "download",
+  use: ".igdl <Instagram URL>",
+  filename: __filename
+}, async (conn, mek, m, { from, reply, args }) => {
+  try {
+    const igUrl = args[0];
+    if (!igUrl || !igUrl.includes("instagram.com")) {
+      return reply('Please provide a valid Instagram URL. Example: `.igdl https://instagram.com/...`');
+    }
+
+    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+
+    // Call the API
+    const apiUrl = `https://api.agatz.xyz/api/instagram?url=${encodeURIComponent(igUrl)}`;
+    const response = await axios.get(apiUrl);
+
+    // Validate response
+    if (!response.data || response.data.status !== 200 || !response.data.data?.videoLinks?.length) {
+      return reply('❌ Unable to fetch video. Invalid URL or API error.');
+    }
+
+    // Get video links (excluding MP3)
+    const videoLinks = response.data.data.videoLinks.filter(v => !v.quality.includes("mp3"));
+    if (!videoLinks.length) {
+      return reply('❌ No video download link found.');
+    }
+
+    // Select first video link (they're usually ordered by quality)
+    const videoInfo = videoLinks[0];
+    const downloadUrl = videoInfo.url;
+    const quality = videoInfo.quality.replace("download (", "").replace(")", "") || "HD";
+
+    await reply('📥 Downloading...');
+
+    // Download video
+    const videoResponse = await axios.get(downloadUrl, { responseType: 'arraybuffer' });
+    if (!videoResponse.data) {
+      return reply('❌ Failed to download video.');
+    }
+
+    // Send video
+    await conn.sendMessage(from, {
+      video: Buffer.from(videoResponse.data),
+      caption: `📥 Instagram Video\nQuality: ${quality}`,
+    }, { quoted: mek });
+
+    await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+  } catch (error) {
+    console.error('Error:', error);
+    reply('❌ Download failed: ' + (error.message || 'Unknown error'));
+    await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+  }
+});
+
+
+cmd({
+  pattern: "ig3",
+  alias: ["insta3", "igdl3", "instagram3"],
   desc: "Download Instagram videos/reels",
   react: "🎥",
   category: "download",
