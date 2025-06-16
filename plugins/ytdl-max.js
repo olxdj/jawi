@@ -7,7 +7,7 @@ cmd({
   desc: "Download YouTube video (MP4)",
   category: "main",
   use: ".songx <video name>",
-  react: "📽️",
+  react: "🔰",
   filename: __filename
 }, async (conn, mek, m, { from, reply, q }) => {
   try {
@@ -49,7 +49,7 @@ cmd({
   desc: "Download YouTube song (MP3)",
   category: "main",
   use: ".playx <song name>",
-  react: "🎵",
+  react: "🔰",
   filename: __filename
 }, async (conn, mek, m, { from, reply, q }) => {
   try {
