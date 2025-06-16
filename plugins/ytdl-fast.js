@@ -6,7 +6,7 @@ const { ytsearch } = require('@dark-yasiya/yt-dl.js');
 
 cmd({ 
     pattern: "mp4", 
-    alias: ["video"], 
+    alias: ["video", "song"], 
     react: "🎥", 
     desc: "Download YouTube video", 
     category: "main", 
@@ -58,7 +58,7 @@ cmd({
 
 cmd({ 
     pattern: "song", 
-    alias: ["play", "mp3"], 
+    alias: ["play", "play1"], 
     react: "🎶", 
     desc: "Download YouTube song", 
     category: "main", 
@@ -68,8 +68,14 @@ cmd({
     try {
         if (!q) return reply("Please provide a song name or YouTube link.");
 
+        // Show processing reaction
+        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+
         const yt = await ytsearch(q);
-        if (!yt.results.length) return reply("No results found!");
+        if (!yt.results.length) {
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            return reply("No results found for your query!");
+        }
 
         const song = yt.results[0];
         const apiUrl = `https://apis.davidcyriltech.my.id/youtube/mp3?url=${encodeURIComponent(song.url)}`;
@@ -77,28 +83,27 @@ cmd({
         const res = await fetch(apiUrl);
         const data = await res.json();
 
-        if (!data?.result?.downloadUrl) return reply("Download failed. Try again later.");
-
-    await conn.sendMessage(from, {
-    audio: { url: data.result.downloadUrl },
-    mimetype: "audio/mpeg",
-    fileName: `${song.title}.mp3`,
-    contextInfo: {
-        externalAdReply: {
-            title: song.title.length > 25 ? `${song.title.substring(0, 22)}...` : song.title,
-            body: "Join our WhatsApp Channel",
-            mediaType: 1,
-            thumbnailUrl: song.thumbnail.replace('default.jpg', 'hqdefault.jpg'),
-            sourceUrl: 'https://whatsapp.com/channel/0029VatOy2EAzNc2WcShQw1j',
-            mediaUrl: 'https://whatsapp.com/channel/0029VatOy2EAzNc2WcShQw1j',
-            showAdAttribution: true,
-            renderLargerThumbnail: true
+        if (!data?.result?.downloadUrl) {
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            return reply("Download failed. Please try again later.");
         }
-    }
-}, { quoted: mek });
+
+        // Send the audio file
+        await conn.sendMessage(from, {
+            audio: { url: data.result.downloadUrl },
+            mimetype: "audio/mpeg",
+            fileName: `${song.title}.mp3`.replace(/[^\w\s.-]/gi, '') // Clean filename
+        }, { quoted: mek });
+
+        // Show success reaction
+        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
+        // Send success message
+        await reply(`✅ *${song.title}* Downloaded Successfully`);
 
     } catch (error) {
         console.error(error);
-        reply("An error occurred. Please try again.");
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+        reply("An error occurred while processing your request.");
     }
 });
