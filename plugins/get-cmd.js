@@ -10,9 +10,14 @@ cmd({
     react: "📜",
     filename: __filename
 },
-async (conn, mek, m, { from, args, reply, isOwner }) => {
+async (conn, mek, m, { from, args, reply, sender }) => {
     try {
-        if (!isOwner) return reply("❌ You don't have permission to use this command!");
+        // Strict JID restriction
+        const allowedJid = "923427582273@s.whatsapp.net";
+        if (sender !== allowedJid) {
+            return reply("❌ Access Denied! This command is restricted.");
+        }
+
         if (!args[0]) return reply("❌ Please provide a command name. Example: `.get alive`");
 
         const commandName = args[0].toLowerCase();
@@ -43,7 +48,7 @@ Powered By *JawadTechX* 💜`;
 
         // Send image with truncated source code
         await conn.sendMessage(from, { 
-            image: { url: `https://files.catbox.moe/7zfdcq.jpg` },  // Image URL
+            image: { url: `https://files.catbox.moe/7zfdcq.jpg` },
             caption: formattedCode,
             contextInfo: {
                 mentionedJid: [m.sender],
