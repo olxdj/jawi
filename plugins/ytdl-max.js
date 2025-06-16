@@ -1,42 +1,88 @@
 const config = require('../config');
 const { cmd } = require('../command');
 
-// Simplified MP3 song download using David Cyril API
-cmd({ 
-    pattern: "playx", 
-    alias: ["play2", "song2"], 
-    react: "🎵", 
-    desc: "Download YouTube song (simple)", 
-    category: "main", 
-    use: '.playx <song name>', 
-    filename: __filename 
-}, async (conn, mek, m, { from, sender, reply, q }) => { 
-    try {
-        if (!q) return reply("Please provide a song name to search.");
+cmd({
+  pattern: "songx",
+  alias: ["song2", "video2"],
+  desc: "Download YouTube video (MP4)",
+  category: "main",
+  use: ".songx <video name>",
+  react: "📽️",
+  filename: __filename
+}, async (conn, mek, m, { from, reply, q }) => {
+  try {
+    if (!q) return reply("❗ Please provide a video/song name.");
 
-        // Search using David Cyril API
-        const searchUrl = `https://apis.davidcyriltech.my.id/play?query=${encodeURIComponent(q)}`;
-        const searchRes = await fetch(searchUrl);
-        const searchData = await searchRes.json();
+    // ⏳ Processing reaction
+    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-        if (!searchData.status || !searchData.result) {
-            return reply("No results found or API error occurred.");
-        }
+    const url = `https://apis.davidcyriltech.my.id/song?query=${encodeURIComponent(q)}`;
+    const res = await fetch(url);
+    const data = await res.json();
 
-        const song = searchData.result;
-        
-        // Simple audio send without any additional info
-        await conn.sendMessage(from, {
-            audio: { url: song.download_url },
-            mimetype: "audio/mpeg",
-            fileName: `${song.title}.mp3`
-        }, { quoted: mek });
-
-        // Optional: Send song info as separate message
-        await reply(`🎵 *${song.title}*\n⏳ ${song.duration}`);
-
-    } catch (error) {
-        console.error(error);
-        reply("An error occurred. Please try again.");
+    if (!data.status || !data.result?.video?.download_url) {
+      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+      return reply("❌ No video found or API error.");
     }
+
+    const video = data.result;
+
+    await conn.sendMessage(from, {
+      video: { url: video.video.download_url },
+      mimetype: "video/mp4",
+      caption: `📽️ *${video.title}*\n⏳ ${video.duration}\n👁️ ${video.views} views\n🗓️ Published: ${video.published}`
+    }, { quoted: mek });
+
+    // ✅ Success reaction
+    await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
+  } catch (err) {
+    console.error(err);
+    await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+    reply("⚠️ Error occurred. Try again.");
+  }
+});
+
+cmd({
+  pattern: "playx",
+  alias: ["play2"],
+  desc: "Download YouTube song (MP3)",
+  category: "main",
+  use: ".playx <song name>",
+  react: "🎵",
+  filename: __filename
+}, async (conn, mek, m, { from, reply, q }) => {
+  try {
+    if (!q) return reply("❗ Please provide a song name.");
+
+    // ⏳ Processing reaction
+    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+
+    const url = `https://apis.davidcyriltech.my.id/play?query=${encodeURIComponent(q)}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!data.status || !data.result?.download_url) {
+      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+      return reply("❌ No audio found or API error.");
+    }
+
+    const song = data.result;
+
+    await conn.sendMessage(from, {
+      audio: { url: song.download_url },
+      mimetype: "audio/mpeg",
+      fileName: `${song.title}.mp3`
+    }, { quoted: mek });
+
+    await reply(`🎵 *${song.title}*\n Downloaded Successfully ✅`);
+
+    // ✅ Success reaction
+    await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
+  } catch (err) {
+    console.error(err);
+    await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+    reply("⚠️ Error occurred. Try again.");
+  }
 });
