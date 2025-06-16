@@ -6,7 +6,7 @@ cmd({
     alias: ["upgrade", "sync"],
     desc: "Update and restart the bot system",
     category: "owner",
-    react: "🔄",
+    react: "🚀",
     filename: __filename
 },
 async (conn, mek, m, { from, reply, isCreator }) => {
