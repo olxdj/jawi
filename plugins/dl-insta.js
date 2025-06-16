@@ -59,7 +59,7 @@ cmd({
 
 cmd({
   pattern: "igdl3",
-  alias: ["instagram3", "ig3" "insta3", "igvideo3"],
+  alias: ["instagram3", "ig3", "insta3", "igvideo3"],
   react: '📥',
   desc: "Download videos from Instagram (Alternative API)",
   category: "download",
