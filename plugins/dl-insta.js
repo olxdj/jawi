@@ -50,9 +50,6 @@ cmd({
   }
 });
 
-const axios = require("axios");
-const { cmd } = require("../command");
-
 cmd({
   pattern: "ig2",
   alias: ["insta2", "igdl2", "instagram2"],
