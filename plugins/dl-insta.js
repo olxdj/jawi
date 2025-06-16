@@ -27,7 +27,7 @@ cmd({
     }
 
     const videoUrl = response.data.BK9[0].url;
-    await conn.sendMessage(from, { react: { text: '📥', key: m.key } });
+    await conn.sendMessage(from, { react: { text: '📶', key: m.key } });
 
     const videoResponse = await axios.get(videoUrl, { responseType: 'arraybuffer' });
     if (!videoResponse.data) {
@@ -39,9 +39,9 @@ cmd({
 
     await conn.sendMessage(from, {
       video: videoBuffer,
-      caption: `📥 *Instagram Downloader*\n\n` +
-        `📏 *Quality*: HD\n\n` +
-        `> © Powered by JawadTechXD 🔪`,
+      caption: `📶 *Instagram Downloader*\n\n` +
+        `- ❤‍🩹 *Quality*: HD\n\n` +
+        `> *© Powered by JawadTechXD*`,
     }, { quoted: mek });
 
     await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
