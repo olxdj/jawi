@@ -57,9 +57,6 @@ cmd({
 });
 
 
-const axios = require("axios");
-const { cmd } = require("../command");
-
 cmd({
   pattern: "igdl3",
   alias: ["instagram3", "ig3" "insta3", "igvideo3"],
