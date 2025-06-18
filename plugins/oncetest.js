@@ -1,5 +1,4 @@
 const { cmd } = require("../command");
-const { getContentType, proto } = require("@whiskeysockets/baileys"); // Adjust path as needed
 
 cmd({
   on: "body"
@@ -10,23 +9,13 @@ cmd({
     if (!isCreator || !["🙂", "💜", "👍"].includes(lowerBody)) return;
     
     // Check if the message is a reply to a view-once message
-    if (!message.quoted) return;
-
-    // Extract the actual message from viewOnce wrapper if needed
-    let quotedMsg = message.quoted;
-    if (quotedMsg.mtype === "viewOnceMessage" || quotedMsg.type === "viewOnceMessage") {
-      quotedMsg = quotedMsg.msg || quotedMsg.message;
-      if (quotedMsg.viewOnceMessage) {
-        quotedMsg = quotedMsg.viewOnceMessage.message[getContentType(quotedMsg.viewOnceMessage.message)];
-      }
+    if (!message.quoted || !message.quoted.viewOnce) {
+      return;
     }
 
-    // Verify it was originally a view-once message
-    if (!quotedMsg.viewOnce) return;
-
     // Download the view-once media
-    const buffer = await client.downloadContentFromMessage(quotedMsg);
-    const mtype = getContentType(quotedMsg);
+    const buffer = await message.quoted.download();
+    const mtype = message.quoted.mtype;
     const options = { quoted: message };
 
     let messageContent = {};
@@ -34,32 +23,34 @@ cmd({
       case "imageMessage":
         messageContent = {
           image: buffer,
-          caption: quotedMsg.caption || '',
-          mimetype: quotedMsg.mimetype || "image/jpeg"
+          caption: message.quoted.text || '',
+          mimetype: message.quoted.mimetype || "image/jpeg"
         };
         break;
       case "videoMessage":
         messageContent = {
           video: buffer,
-          caption: quotedMsg.caption || '',
-          mimetype: quotedMsg.mimetype || "video/mp4"
+          caption: message.quoted.text || '',
+          mimetype: message.quoted.mimetype || "video/mp4"
         };
         break;
       case "audioMessage":
-        messageContent = {
-          audio: buffer,
-          mimetype: quotedMsg.ptt ? "audio/ogg; codecs=opus" : quotedMsg.mimetype || "audio/mp4",
-          ptt: quotedMsg.ptt || false
-        };
-        break;
-      case "stickerMessage":
-        messageContent = {
-          sticker: buffer,
-          mimetype: quotedMsg.mimetype || "image/webp"
-        };
+        // Check if it's a voice note (ptt) or regular audio
+        if (message.quoted.ptt) {
+          messageContent = {
+            audio: buffer,
+            mimetype: "audio/ogg; codecs=opus",
+            ptt: true
+          };
+        } else {
+          messageContent = {
+            audio: buffer,
+            mimetype: message.quoted.mimetype || "audio/mp4"
+          };
+        }
         break;
       default:
-        return; // Unsupported media type
+        return; // Only support image, video and audio for view-once
     }
 
     // Send the media back to the user who triggered it
