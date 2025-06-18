@@ -99,3 +99,42 @@ cmd({
     reply(`❌ Error: ${error.message || "Failed to download media"}`);
   }
 });
+
+cmd({
+    pattern: "ig3",
+    alias: ["insta3", "instagram3"],
+    desc: "Download Instagram video",
+    category: "downloader",
+    react: "⤵️",
+    filename: __filename
+},
+async (conn, mek, m, { from, args, q, reply }) => {
+    try {
+        if (!q) return reply("Please provide an Instagram video link.");
+        if (!q.includes("instagram.com")) return reply("Invalid Instagram link.");
+        
+        reply("Downloading video, please wait...");
+        
+        const apiUrl = `https://rest-lily.vercel.app/api/downloader/igdl?url=${q}`;
+        const { data } = await axios.get(apiUrl);
+        
+        if (!data.status || !data.data || !data.data[0]) return reply("Failed to fetch Instagram video.");
+        
+        const { url } = data.data[0];
+        
+        const caption = 
+`- *Instagram Downloader ⚡*\n\n` +
+`- *Powered By KHAN-MD ❤️*`;
+        
+        await conn.sendMessage(from, {
+            video: { url: url },
+            caption: caption,
+            contextInfo: { mentionedJid: [m.sender] }
+        }, { quoted: mek });
+        
+    } catch (e) {
+        console.error("Error in Instagram downloader command:", e);
+        reply(`An error occurred: ${e.message}`);
+    }
+});
+                      
