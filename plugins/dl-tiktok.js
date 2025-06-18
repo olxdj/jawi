@@ -40,4 +40,45 @@ async (conn, mek, m, { from, args, q, reply }) => {
         reply(`An error occurred: ${e.message}`);
     }
 });
-          
+
+cmd({
+    pattern: "tt2",
+    alias: ["ttdl2", "ttv2", "tiktok2"],
+    desc: "Download TikTok video without watermark",
+    category: "downloader",
+    react: "⬇️",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, args, q }) => {
+    try {
+        // Validate input
+        const url = q || m.quoted?.text;
+        if (!url || !url.includes("tiktok.com")) {
+            return reply("❌ Please provide/reply to a TikTok link");
+        }
+
+        // Show processing reaction
+        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+
+        // Fetch video from BK9 API
+        const { data } = await axios.get(`https://bk9.fun/download/tiktok2?url=${encodeURIComponent(url)}`);
+        
+        if (!data?.status || !data.BK9?.video?.noWatermark) {
+            throw new Error("No video found in API response");
+        }
+
+        // Send video with minimal caption
+        await conn.sendMessage(from, {
+            video: { url: data.BK9.video.noWatermark },
+            caption: `- *Powered By JawadTechX 💜*`
+        }, { quoted: mek });
+
+        // Success reaction
+        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
+    } catch (error) {
+        console.error('TT2 Error:', error);
+        reply("❌ Download failed. Invalid link or API error");
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+    }
+});
+                
