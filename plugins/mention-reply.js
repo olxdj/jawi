@@ -9,7 +9,6 @@ function loadMentionUrls() {
   try {
     const filePath = path.join(__dirname, "../assets/mention_urls.json");
     if (!fs.existsSync(filePath)) {
-      // Create default file if it doesn't exist
       const defaultUrls = {
         voiceClips: [
           "https://cdn.ironman.my.id/i/7p5plg.mp4",
@@ -39,7 +38,146 @@ function saveMentionUrls(data) {
   }
 }
 
-// Mention handler
+// Extract URLs from text (supports both comma-separated and space-separated)
+function extractUrls(text) {
+  // Split by comma first, then by space, then flatten
+  return text.split(',')
+    .map(part => part.split(' '))
+    .flat()
+    .map(url => url.trim())
+    .filter(url => url.length > 0);
+}
+
+// Enhanced Add Mention Command
+cmd({
+  pattern: "addmention",
+  alias: ["addmentionurl", "addurl"],
+  desc: "Add one or multiple mention response URLs\nUsage: .add url1 or .add url1,url2 or .add url1 url2",
+  category: "owner",
+  react: "➕",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  try {
+    if (!isCreator) return reply("_❗Only the bot owner can use this command!_");
+
+    if (!args[0]) return reply("❌ Please provide URL(s) to add.\nExample:\n.add url1\n.add url1,url2\n.add url1 url2");
+
+    const urlsToAdd = extractUrls(args.join(' '));
+    if (urlsToAdd.length === 0) return reply("❌ No valid URLs found in your input.");
+
+    const data = loadMentionUrls();
+    const addedUrls = [];
+    const duplicateUrls = [];
+
+    urlsToAdd.forEach(url => {
+      if (!data.voiceClips.includes(url)) {
+        data.voiceClips.push(url);
+        addedUrls.push(url);
+      } else {
+        duplicateUrls.push(url);
+      }
+    });
+
+    saveMentionUrls(data);
+
+    let response = `✅ Added ${addedUrls.length} new URL(s).\nTotal URLs: ${data.voiceClips.length}`;
+    
+    if (addedUrls.length > 0) {
+      response += "\n\nAdded URLs:\n" + addedUrls.map((u, i) => `${i+1}. ${u}`).join('\n');
+    }
+    
+    if (duplicateUrls.length > 0) {
+      response += `\n\n⚠️ ${duplicateUrls.length} URL(s) already existed:\n` + 
+                 duplicateUrls.map((u, i) => `${i+1}. ${u}`).join('\n');
+    }
+
+    reply(response);
+  } catch (err) {
+    console.error(err);
+    reply("❌ Error: " + err.message);
+  }
+});
+
+// Enhanced Remove Mention Command
+cmd({
+  pattern: "removemention",
+  alias: ["removementionurl", "delmention", "removeurl", "delurl"],
+  desc: "Remove one or multiple mention response URLs\nUsage: .remove url1 or .remove url1,url2 or .remove url1 url2",
+  category: "owner",
+  react: "➖",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  try {
+    if (!isCreator) return reply("_❗Only the bot owner can use this command!_");
+
+    if (!args[0]) return reply("❌ Please provide URL(s) to remove.\nExample:\n.remove url1\n.remove url1,url2\n.remove url1 url2");
+
+    const urlsToRemove = extractUrls(args.join(' '));
+    if (urlsToRemove.length === 0) return reply("❌ No valid URLs found in your input.");
+
+    const data = loadMentionUrls();
+    const removedUrls = [];
+    const notFoundUrls = [];
+
+    urlsToRemove.forEach(url => {
+      const index = data.voiceClips.indexOf(url);
+      if (index !== -1) {
+        data.voiceClips.splice(index, 1);
+        removedUrls.push(url);
+      } else {
+        notFoundUrls.push(url);
+      }
+    });
+
+    saveMentionUrls(data);
+
+    let response = `✅ Removed ${removedUrls.length} URL(s).\nRemaining URLs: ${data.voiceClips.length}`;
+    
+    if (removedUrls.length > 0) {
+      response += "\n\nRemoved URLs:\n" + removedUrls.map((u, i) => `${i+1}. ${u}`).join('\n');
+    }
+    
+    if (notFoundUrls.length > 0) {
+      response += `\n\n⚠️ ${notFoundUrls.length} URL(s) not found:\n` + 
+                 notFoundUrls.map((u, i) => `${i+1}. ${u}`).join('\n');
+    }
+
+    reply(response);
+  } catch (err) {
+    console.error(err);
+    reply("❌ Error: " + err.message);
+  }
+});
+
+// Enhanced List Command
+cmd({
+  pattern: "listmention",
+  alias: ["listmentionurls", "mentionurls", "listurls"],
+  desc: "List all mention response URLs",
+  category: "owner",
+  react: "📋",
+  filename: __filename
+}, async (conn, mek, m, { from, isCreator, reply }) => {
+  try {
+    if (!isCreator) return reply("_❗Only the bot owner can use this command!_");
+
+    const { voiceClips } = loadMentionUrls();
+    if (voiceClips.length === 0) return reply("❌ No mention URLs found.");
+
+    let msg = `🎧 *Mention Response URLs (${voiceClips.length}):*\n\n`;
+    msg += voiceClips.map((url, index) => {
+      return `${index + 1}. ${url}`;
+    }).join('\n');
+
+    msg += `\n\n📝 Usage:\n.add url1,url2\n.remove url1,url2`;
+    reply(msg);
+  } catch (err) {
+    console.error(err);
+    reply("❌ Error: " + err.message);
+  }
+});
+
+// The existing mention handler remains the same
 cmd({
   on: "body"
 }, async (conn, m, { isGroup }) => {
@@ -86,120 +224,5 @@ cmd({
     await conn.sendMessage(ownerJid, {
       text: `*Bot Error in Mention Handler:*\n${e.message}`
     });
-  }
-});
-
-// Command to add new mention URL
-cmd({
-  pattern: "addmention",
-  alias: ["addmentionurl"],
-  desc: "Add a new mention response URL",
-  category: "owner",
-  react: "➕",
-  filename: __filename
-}, async (conn, mek, m, { from, args, isCreator, reply }) => {
-  try {
-    if (!isCreator) return reply("_❗Only the bot owner can use this command!_");
-
-    const url = args[0];
-    if (!url) return reply("❌ Please provide a URL to add.");
-
-    const data = loadMentionUrls();
-    if (data.voiceClips.includes(url)) {
-      return reply("❌ This URL is already in the list.");
-    }
-
-    data.voiceClips.push(url);
-    saveMentionUrls(data);
-
-    reply(`✅ URL added successfully!\nTotal URLs: ${data.voiceClips.length}`);
-  } catch (err) {
-    console.error(err);
-    reply("❌ Error: " + err.message);
-  }
-});
-
-// Command to remove mention URL
-cmd({
-  pattern: "removemention",
-  alias: ["removementionurl", "delmention"],
-  desc: "Remove a mention response URL",
-  category: "owner",
-  react: "➖",
-  filename: __filename
-}, async (conn, mek, m, { from, args, isCreator, reply }) => {
-  try {
-    if (!isCreator) return reply("_❗Only the bot owner can use this command!_");
-
-    const url = args[0];
-    if (!url) return reply("❌ Please provide a URL to remove.");
-
-    const data = loadMentionUrls();
-    if (!data.voiceClips.includes(url)) {
-      return reply("❌ This URL is not in the list.");
-    }
-
-    data.voiceClips = data.voiceClips.filter(u => u !== url);
-    saveMentionUrls(data);
-
-    reply(`✅ URL removed successfully!\nRemaining URLs: ${data.voiceClips.length}`);
-  } catch (err) {
-    console.error(err);
-    reply("❌ Error: " + err.message);
-  }
-});
-
-// Command to list all mention URLs
-cmd({
-  pattern: "listmention",
-  alias: ["listmentionurls", "mentionurls"],
-  desc: "List all mention response URLs",
-  category: "owner",
-  react: "📋",
-  filename: __filename
-}, async (conn, mek, m, { from, isCreator, reply }) => {
-  try {
-    if (!isCreator) return reply("_❗Only the bot owner can use this command!_");
-
-    const { voiceClips } = loadMentionUrls();
-    if (voiceClips.length === 0) return reply("❌ No mention URLs found.");
-
-    let msg = "🎧 *Mention Response URLs:*\n\n";
-    voiceClips.forEach((url, index) => {
-      msg += `${index + 1}. ${url}\n`;
-    });
-
-    reply(msg);
-  } catch (err) {
-    console.error(err);
-    reply("❌ Error: " + err.message);
-  }
-});
-
-// Command to reset mention URLs to default
-cmd({
-  pattern: "resetmention",
-  alias: ["resetmentionurls"],
-  desc: "Reset mention URLs to default",
-  category: "owner",
-  react: "🔄",
-  filename: __filename
-}, async (conn, mek, m, { from, isCreator, reply }) => {
-  try {
-    if (!isCreator) return reply("_❗Only the bot owner can use this command!_");
-
-    const defaultUrls = {
-      voiceClips: [
-        "https://cdn.ironman.my.id/i/7p5plg.mp4",
-        "https://cdn.ironman.my.id/i/l4dyvg.mp4",
-        "https://cdn.ironman.my.id/i/4z93dg.mp4"
-      ]
-    };
-
-    saveMentionUrls(defaultUrls);
-    reply("✅ Mention URLs reset to default!");
-  } catch (err) {
-    console.error(err);
-    reply("❌ Error: " + err.message);
   }
 });
