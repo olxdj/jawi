@@ -8,7 +8,7 @@ const axios = require('axios')
 
 cmd({
   pattern: "settings",
-  alias: ["env", "var", "config"],
+  alias: ["env", "var"],
   desc: "Show all bot configuration settings",
   category: "owner",
   react: "⚙️",
