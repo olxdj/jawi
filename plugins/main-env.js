@@ -16,8 +16,7 @@ cmd({
 }, async (conn, mek, m, { from, reply, isCreator }) => {
   if (!isCreator) return reply("❗ Only the bot owner can use this command.");
 
-  const settingsMenu = `
-╭────⬡ *SETTING MENU* ⬡────⭓
+  const settingsMenu = `╭────⬡ *SETTING MENU* ⬡────⭓
 │
 ├───⬡ *BOT CONFIGURATION* ⬡───
 │├▢ .prefix [new prefix]
