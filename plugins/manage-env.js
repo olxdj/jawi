@@ -678,29 +678,28 @@ cmd({
 });
 
 
+// CUSTOM REACT
 cmd({
-  pattern: "customreact",
-  alias: ["creact"],
-  desc: "Enable or disable custom reaction emojis",
-  category: "owner", // optional: reflect correct category
-  react: "💬",
-  filename: __filename
-}, async (conn, mek, m, { args, isCreator, reply }) => {
-  try {
-    if (!isCreator) return reply("❗ Only the bot owner can use this command.");
+    pattern: "customreact",
+    alias: ["creact", "reactc"],
+    react: "😎",
+    desc: "Enable or disable custom reactions",
+    category: "settings",
+    filename: __filename
+},
+async (conn, mek, m, { from, args, isCreator, reply }) => {
+    if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
 
-    if (args[0] === "on") {
-      config.CUSTOM_REACT = "true";
-      reply("✅ Custom reactions are now enabled.");
-    } else if (args[0] === "off") {
-      config.CUSTOM_REACT = "false";
-      reply("❌ Custom reactions are now disabled.");
+    const status = args[0]?.toLowerCase();
+    if (status === "on") {
+        config.CUSTOM_REACT = "true";
+        return reply("✅ Custom reactions are now enabled.");
+    } else if (status === "off") {
+        config.CUSTOM_REACT = "false";
+        return reply("❌ Custom reactions are now disabled.");
     } else {
-      reply("Usage: *.customreact on/off*");
+        return reply(`Example: .customreact on`);
     }
-  } catch (e) {
-    reply(`Error: ${e.message}`);
-  }
 });
 
 cmd({
