@@ -8,8 +8,8 @@ function isEnabled(value) {
 }
 
 cmd({
-    pattern: "env",
-    alias: ["config", "settings"],
+    pattern: "config",
+    alias: ["varlist", "envlist"],
     desc: "Show all bot configuration variables (Owner Only)",
     category: "system",
     react: "⚙️",
