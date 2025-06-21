@@ -1,7 +1,6 @@
 const { cmd } = require('../command');
 const { ytsearch } = require('@dark-yasiya/yt-dl.js');
 
-
 cmd({
     pattern: "play",
     alias: ["yta"],
@@ -58,7 +57,7 @@ async (conn, mek, m, { from, q, reply }) => {
                 document: { url: json.data.downloadURL },
                 mimetype: "audio/mpeg",
                 fileName: `${json.data.title || vid.title}.mp3`,
-                caption: "> *© Powered By Shaban-MD ♡*"
+                caption: "> *© Powered By KHAN-MD ♡*"
             },
             { quoted: mek });
 
