@@ -2,8 +2,8 @@ const { cmd } = require('../command');
 const { ytsearch } = require('@dark-yasiya/yt-dl.js');
 
 cmd({
-    pattern: "mp3",
-    alias: ["song"],
+    pattern: "play",
+    alias: ["yta"],
     react: "🎵",
     desc: "Download YouTube audio",
     category: "downloader",
