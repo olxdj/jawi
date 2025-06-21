@@ -16,48 +16,52 @@ cmd({
     category: "settings",
     filename: __filename,
     react: "✅"
-}, async (conn, mek, m, { from, args, isOwner, reply }) => {
+}, async (conn, mek, m, { from, args, isOwner, reply, prefix }) => {
     if (!isOwner) return reply("*📛 Only the owner can use this command!*");
 
     const mode = args[0]?.toLowerCase();
     const target = args[1]?.toLowerCase();
 
-    const status = `🔄 *Current AI Status:*
-📩 Inbox: ${AI_STATE.IB === "true" ? "✅ ON" : "❌ OFF"}
-👥 Group: ${AI_STATE.GC === "true" ? "✅ ON" : "❌ OFF"}
-
-🛠️ *Usage:*
-${prefix}chatbot on [all/ib/gc]
-${prefix}chatbot off [all/ib/gc]`;
-
-    // If mode is either on or off
-    if (["on", "off"].includes(mode)) {
-        const value = mode === "on" ? "true" : "false";
-
-        switch (target) {
-            case "all":
-            case undefined:
-                AI_STATE.IB = value;
-                AI_STATE.GC = value;
-                await setConfig("AI_STATE", JSON.stringify(AI_STATE));
-                return reply(`🤖 AI chatbot is now ${mode} for both inbox and group chats`);
-            case "ib":
-                AI_STATE.IB = value;
-                await setConfig("AI_STATE", JSON.stringify(AI_STATE));
-                return reply(`🤖 AI chatbot is now ${mode} for inbox chats`);
-            case "gc":
-                AI_STATE.GC = value;
-                await setConfig("AI_STATE", JSON.stringify(AI_STATE));
-                return reply(`🤖 AI chatbot is now ${mode} for group chats`);
-            default:
-                return reply(`❗ Invalid target!\n\n${status}`);
+    if (mode === "on") {
+        if (!target || target === "all") {
+            AI_STATE.IB = "true";
+            AI_STATE.GC = "true";
+            await setConfig("AI_STATE", JSON.stringify(AI_STATE));
+            return reply("🤖 AI chatbot is now enabled for both inbox and group chats");
+        } else if (target === "ib") {
+            AI_STATE.IB = "true";
+            await setConfig("AI_STATE", JSON.stringify(AI_STATE));
+            return reply("🤖 AI chatbot is now enabled for inbox chats");
+        } else if (target === "gc") {
+            AI_STATE.GC = "true";
+            await setConfig("AI_STATE", JSON.stringify(AI_STATE));
+            return reply("🤖 AI chatbot is now enabled for group chats");
         }
+    } else if (mode === "off") {
+        if (!target || target === "all") {
+            AI_STATE.IB = "false";
+            AI_STATE.GC = "false";
+            await setConfig("AI_STATE", JSON.stringify(AI_STATE));
+            return reply("🤖 AI chatbot is now disabled for both inbox and group chats");
+        } else if (target === "ib") {
+            AI_STATE.IB = "false";
+            await setConfig("AI_STATE", JSON.stringify(AI_STATE));
+            return reply("🤖 AI chatbot is now disabled for inbox chats");
+        } else if (target === "gc") {
+            AI_STATE.GC = "false";
+            await setConfig("AI_STATE", JSON.stringify(AI_STATE));
+            return reply("🤖 AI chatbot is now disabled for group chats");
+        }
+    } else {
+        return reply(`*USAGE OF KHAN-CHAT-BOT AI 
+.chatbot on all - Enable AI in all chats
+.chatbot on ib - Enable AI in inbox only
+.chatbot on gc - Enable AI in groups only
+.chatbot off all - Disable AI in all chats
+.chatbot off ib - Disable AI in inbox only
+.chatbot off gc - Disable AI in groups only`);
     }
-
-    // If mode is invalid or missing
-    return reply(`❗ Invalid command usage!\n\n${status}`);
 });
-
 
 // Initialize AI state on startup
 (async () => {
@@ -99,6 +103,24 @@ cmd({
 
         // Optional: Prevent bot responding to its own messages or commands
         if (!body || m.key.fromMe || body.startsWith(config.PREFIX)) return;
+
+        // Handle time/date questions directly
+        const lowerBody = body.toLowerCase();
+        if (lowerBody.includes('time') || lowerBody.includes('date')) {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                timeZoneName: 'short'
+            };
+            const currentDateTime = now.toLocaleDateString('en-US', options);
+            return reply(`⏰ Current Date & Time:\n${currentDateTime}\n\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴊᴀᴡᴀᴅᴛᴇᴄʜx ⚡`);
+        }
 
         // Encode message for the query
         const query = encodeURIComponent(body);
