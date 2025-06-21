@@ -4,7 +4,7 @@ const { ytsearch } = require('@dark-yasiya/yt-dl.js');
 cmd({
     pattern: "play",
     alias: ["yta"],
-    react: "🎵",
+    react: "🎧",
     desc: "Download YouTube audio",
     category: "downloader",
     use: ".mp3 <song name>",
@@ -13,8 +13,10 @@ cmd({
     try {
         if (!q) return reply("🎵 Please provide a song name");
         
+        // 1. Indicate processing
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
         
+        // 2. Search YouTube
         const yt = await ytsearch(q);
         if (!yt?.results?.length) {
             await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
@@ -22,6 +24,8 @@ cmd({
         }
         
         const vid = yt.results[0];
+        
+        // 3. Fetch audio with proper headers
         const api = `https://api-aswin-sparky.koyeb.app/api/downloader/song?search=${encodeURIComponent(vid.url)}`;
         const res = await fetch(api);
         const json = await res.json();
@@ -31,25 +35,37 @@ cmd({
             return reply("Download failed");
         }
         
-        // Modified audio sending with forced filename
+        // 4. Clean and format filename
+        const cleanTitle = vid.title
+            .replace(/[^\w\s.-]/gi, '') // Remove special chars
+            .replace(/\s+/g, ' ')      // Collapse multiple spaces
+            .trim()
+            .substring(0, 64);         // Limit length
+        
+        // 5. Send audio with all required parameters
         await conn.sendMessage(from, {
             audio: { 
                 url: json.data.downloadURL,
-                filename: "audio.mp3"
+                filename: `${cleanTitle}.mp3`
             },
-            mimetype: "audio/mpeg"
-        }, { quoted: mek });
+            mimetype: "audio/mpeg",
+            ptt: false, // Important for music files
+            waveform: [0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1] // Fake waveform for better appearance
+        }, { 
+            quoted: mek,
+            upload: true // Ensures proper upload handling
+        });
         
-        await reply(`🎵 *${vid.title}* - Downloaded Successfully ✅`);
+        // 6. Success message
+        await reply(`🎵 *${cleanTitle}* - Downloaded Successfully ✅`);
         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
         
     } catch (e) {
         console.error(e);
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        reply("Error occurred: " + e.message);
+        reply(`Error occurred: ${e.message}`);
     }
 });
-
 
 cmd({
     pattern: "song",
