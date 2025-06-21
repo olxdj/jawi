@@ -3,7 +3,7 @@ const { cmd } = require('../command');
 
 cmd({
   pattern: "songx",
-  alias: ["song2", "video2"],
+  alias: ["song3", "video3"],
   desc: "Download YouTube video (MP4)",
   category: "main",
   use: ".songx <video name>",
@@ -45,7 +45,7 @@ cmd({
 
 cmd({
   pattern: "playx",
-  alias: ["play2"],
+  alias: ["play3"],
   desc: "Download YouTube song (MP3)",
   category: "main",
   use: ".playx <song name>",
