@@ -8,7 +8,7 @@ const commonContextInfo = (sender) => ({
     isForwarded: true,
     forwardedNewsletterMessageInfo: {
         newsletterJid: '120363354023106228@newsletter',
-        newsletterName: 'JawadTechX',
+        newsletterName: config.BOT_NAME,
         serverMessageId: 143
     }
 });
@@ -25,16 +25,16 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
         let totalCommands = Object.keys(commands).length;
         const caption = `*╭────⬡ ${config.BOT_NAME} ⬡────*
 *├▢ 🔸 Owner:* ${config.OWNER_NAME}
-*├▢ 🔸 Prefix:* ${config.PREFIX}
+*├▢ 🔹 Prefix:* ${config.PREFIX}
 *├▢ 🔸 Version:* 5.0.0 Beta
-*├▢ 🔸 Platform:* Heroku
+*├▢ 🔹 Platform:* Heroku
 *├▢ 🔸 Total Commands:* ${totalCommands}
-*├▢ 🔸 Runtime:* ${runtime(process.uptime())}
+*├▢ 🔹 Runtime:* ${runtime(process.uptime())}
 *╰────────────────*
 
 *╭───⬡ SELECT MENU ⬡───*
 *├▢ 1. 📖 Quran Menu*
-*├▢ 2. 🕋 Prayer Time*
+*├▢ 2. ⚙️ Setting Menu*
 *├▢ 3. 🤖 AI Menu*
 *├▢ 4. 🎭 Anime Menu*
 *├▢ 5. 😹 Reactions*
@@ -84,7 +84,14 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • play <reciter> <surah>*
 *├▢ • searchquran <query>*
 *├▢ • quranpdf <surah>*
-*╰────────────────*`,
+*├▢ • prayer <city>*
+*├▢ • setlocation <city>*
+*├▢ • mylocation*
+*├▢ • prayerfull <city>*
+*├▢ • prayernext <city>*
+*├▢ • hijridate*
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -92,14 +99,46 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
                     case "2": // Prayer Time
                         await conn.sendMessage(senderID, {
                             image: { url: config.MENU_IMAGE_URL },
-                            caption: `*╭────⬡ PRAYER TIME ⬡────*
-*├▢ • prayer <city>*
-*├▢ • setlocation <city>*
-*├▢ • mylocation*
-*├▢ • prayerfull <city>*
-*├▢ • prayernext <city>*
-*├▢ • hijridate*
-*╰────────────────*`,
+                            caption: `*╭────⬡ *SETTING MENU* ⬡────⭓
+│
+├───⬡ *BOT CONFIGURATION* ⬡───
+│├▢ .prefix new prefix
+│├▢ .botname new name
+│├▢ .ownername new name
+│├▢ .botimage reply to image 
+│├▢ .mode public/private
+│
+├───⬡ *AUTO FEATURES* ⬡───
+│├▢ .autoreact on/off
+│├▢ .autoreply on/off
+│├▢ .autosticker on/off
+│├▢ .autotyping on/off
+│├▢ .autostatusview on/off
+│├▢ .autostatusreact on/off
+│├▢ .autostatusreply on/off
+│├▢ .autorecoding on/off
+│├▢ .alwaysonline on/off
+│
+├───⬡ *GROUP SETTINGS* ⬡───
+│├▢ .welcome on/off
+│├▢ .goodbye on/off
+│├▢ .antilink on/off
+│├▢ .antilinkkick on/off
+│├▢ .deletelink on/off
+│├▢ .antibad on/off
+│├▢ .antibot on/off
+│
+├───⬡ *MESSAGE SETTINGS* ⬡───
+│├▢ .read-message on/off
+│├▢ .mention-reply on/off
+│├▢ .admin-action on/off
+│
+├───⬡ *CUSTOMIZATION* ⬡───
+│├▢ .creact on/off
+│├▢ .cemojis ❤️,🧡,💛
+│
+╰────⬡ *Use ${config.PREFIX}command on/off* ⬡────⭓
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -123,7 +162,8 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • meta <query>*
 *├▢ • khan <query>*
 *├▢ • jawad <query>*
-*╰────────────────*`,
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -148,7 +188,8 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • anime3*
 *├▢ • anime4*
 *├▢ • anime5*
-*╰────────────────*`,
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -173,7 +214,8 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • wave @tag*
 *├▢ • highfive @tag*
 *├▢ • handhold @tag*
-*╰────────────────*`,
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -195,7 +237,8 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • tinyurl <url>*
 *├▢ • emojimix <emoji+emoji>*
 *├▢ • fancy <text>*
-*╰────────────────*`,
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -217,7 +260,8 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • pickup*
 *├▢ • wyr*
 *├▢ • wouldyourather*
-*╰────────────────*`,
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -243,7 +287,8 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • playx <query>*
 *├▢ • mediafire <url>*
 *├▢ • gdrive <url>*
-*╰────────────────*`,
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -271,7 +316,8 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • tagall*
 *├▢ • tagadmins*
 *├▢ • hidetag <text>*
-*╰────────────────*`,
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -290,7 +336,8 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • menu2*
 *├▢ • listcmd*
 *├▢ • allmenu*
-*╰────────────────*`,
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -315,7 +362,8 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • addsudo @tag*
 *├▢ • delsudo @tag*
 *├▢ • banlist*
-*╰────────────────*`,
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -337,7 +385,8 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • rcolor*
 *├▢ • countdown <seconds>*
 *├▢ • remind <time> <message>*
-*╰────────────────*`,
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -377,7 +426,8 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • bear <text>*
 *├▢ • typography <text>*
 *├▢ • birthday <text>*
-*╰────────────────*`,
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
@@ -418,7 +468,8 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ • .jail <image>*
 *├▢ • .tiny <url>*
 *├▢ • .chr <link> <text/emoji>*
-*╰────────────────*`,
+*╰────────────────*
+> ${config.DESCRIPTION}`,
                             contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                         }, { quoted: receivedMsg });
                         break;
