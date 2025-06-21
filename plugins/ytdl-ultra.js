@@ -38,7 +38,7 @@ cmd({
         // 4. Send audio first (without caption)
         await client.sendMessage(from, {
             audio: { url: json.data.downloadURL },
-            mimetype: "audio/mp3"
+            mimetype: "audio/mp4"
         }, { quoted: mek });
         
         // 5. Send follow-up message
