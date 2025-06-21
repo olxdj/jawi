@@ -31,17 +31,17 @@ cmd({
             return reply("Download failed");
         }
 
-        // Critical Fixes:
-        // 1. Download the audio first to buffer
+        // FIXED: Proper way to get buffer from fetch response
         const audioRes = await fetch(json.data.downloadURL);
-        const audioBuffer = await audioRes.buffer();
+        const audioArrayBuffer = await audioRes.arrayBuffer();
+        const audioBuffer = Buffer.from(audioArrayBuffer);
         
-        // 2. Send with proper metadata
+        // Send with proper metadata
         await conn.sendMessage(from, {
             audio: audioBuffer,
-            mimetype: "audio/mpeg", // Force MP3 type
-            ptt: false, // Important for music
-            fileName: `${json.data.title.replace(/[^\w\s]/gi, '')}.mp3` // Clean filename
+            mimetype: "audio/mpeg",
+            ptt: false,
+            fileName: `${json.data.title.replace(/[^\w\s]/gi, '')}.mp3`
         }, { quoted: mek });
         
         await reply(`🎵 *${json.data.title}* - Downloaded Successfully ✅`);
