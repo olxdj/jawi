@@ -94,6 +94,54 @@ let dec = `*╭────⬡ ${config.BOT_NAME} ⬡────⭓*
 *├▢ tagadmins*
 *╰────────────────*
 
+*╭────⬡ SETTING MENU ⬡────*
+*├▢ .prefix new prefix*  
+*├▢ .botname name*   
+*├▢ .ownername name*
+*├▢ .botimage reply to image*
+*├▢ .mode [public/private]* 
+*├▢ .autoreact [on/off]* 
+*├▢ .autoreply [on/off]*
+*├▢ .autosticker [on/off]*
+*├▢ .autotyping [on/off]*   
+*├▢ .autostatusview [on/off]*  
+*├▢ .autostatusreact [on/off]* 
+*├▢ .autostatusreply [on/off]*  
+*├▢ .autorecoding [on/off]* 
+*├▢ .alwaysonline [on/off]*
+*├▢ .welcome [on/off]*   
+*├▢ .goodbye [on/off]*   
+*├▢ .antilink [on/off]* 
+*├▢ .antilinkkick [on/off]*  
+*├▢ .deletelink [on/off]*
+*├▢ .antibad [on/off]*   
+*├▢ .antibot [on/off]* 
+*├▢ .read-message [on/off]*  
+*├▢ .mention-reply [on/off]*  
+*├▢ .admin-action [on/off]* 
+*├▢ .creact [on/off]*
+*├▢ .cemojis [❤️,🧡,💛]* 
+*╰────────────────*
+
+*╭────⬡ AUDIO MENU ⬡────*
+*├▢ .bass*
+*├▢ .slow* 
+*├▢ .fast*
+*├▢ .reverse*
+*├▢ .baby* 
+*├▢ .demon*
+*├▢ .earrape*  
+*├▢ .nightcore*
+*├▢ .robot* 
+*├▢ .chipmunk* 
+*├▢ .radio* 
+*├▢ .blown* 
+*├▢ .tupai*   
+*├▢ .fat* 
+*├▢ .smooth*
+*├▢ .deep*
+*╰────────────────*
+
 *╭────⬡ REACTIONS MENU ⬡────*
 *├▢ bully @tag*
 *├▢ cuddle @tag*
