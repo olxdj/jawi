@@ -58,7 +58,7 @@ cmd({
 
 cmd({ 
     pattern: "play2", 
-    alias: ["pla"], 
+    alias: ["yta2"], 
     react: "🎧", 
     desc: "Download YouTube song", 
     category: "main", 
