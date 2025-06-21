@@ -53,10 +53,12 @@ cmd({
             return reply("🤖 AI chatbot is now disabled for group chats");
         }
     } else {
-        return reply(`- *USAGE OF KHAN-CHAT-BOT 👾*
+        return reply(`- *JawadTech-Chat-Bot Menu 👾*
+*Enble Settings ✅*      
 > .chatbot on all - Enable AI in all chats
 > .chatbot on ib - Enable AI in inbox only
 > .chatbot on gc - Enable AI in groups only
+*Disable Settings ❌*
 > .chatbot off all - Disable AI in all chats
 > .chatbot off ib - Disable AI in inbox only
 > .chatbot off gc - Disable AI in groups only`);
