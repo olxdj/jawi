@@ -3,7 +3,7 @@ const { ytsearch } = require('@dark-yasiya/yt-dl.js');
 
 cmd({
     pattern: "play",
-    alias: ["play1"],
+    alias: ["yta"],
     react: "🎵",
     desc: "Download YouTube audio",
     category: "downloader",
