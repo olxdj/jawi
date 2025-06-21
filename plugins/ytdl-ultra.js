@@ -2,55 +2,55 @@ const { cmd } = require('../command');
 const { ytsearch } = require('@dark-yasiya/yt-dl.js');
 
 cmd({
-    pattern: "play",
-    alias: ["yta"],
+    pattern: "mp3",
+    alias: ["song"],
     react: "🎵",
     desc: "Download YouTube audio",
     category: "downloader",
     use: ".mp3 <song name>",
     filename: __filename
-}, async (conn, mek, m, { from, q, reply }) => {
+}, async (client, mek, m, { from, q, reply }) => {
     try {
         if (!q) return reply("🎵 Please provide a song name");
         
-        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+        // 1. Indicate processing
+        await client.sendMessage(from, { react: { text: '⏳', key: m.key } });
         
+        // 2. Search YouTube
         const yt = await ytsearch(q);
         if (!yt?.results?.length) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            await client.sendMessage(from, { react: { text: '❌', key: m.key } });
             return reply("No results found");
         }
         
         const vid = yt.results[0];
+        
+        // 3. Fetch audio
         const api = `https://api-aswin-sparky.koyeb.app/api/downloader/song?search=${encodeURIComponent(vid.url)}`;
         const res = await fetch(api);
         const json = await res.json();
         
         if (!json?.data?.downloadURL) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            await client.sendMessage(from, { react: { text: '❌', key: m.key } });
             return reply("Download failed");
         }
-
-        // FIXED: Proper way to get buffer from fetch response
-        const audioRes = await fetch(json.data.downloadURL);
-        const audioArrayBuffer = await audioRes.arrayBuffer();
-        const audioBuffer = Buffer.from(audioArrayBuffer);
         
-        // Send with proper metadata
-        await conn.sendMessage(from, {
-            audio: audioBuffer,
-            mimetype: "audio/mpeg",
-            ptt: false,
-            fileName: `${json.data.title.replace(/[^\w\s]/gi, '')}.mp3`
+        // 4. Send audio first (without caption)
+        await client.sendMessage(from, {
+            audio: { url: json.data.downloadURL },
+            mimetype: "audio/mp4"
         }, { quoted: mek });
         
-        await reply(`🎵 *${json.data.title}* - Downloaded Successfully ✅`);
-        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+        // 5. Send follow-up message
+        await reply(`🎵 *${vid.title}* - Downloaded Successfully\n> KHAN-MD`);
+        
+        // 6. Success reaction
+        await client.sendMessage(from, { react: { text: '✅', key: m.key } });
         
     } catch (e) {
         console.error(e);
-        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        reply("Error occurred: " + e.message);
+        await client.sendMessage(from, { react: { text: '❌', key: m.key } });
+        reply("Error occurred");
     }
 });
 
