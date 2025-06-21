@@ -22,47 +22,42 @@ cmd({
     const mode = args[0]?.toLowerCase();
     const target = args[1]?.toLowerCase();
 
-    if (mode === "on") {
-        if (!target || target === "all") {
-            AI_STATE.IB = "true";
-            AI_STATE.GC = "true";
-            await setConfig("AI_STATE", JSON.stringify(AI_STATE));
-            return reply("🤖 AI chatbot is now enabled for both inbox and group chats");
-        } else if (target === "ib") {
-            AI_STATE.IB = "true";
-            await setConfig("AI_STATE", JSON.stringify(AI_STATE));
-            return reply("🤖 AI chatbot is now enabled for inbox chats");
-        } else if (target === "gc") {
-            AI_STATE.GC = "true";
-            await setConfig("AI_STATE", JSON.stringify(AI_STATE));
-            return reply("🤖 AI chatbot is now enabled for group chats");
+    const status = `🔄 *Current AI Status:*
+📩 Inbox: ${AI_STATE.IB === "true" ? "✅ ON" : "❌ OFF"}
+👥 Group: ${AI_STATE.GC === "true" ? "✅ ON" : "❌ OFF"}
+
+🛠️ *Usage:*
+${prefix}chatbot on [all/ib/gc]
+${prefix}chatbot off [all/ib/gc]`;
+
+    // If mode is either on or off
+    if (["on", "off"].includes(mode)) {
+        const value = mode === "on" ? "true" : "false";
+
+        switch (target) {
+            case "all":
+            case undefined:
+                AI_STATE.IB = value;
+                AI_STATE.GC = value;
+                await setConfig("AI_STATE", JSON.stringify(AI_STATE));
+                return reply(`🤖 AI chatbot is now ${mode} for both inbox and group chats`);
+            case "ib":
+                AI_STATE.IB = value;
+                await setConfig("AI_STATE", JSON.stringify(AI_STATE));
+                return reply(`🤖 AI chatbot is now ${mode} for inbox chats`);
+            case "gc":
+                AI_STATE.GC = value;
+                await setConfig("AI_STATE", JSON.stringify(AI_STATE));
+                return reply(`🤖 AI chatbot is now ${mode} for group chats`);
+            default:
+                return reply(`❗ Invalid target!\n\n${status}`);
         }
-    } else if (mode === "off") {
-        if (!target || target === "all") {
-            AI_STATE.IB = "false";
-            AI_STATE.GC = "false";
-            await setConfig("AI_STATE", JSON.stringify(AI_STATE));
-            return reply("🤖 AI chatbot is now disabled for both inbox and group chats");
-        } else if (target === "ib") {
-            AI_STATE.IB = "false";
-            await setConfig("AI_STATE", JSON.stringify(AI_STATE));
-            return reply("🤖 AI chatbot is now disabled for inbox chats");
-        } else if (target === "gc") {
-            AI_STATE.GC = "false";
-            await setConfig("AI_STATE", JSON.stringify(AI_STATE));
-            return reply("🤖 AI chatbot is now disabled for group chats");
-        }
-    } else {
-        const status = `Current AI state:
-📩 Inbox Chats: ${AI_STATE.IB === "true" ? "ON" : "OFF"}
-👥 Group Chats: ${AI_STATE.GC === "true" ? "ON" : "OFF"}
-        
-Usage:
-${prefix}chatbot on [all/ib/gc] - Enable AI
-${prefix}chatbot off [all/ib/gc] - Disable AI`;
-        return reply(status);
     }
+
+    // If mode is invalid or missing
+    return reply(`❗ Invalid command usage!\n\n${status}`);
 });
+
 
 // Initialize AI state on startup
 (async () => {
