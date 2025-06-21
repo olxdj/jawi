@@ -13,10 +13,8 @@ cmd({
     try {
         if (!q) return reply("🎵 Please provide a song name");
         
-        // 1. Indicate processing
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
         
-        // 2. Search YouTube
         const yt = await ytsearch(q);
         if (!yt?.results?.length) {
             await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
@@ -24,8 +22,6 @@ cmd({
         }
         
         const vid = yt.results[0];
-        
-        // 3. Fetch audio
         const api = `https://api-aswin-sparky.koyeb.app/api/downloader/song?search=${encodeURIComponent(vid.url)}`;
         const res = await fetch(api);
         const json = await res.json();
@@ -35,24 +31,25 @@ cmd({
             return reply("Download failed");
         }
         
-        // 4. Send audio first (without caption)
+        // Modified audio sending with forced filename
         await conn.sendMessage(from, {
-            audio: { url: json.data.downloadURL },
+            audio: { 
+                url: json.data.downloadURL,
+                filename: "audio.mp3"
+            },
             mimetype: "audio/mpeg"
         }, { quoted: mek });
         
-        // 5. Send follow-up message
         await reply(`🎵 *${vid.title}* - Downloaded Successfully ✅`);
-        
-        // 6. Success reaction
         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
         
     } catch (e) {
         console.error(e);
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        reply("Error occurred");
+        reply("Error occurred: " + e.message);
     }
 });
+
 
 cmd({
     pattern: "song",
