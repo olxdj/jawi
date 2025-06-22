@@ -2,8 +2,55 @@ const axios = require("axios");
 const { cmd } = require('../command');
 
 cmd({
-  pattern: "igdl",
-  alias: ["instagram", "insta", "ig", "igvideo"],
+    pattern: "igdl",
+    alias: ["instagram", "insta", "ig"],
+    react: "⬇️",
+    desc: "Download Instagram videos/reels",
+    category: "downloader",
+    use: ".igdl <Instagram URL>",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, args, q }) => {
+    try {
+        const url = q || m.quoted?.text;
+        if (!url || !url.includes("instagram.com")) {
+            return reply("❌ Please provide/reply to an Instagram link");
+        }
+
+        // Show processing reaction
+        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+
+        // Fetch from API
+        const apiUrl = `https://api-aswin-sparky.koyeb.app/api/downloader/igdl?url=${encodeURIComponent(url)}`;
+        const response = await axios.get(apiUrl);
+
+        if (!response.data?.status || !response.data.data?.length) {
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            return reply("Failed to fetch media. Invalid link or private content.");
+        }
+
+        // Send all media items
+        for (const item of response.data.data) {
+            await conn.sendMessage(from, {
+                [item.type === 'video' ? 'video' : 'image']: { url: item.url },
+                caption: `📶 *Instagram Downloader*\n\n` +
+        `- ❤‍🩹 *Quality*: HD\n\n` +
+        `> *© Powered by JawadTechXD*`
+            }, { quoted: mek });
+        }
+
+        // Success reaction
+        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
+    } catch (error) {
+        console.error('IGDL Error:', error);
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+        reply("❌ Download failed. Try again later.");
+    }
+});
+
+cmd({
+  pattern: "igdl4",
+  alias: ["instagram4", "insta4", "ig4", "igvideo4"],
   react: '📶',
   desc: "Download videos from Instagram (Alternative API)",
   category: "download",
