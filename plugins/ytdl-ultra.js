@@ -36,8 +36,7 @@ cmd({
         }
 
         // 4. Create caption
-        const caption = `
-*YOUTUBE DOWNLOADER 🎧*
+        const caption = `*YOUTUBE DOWNLOADER 🎧*
 ╭━━❐━⪼
 ┇๏ *Title*    –  ${vid.title}
 ┇๏ *Duration* –  ${vid.timestamp}
