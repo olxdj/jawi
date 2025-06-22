@@ -1,56 +1,70 @@
 const { cmd } = require('../command');
 const { ytsearch } = require('@dark-yasiya/yt-dl.js');
+const AudioConverter = require('../data/converter'); // Path to your converter
 
 cmd({
     pattern: "play",
     alias: ["yta"],
     react: "🎵",
-    desc: "Download YouTube audio",
-    category: "downloader",
-    use: ".mp3 <song name>",
+    desc: "Download YouTube song (optimized audio)",
+    category: "main",
+    use: ".play <song name>",
     filename: __filename
-}, async (client, mek, m, { from, q, reply }) => {
+}, async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return reply("🎵 Please provide a song name");
-        
-        // 1. Indicate processing
-        await client.sendMessage(from, { react: { text: '⏳', key: m.key } });
-        
+        if (!q) return reply("🎵 Please provide a song name (e.g. .play Tum Hi Ho)");
+
+        // 1. Show processing reaction
+        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+
         // 2. Search YouTube
         const yt = await ytsearch(q);
         if (!yt?.results?.length) {
-            await client.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return reply("No results found");
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            return reply("No YouTube results found");
         }
-        
+
         const vid = yt.results[0];
-        
-        // 3. Fetch audio
-        const api = `https://api-aswin-sparky.koyeb.app/api/downloader/song?search=${encodeURIComponent(vid.url)}`;
-        const res = await fetch(api);
-        const json = await res.json();
+        const apiUrl = `https://api-aswin-sparky.koyeb.app/api/downloader/song?search=${encodeURIComponent(vid.url)}`;
+
+        // 3. Fetch and convert audio
+        const response = await fetch(apiUrl);
+        const json = await response.json();
         
         if (!json?.data?.downloadURL) {
-            await client.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return reply("Download failed");
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            return reply("Failed to fetch song URL");
         }
-        
-        // 4. Send audio first (without caption)
-        await client.sendMessage(from, {
-            audio: { url: json.data.downloadURL },
-            mimetype: "audio/mp4"
+
+        // 4. Download and convert to proper MP3 format
+        const audioBuffer = await (await fetch(json.data.downloadURL)).buffer();
+        const convertedAudio = await AudioConverter.toAudio(audioBuffer, 'mp4');
+
+        // 5. Create caption
+        const caption = 
+`*YOUTUBE DOWNLOADER ❤️*
+╭━━❐━⪼
+┇๏ *Title*    –  ${vid.title}
+┇๏ *Duration* –  ${vid.timestamp}
+┇๏ *Views*    –  ${vid.views}
+┇๏ *Author*   –  ${vid.author.name}
+╰━━❑━⪼
+> *© POWERED BY KHAN-MD*`;
+
+        // 6. Send as playable audio
+        await conn.sendMessage(from, {
+            audio: convertedAudio,
+            mimetype: 'audio/mpeg',
+            ptt: false
         }, { quoted: mek });
-        
-        // 5. Send follow-up message
-        await reply(`🎵 *${vid.title}* - Downloaded Successfully\n> KHAN-MD`);
-        
-        // 6. Success reaction
-        await client.sendMessage(from, { react: { text: '✅', key: m.key } });
-        
+
+        // 7. Success reaction
+        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
     } catch (e) {
-        console.error(e);
-        await client.sendMessage(from, { react: { text: '❌', key: m.key } });
-        reply("Error occurred");
+        console.error('Play Error:', e);
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+        reply("Error processing song. Try again later.");
     }
 });
 
