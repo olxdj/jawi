@@ -1,6 +1,6 @@
 const { cmd } = require('../command');
 const { ytsearch } = require('@dark-yasiya/yt-dl.js');
-const AudioConverter = require('../data/converter'); // Path to your converter
+const converter = require('../data/converter'); // Path to your converter
 
 cmd({
     pattern: "play",
@@ -38,7 +38,7 @@ cmd({
 
         // 4. Download and convert to proper MP3 format
         const audioBuffer = await (await fetch(json.data.downloadURL)).buffer();
-        const convertedAudio = await AudioConverter.toAudio(audioBuffer, 'mp4');
+        const convertedAudio = await converter.toAudio(audioBuffer, 'mp4');
 
         // 5. Create caption
         const caption = 
