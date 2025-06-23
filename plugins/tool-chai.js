@@ -13,7 +13,7 @@ async (conn, mek, m, { from, reply }) => {
     try {
         // Smoking animation steps
         const smokeSteps = [
-            "Rolling your cigarette... �",
+            "Rolling your cigarette... 🚬",
             "Lighting it up... 🔥",
             "*Puff*... 💨",
             "*Puff puff*... 💨💨",
