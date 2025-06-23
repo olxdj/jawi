@@ -1,6 +1,7 @@
 const config = require('../config');
 const { cmd } = require('../command');
 const { ytsearch, ytmp3, ytmp4 } = require('@dark-yasiya/yt-dl.js'); 
+const converter = require('../data/converter');
 
 cmd({ 
      pattern: "play", 
@@ -51,8 +52,6 @@ const yt = await ytsearch(q);
 
 });
 
-// Mp3 Url
-
 cmd({
     pattern: "play2",
     alias: ["yta2"],
@@ -74,7 +73,7 @@ async (conn, mek, m, { from, q, reply }) => {
         const yurl  = vid.url;                 // full YouTube link
         const thumb = vid.thumbnail || "";     // fallback if missing
 
-        /* 2️⃣  Hit Sparky’s MP3 API */
+        /* 2️⃣  Hit Sparky's MP3 API */
         const api   = `https://api-aswin-sparky.koyeb.app/api/downloader/song?search=${encodeURIComponent(yurl)}`;
         const res   = await fetch(api);
         const json  = await res.json();
@@ -98,9 +97,21 @@ async (conn, mek, m, { from, q, reply }) => {
             { image: { url: thumb }, caption },
             { quoted: mek });
 
-        /* 5️⃣  Send playable audio */
+        /* 5️⃣  Download and convert audio */
+        const audioResponse = await fetch(json.data.downloadURL);
+        const audioBuffer = await audioResponse.arrayBuffer();
+        const nodeBuffer = Buffer.from(audioBuffer);
+        
+        // Convert to WhatsApp-supported format
+        const convertedAudio = await converter.toAudio(nodeBuffer, 'mp3');
+
+        /* 6️⃣  Send playable audio */
         await conn.sendMessage(from,
-            { audio: { url: json.data.downloadURL }, mimetype: "audio/mpeg" },
+            { 
+                audio: convertedAudio, 
+                mimetype: "audio/mpeg",
+                ptt: false 
+            },
             { quoted: mek });
 
     } catch (err) {
@@ -108,70 +119,3 @@ async (conn, mek, m, { from, q, reply }) => {
         reply("⚠️  An unexpected error occurred. Please try again later.");
     }
 });
-
-// Mp4 url
-
-cmd({
-    pattern: "play3",
-    alias: ["yta3"],
-    react: "🎵",
-    desc: "Download YouTube songs (New API)",
-    category: "downloader",
-    use: ".play <song name>",
-    filename: __filename
-}, async (conn, mek, m, { from, q, reply }) => {
-    try {
-        if (!q) return reply("🎵 Please provide a song name (e.g. *.play Tum Hi Ho*)");
-        
-        // 1. Show processing indicator
-        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
-
-        // 2. Search YouTube
-        const yt = await ytsearch(q);
-        if (!yt?.results?.length) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return reply("❌ No results found");
-        }
-
-        const vid = yt.results[0];
-        
-        // 3. Fetch from new API
-        const apiUrl = `https://api.siputzx.my.id/api/dl/youtube/mp3?url=${encodeURIComponent(vid.url)}`;
-        const res = await fetch(apiUrl);
-        const data = await res.json();
-
-        if (!data?.status || !data.data) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return reply("❌ Download failed. Try again later.");
-        }
-
-        // 4. Create caption
-        const caption = `*AUDIO DOWNLOADER 🎧*
-╭━━❐━⪼
-┇๏ *Title*    –  ${vid.title}
-┇๏ *Duration* –  ${vid.timestamp}
-┇๏ *Views*    –  ${vid.views}
-┇๏ *Author*   –  ${vid.author.name}
-╰━━❑━⪼
-> *Powered By KHAN-MD*`;
-
-        // 5. Send thumbnail first
-        await conn.sendMessage(from, 
-            { image: { url: vid.thumbnail }, caption }, 
-            { quoted: mek });
-
-        // 6. Send audio
-        await conn.sendMessage(from, 
-            { audio: { url: data.data }, mimetype: "audio/mpeg" }, 
-            { quoted: mek });
-
-        // 7. Success reaction
-        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
-
-    } catch (e) {
-        console.error('Play Error:', e);
-        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        reply("⚠️ An error occurred. Please try again.");
-    }
-});
-
