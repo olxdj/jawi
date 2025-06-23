@@ -2,8 +2,8 @@ const { cmd } = require('../command');
 const { sleep } = require('../lib/functions');
 
 cmd({
-    pattern: "cig",
-    alias: ["cigrate", "smoke", "cigar"],
+    pattern: "cgrt",
+    alias: ["cigrate", "smoke", "🚬"],
     desc: "Sends a fun cigarette meme with smoking animation",
     category: "fun",
     react: "🚬",
