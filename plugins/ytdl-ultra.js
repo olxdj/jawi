@@ -1,5 +1,60 @@
 const { cmd } = require('../command');
 const { ytsearch } = require('@dark-yasiya/yt-dl.js');
+const axios = require('axios');
+
+// Shared download function
+const ytDownload = async (url, type = 'mp3', quality = '720') => {
+    const { data } = await axios.post('https://y2kid.yogik.id/api/download', 
+        { url, type, quality },
+        { headers: { 'Content-Type': 'application/json' } }
+    );
+    return data;
+};
+
+// MP3 Download Command with Search
+cmd({
+    pattern: "yta3",
+    alias: ["song3", "mp33"],
+    react: "🎵",
+    desc: "Download YouTube audio (High Quality)",
+    category: "downloader",
+    use: ".yta3 <song name or YouTube URL>",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, args, q }) => {
+    try {
+        if (!q) return reply(`Please provide song name/URL\nExample: .yta3 Tum Hi Ho`);
+        
+        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+
+        // Check if input is URL or search term
+        let videoUrl = q;
+        if (!q.includes('youtube.com') && !q.includes('youtu.be')) {
+            const yt = await ytsearch(q);
+            if (!yt?.results?.length) {
+                await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+                return reply("No results found");
+            }
+            videoUrl = yt.results[0].url;
+        }
+
+        const result = await ytDownload(videoUrl, 'mp3', '1080');
+        const { title, download_url } = result.data;
+
+        await conn.sendMessage(from, {
+            audio: { url: download_url },
+            mimetype: 'audio/mpeg',
+            fileName: `${title}.mp3`,
+           }, { quoted: mek });
+
+        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
+    } catch (e) {
+        console.error(e);
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+        reply(`Error: ${e.message}`);
+    }
+});
+
 
 cmd({
     pattern: "play",
