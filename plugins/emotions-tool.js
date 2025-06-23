@@ -1,54 +1,29 @@
-const { cmd } = require('../command');
+const { cmd } = require("../command");
+const { sleep } = require("../lib/functions");
 
 cmd({
     pattern: "muth",
     alias: ["handjob", "hand"],
-    desc: "Playful handjob animation (emoji only) - Owner Only",
-    category: "owner", // Changed to owner category
+    desc: "Displays a simple handjob animation",
+    category: "fun",
     react: "✊",
     filename: __filename
 },
-async (conn, mek, m, { from, reply, isCreator }) => {
+async (conn, mek, m, { from, reply }) => {
     try {
-        if (!isCreator) {
-            return reply("*📛 This is an owner-only command!*");
-        }
-
-        // Start with initial message
-        const loadingMessage = await conn.sendMessage(from, { text: '✊ =======' });
+        const loadingMessage = await conn.sendMessage(from, { text: '✊ Starting...' });
         
-        // Animation frames
-        const frames = [
-            "✊ =======",
-            "✊ ======~",
-            "✊ =====~~",
-            "✊ ====~~~",
-            "✊ ===~~~~",
-            "✊ ==~~~~~",
-            "✊ =~~~~~~",
-            "✊ ~~~~~~~",
-            "✊=~~~~~~",
-            "✊==~~~~~",
-            "✊===~~~~",
-            "✊====~~~",
-            "✊=====~~",
-            "✊======~",
-            "✊=======",
-            "✊ =======",
-            "✊💦======",
-            "✊💦💦=====",
-            "✊💦💦💦====",
-            "✊💦💦💦💦===",
-            "✊💦💦💦💦💦==",
-            "✊💦💦💦💦💦💦=",
-            "✊💦💦💦💦💦💦💦",
-            "😩✊💦💦💦💦💦💦",
-            "😫 Done! 🚬"
+        const animationFrames = [
+            "✊ 🍌",
+            "✊🍌",
+            "✊🍌💦",
+            "✊🍌💦💦",
+            "😩💦💦💦",
+            "😵‍💫 Done!"
         ];
 
-        // Animate each frame with delay
-        for (const frame of frames) {
-            await sleep(500); // Half second delay
+        for (const frame of animationFrames) {
+            await sleep(800); // 0.8 second delay
             await conn.relayMessage(
                 from,
                 {
@@ -63,7 +38,6 @@ async (conn, mek, m, { from, reply, isCreator }) => {
                 {}
             );
         }
-
     } catch (e) {
         console.log(e);
         reply(`❌ Error: ${e.message}`);
@@ -339,7 +313,7 @@ async (conn, mek, m, { from, reply }) => {
 });
 
 cmd({
-    pattern: "hot",
+    pattern: "chumi",
     desc: "Displays a dynamic edit msg for fun.",
     category: "tools",
     react: "💋",
