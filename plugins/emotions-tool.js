@@ -1,6 +1,76 @@
 const { cmd } = require('../command');
 
 cmd({
+    pattern: "muth",
+    alias: ["handjob", "hand"],
+    desc: "Playful handjob animation (emoji only) - Owner Only",
+    category: "owner", // Changed to owner category
+    react: "✊",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply, isCreator }) => {
+    try {
+        if (!isCreator) {
+            return reply("*📛 This is an owner-only command!*");
+        }
+
+        // Start with initial message
+        const loadingMessage = await conn.sendMessage(from, { text: '✊ =======' });
+        
+        // Animation frames
+        const frames = [
+            "✊ =======",
+            "✊ ======~",
+            "✊ =====~~",
+            "✊ ====~~~",
+            "✊ ===~~~~",
+            "✊ ==~~~~~",
+            "✊ =~~~~~~",
+            "✊ ~~~~~~~",
+            "✊=~~~~~~",
+            "✊==~~~~~",
+            "✊===~~~~",
+            "✊====~~~",
+            "✊=====~~",
+            "✊======~",
+            "✊=======",
+            "✊ =======",
+            "✊💦======",
+            "✊💦💦=====",
+            "✊💦💦💦====",
+            "✊💦💦💦💦===",
+            "✊💦💦💦💦💦==",
+            "✊💦💦💦💦💦💦=",
+            "✊💦💦💦💦💦💦💦",
+            "😩✊💦💦💦💦💦💦",
+            "😫 Done! 🚬"
+        ];
+
+        // Animate each frame with delay
+        for (const frame of frames) {
+            await sleep(500); // Half second delay
+            await conn.relayMessage(
+                from,
+                {
+                    protocolMessage: {
+                        key: loadingMessage.key,
+                        type: 14,
+                        editedMessage: {
+                            conversation: frame,
+                        },
+                    },
+                },
+                {}
+            );
+        }
+
+    } catch (e) {
+        console.log(e);
+        reply(`❌ Error: ${e.message}`);
+    }
+});
+
+cmd({
     pattern: "happy",
     desc: "Displays a dynamic edit msg for fun.",
     category: "tools",
