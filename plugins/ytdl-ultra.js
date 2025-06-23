@@ -2,59 +2,6 @@ const { cmd } = require('../command');
 const { ytsearch } = require('@dark-yasiya/yt-dl.js');
 
 cmd({
-    pattern: "pp",
-    alias: ["ik"],
-    react: "🎵",
-    desc: "Download YouTube songs",
-    category: "downloader",
-    use: ".play <song name>",
-    filename: __filename
-}, async (conn, mek, m, { from, q, reply }) => {
-    try {
-        if (!q) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return reply("Please provide a song name");
-        }
-
-        // Show processing
-        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
-
-        // Search YouTube
-        const yt = await ytsearch(q);
-        if (!yt?.results?.length) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return reply("Song not found");
-        }
-
-        const vid = yt.results[0];
-        
-        // Fetch from new API
-        const apiUrl = `https://api.hanggts.xyz/download/ytmp3?url=${encodeURIComponent(vid.url)}`;
-        const res = await fetch(apiUrl);
-        const data = await res.json();
-
-        if (!data?.status || !data.result) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return reply("Download failed");
-        }
-
-        // Send audio directly
-        await conn.sendMessage(from, {
-            audio: { url: data.result },
-            mimetype: "audio/mpeg"
-        }, { quoted: mek });
-
-        // Success reaction
-        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
-
-    } catch (e) {
-        console.error('Play Error:', e);
-        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        reply("Error occurred");
-    }
-});
-
-cmd({
     pattern: "play",
     alias: ["yta"],
     react: "🎵",
