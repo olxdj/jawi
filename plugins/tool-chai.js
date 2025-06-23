@@ -1,5 +1,71 @@
 const { cmd } = require('../command');
-const { sleep } = require('../lib/functions'); // Import sleep function
+const { sleep } = require('../lib/functions');
+
+cmd({
+    pattern: "cig",
+    alias: ["cigrate", "smoke", "cigar"],
+    desc: "Sends a fun cigarette meme with smoking animation",
+    category: "fun",
+    react: "🚬",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply }) => {
+    try {
+        // Smoking animation steps
+        const smokeSteps = [
+            "Rolling your cigarette... �",
+            "Lighting it up... 🔥",
+            "*Puff*... 💨",
+            "*Puff puff*... 💨💨",
+            "Ahhh... that sweet nicotine rush... 😌",
+            "*Cough cough* (just kidding) 😂",
+            "Enjoying the moment... 🚬😎",
+            "Blowing smoke rings... ⭕💨",
+            "Almost finished... 🚬",
+            "Final puff... 💨"
+        ];
+
+        // Send initial message
+        const smokingMsg = await conn.sendMessage(from, { 
+            text: 'Preparing your cigarette break... 🚬' 
+        }, { quoted: mek });
+
+        // Show each step with delay
+        for (const step of smokeSteps) {
+            await sleep(800); // 0.8 second delay between steps
+            await conn.relayMessage(
+                from,
+                {
+                    protocolMessage: {
+                        key: smokingMsg.key,
+                        type: 14,
+                        editedMessage: {
+                            conversation: step,
+                        },
+                    },
+                },
+                {}
+            );
+        }
+
+        // Final message and image
+        await sleep(1000);
+        await conn.sendMessage(from, { 
+            text: 'Your smoking session is complete! 🚬✨\nHere\'s your meme...' 
+        }, { quoted: mek });
+
+        await sleep(1000);
+        await conn.sendMessage(from, {
+            image: { url: "https://files.catbox.moe/bd95gw.jpg" },
+            caption: "- *Smoking kills... but looks cool* 🚬😎\n> _Smoking is injurious to health_\n> _This is just for fun_ 😂",
+            mimetype: "image/jpeg"
+        }, { quoted: mek });
+
+    } catch (e) {
+        console.log(e);
+        reply(`❌ *Cigarette dropped!* ${e.message}\n_Maybe try vaping instead?_ 😜`);
+    }
+});
 
 cmd({
     pattern: "chai",
