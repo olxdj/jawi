@@ -28,6 +28,8 @@ cmd({
 
         // Check if input is URL or search term
         let videoUrl = q;
+        let videoTitle = "YouTube Audio";
+        
         if (!q.includes('youtube.com') && !q.includes('youtu.be')) {
             const yt = await ytsearch(q);
             if (!yt?.results?.length) {
@@ -35,26 +37,34 @@ cmd({
                 return reply("No results found");
             }
             videoUrl = yt.results[0].url;
+            videoTitle = yt.results[0].title || videoTitle;
         }
 
         const result = await ytDownload(videoUrl, 'mp3', '1080');
-        const { title, download_url } = result.data;
+        
+        // Validate API response
+        if (!result?.data?.download_url) {
+            throw new Error("Invalid API response - no download URL");
+        }
+
+        // Ensure title is string
+        const title = result.data.title?.toString() || videoTitle;
+        const downloadUrl = result.data.download_url.toString();
 
         await conn.sendMessage(from, {
-            audio: { url: download_url },
+            audio: { url: downloadUrl },
             mimetype: 'audio/mpeg',
-            fileName: `${title}.mp3`,
-           }, { quoted: mek });
+            fileName: `${title.replace(/[^\w\s]/gi, '')}.mp3`, // Remove special chars
+            }, { quoted: mek });
 
         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
 
     } catch (e) {
-        console.error(e);
+        console.error('Audio Download Error:', e);
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        reply(`Error: ${e.message}`);
+        reply(`⚠️ Error: ${e.message.includes('toString') ? 'Invalid audio data received' : e.message}`);
     }
 });
-
 
 cmd({
     pattern: "play",
