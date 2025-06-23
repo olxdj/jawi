@@ -3,32 +3,35 @@ const config = require('../config');
 
 cmd({
     pattern: "owner",
-    react: "✅", 
+    react: "✅",
     desc: "Get owner number",
     category: "main",
     filename: __filename
-}, 
-async (conn, mek, m, { from }) => {
+}, async (conn, mek, m, { from, reply }) => {
     try {
         const ownerNumber = config.OWNER_NUMBER;
         const ownerName = config.OWNER_NAME;
 
-        const vcard = 'BEGIN:VCARD\n' +
-                      'VERSION:3.0\n' +
-                      `FN:${ownerName}\n` +  
-                      `TEL;type=CELL;type=VOICE;waid=${ownerNumber.replace('+', '')}:${ownerNumber}\n` + 
-                      'END:VCARD';
+        const vcard = `BEGIN:VCARD\n` +
+                      `VERSION:3.0\n` +
+                      `FN:${ownerName}\n` +
+                      `ORG:Owner of the Bot\n` +
+                      `TEL;type=CELL;type=VOICE;waid=${ownerNumber.replace('+', '')}:${ownerNumber}\n` +
+                      `END:VCARD`;
 
-        // Only send contact card
-        await conn.sendMessage(from, {
+        const contactMsg = {
             contacts: {
                 displayName: ownerName,
-                contacts: [{ vcard }]
+                contacts: [{
+                    vcard
+                }]
             }
-        });
+        };
+
+        await conn.sendMessage(from, contactMsg, { quoted: mek });
 
     } catch (error) {
-        console.error(error);
-        reply(`An error occurred: ${error.message}`);
+        console.error("Error sending contact:", error);
+        await reply(`⚠️ Could not send contact.\nTry saving manually:\n\n*Name:* ${config.OWNER_NAME}\n*Number:* ${config.OWNER_NUMBER}`);
     }
 });
