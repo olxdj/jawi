@@ -25,7 +25,7 @@ async (conn, mek, m, {
         // Send a goodbye message first
         await reply(`👋 *Goodbye everyone!*  
 I am leaving the group now.  
-Thanks for having me here! 🥹❤️`);
+Thanks for having me here! ❤️`);
 
         await sleep(1500); // Wait a bit before leaving
         await conn.groupLeave(from);
