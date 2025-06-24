@@ -1,31 +1,59 @@
-const config = require("../config");
-const { cmd, commands } = require("../command");
+const { cmd } = require('../command')
+const { getGroupAdmins } = require('../lib/functions')
 
-cmd(
-  {
-    pattern: "demote",
-    alias: ["d", "dismiss", "removeadmin"],
-    desc: "Demotes a member",
+// Get bot owner JID dynamically
+const botOwner = (conn.user.id || "").split(":")[0] + "@s.whatsapp.net";
+
+// PROMOTE COMMAND
+cmd({
+    pattern: "promote",
+    react: "🥏",
+    alias: ["addadmin", "p"],
+    desc: "To add a participant as an admin",
     category: "group",
-    filename: __filename,
-  },
-  async (conn, mek, m, { from, quoted, args, reply, isGroup, isBotAdmins }) => {
-    try {
-      if (!isGroup) return reply("_This command is for groups_");
-      if (!isBotAdmins) return reply("_I'm not admin_");
-      if (!args[0] && !quoted) return reply("_Mention user to demote_");
+    use: '.promote',
+    filename: __filename
+},
+async(conn, mek, m, { from, isGroup, isAdmins, isBotAdmins, participants, reply }) => {
+    if (!isGroup) return reply("❌ This command only works in group chats.");
+    if (!isAdmins) return reply("❌ You must be a group admin to use this.");
+    if (!isBotAdmins) return reply("❌ I need admin rights to do that.");
 
-      let jid = m.mentionedJid?.[0] 
-            || (m.quoted?.sender ?? null)
-            || (args[0]?.replace(/[^0-9]/g, '') + "@s.whatsapp.net");
-            
-      await conn.groupParticipantsUpdate(from, [jid], "demote");
-      return reply(`@${jid.split("@")[0]} demoted from admin`, { mentions: [jid] });
-    } catch (e) {
-      console.log(e);
-      m.reply(`${e}`);
-    }
-  }
-);
+    let users = mek.mentionedJid ? mek.mentionedJid[0] : mek.msg?.contextInfo?.participant;
+    if (!users) return reply("❌ Couldn't find any user to promote.");
 
+    if (users === botOwner) return reply("⚠️ Cannot promote the bot owner!");
 
+    const groupAdmins = await getGroupAdmins(participants);
+    if (groupAdmins.includes(users)) return reply("ℹ️ This user is already an admin.");
+
+    await conn.groupParticipantsUpdate(from, [users], "promote");
+    await conn.sendMessage(from, { text: `✅ User promoted as an admin.` }, { quoted: mek });
+});
+
+// DEMOTE COMMAND
+cmd({
+    pattern: "demote",
+    react: "🥏",
+    alias: ["d", "dismiss"],
+    desc: "To demote an admin to member",
+    category: "group",
+    use: '.demote',
+    filename: __filename
+},
+async(conn, mek, m, { from, isGroup, isAdmins, isBotAdmins, participants, reply }) => {
+    if (!isGroup) return reply("❌ This command only works in group chats.");
+    if (!isAdmins) return reply("❌ You must be a group admin to use this.");
+    if (!isBotAdmins) return reply("❌ I need admin rights to do that.");
+
+    let users = mek.mentionedJid ? mek.mentionedJid[0] : mek.msg?.contextInfo?.participant;
+    if (!users) return reply("❌ Couldn't find any user to demote.");
+
+    if (users === botOwner) return reply("⚠️ Cannot demote the bot owner!");
+
+    const groupAdmins = await getGroupAdmins(participants);
+    if (!groupAdmins.includes(users)) return reply("ℹ️ This user is already not an admin.");
+
+    await conn.groupParticipantsUpdate(from, [users], "demote");
+    await conn.sendMessage(from, { text: `✅ User has been demoted.` }, { quoted: mek });
+});
