@@ -1,31 +1,44 @@
 const { cmd } = require('../command');
-const { getGroupAdmins } = require('../lib/functions');
 
-// PROMOTE COMMAND
 cmd({
-    pattern: "promote",
-    react: "🥏",
-    alias: ["addadmin", "p"],
-    desc: "To add a participant as an admin",
-    category: "group",
-    use: '.promote',
+    pattern: "demote",
+    alias: ["d", "dismiss", "removeadmin"],
+    desc: "Demotes a group admin to a normal member",
+    category: "admin",
+    react: "⬇️",
     filename: __filename
 },
-async(conn, mek, m, { from, isGroup, isAdmins, isBotAdmins, participants, reply }) => {
-    if (!isGroup) return reply("❌ This command only works in group chats.");
-    if (!isAdmins) return reply("❌ You must be a group admin to use this.");
-    if (!isBotAdmins) return reply("❌ I need admin rights to do that.");
+async(conn, mek, m, {
+    from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isCreator, isDev, isAdmins, reply
+}) => {
+    // Check if the command is used in a group
+    if (!isGroup) return reply("❌ This command can only be used in groups.");
 
-    const botOwner = (conn.user.id || "").split(":")[0] + "@s.whatsapp.net";
+    // Check if the user is an admin
+    if (!isAdmins) return reply("❌ Only group admins can use this command.");
 
-    let users = mek.mentionedJid ? mek.mentionedJid[0] : mek.msg?.contextInfo?.participant;
-    if (!users) return reply("❌ Couldn't find any user to promote.");
-    if (users === botOwner) return reply("⚠️ Cannot promote the bot owner!");
+    // Check if the bot is an admin
+    if (!isBotAdmins) return reply("❌ I need to be an admin to use this command.");
 
-    const groupAdmins = await getGroupAdmins(participants);
-    if (groupAdmins.includes(users)) return reply("ℹ️ This user is already an admin.");
+    let number;
+    if (m.quoted) {
+        number = m.quoted.sender.split("@")[0]; // If replying to a message, get the sender's number
+    } else if (q && q.includes("@")) {
+        number = q.replace(/[@\s]/g, ''); // If manually typing a number
+    } else {
+        return reply("❌ Please reply to a message or provide a number to demote.");
+    }
 
-    await conn.groupParticipantsUpdate(from, [users], "promote");
-    await conn.sendMessage(from, { text: `✅ User promoted as an admin.` }, { quoted: mek });
+    // Prevent demoting the bot itself
+    if (number === botNumber) return reply("❌ The bot cannot demote itself.");
+
+    const jid = number + "@s.whatsapp.net";
+
+    try {
+        await conn.groupParticipantsUpdate(from, [jid], "demote");
+        reply(`✅ Successfully demoted @${number} to a normal member.`, { mentions: [jid] });
+    } catch (error) {
+        console.error("Demote command error:", error);
+        reply("❌ Failed to demote the member.");
+    }
 });
-
