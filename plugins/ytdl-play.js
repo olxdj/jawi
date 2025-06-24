@@ -1,7 +1,8 @@
 const config = require('../config');
 const { cmd } = require('../command');
 const { ytsearch, ytmp3, ytmp4 } = require('@dark-yasiya/yt-dl.js'); 
-const converter = require('../data/converter');
+const converter = require('../data/play-converter');
+const fetch = require('node-fetch');
 
 cmd({ 
      pattern: "play", 
@@ -54,34 +55,23 @@ const yt = await ytsearch(q);
 
 cmd({
     pattern: "play2",
-    alias: ["yta2"],
+    alias: ["yta2", "song"],
     react: "🎵",
-    desc: "Download YouTube song",
-    category: "main",
-    use: ".play <song name>",
+    desc: "Download high quality YouTube audio",
+    category: "media",
+    use: "<song name>",
     filename: __filename
-},
-async (conn, mek, m, { from, q, reply }) => {
+}, async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return reply("🎵  Please type the song name, e.g. *.play Tum Hi Ho*");
+        if (!q) return reply("Please provide a song name\nExample: .play2 Tum Hi Ho");
 
-        /* 1️⃣  Search YouTube */
+        // Step 1: Search YouTube
+        await conn.sendMessage(from, { text: "🔍 Searching for your song..." }, { quoted: mek });
         const yt = await ytsearch(q);
-        if (!yt?.results?.length) return reply("❌  No YouTube results found.");
+        if (!yt?.results?.length) return reply("❌ No results found. Try a different search term.");
 
-        const vid   = yt.results[0];           // first result
-        const yurl  = vid.url;                 // full YouTube link
-        const thumb = vid.thumbnail || "";     // fallback if missing
+        const vid = yt.results[0];
 
-        /* 2️⃣  Hit Sparky's MP3 API */
-        const api   = `https://api-aswin-sparky.koyeb.app/api/downloader/song?search=${encodeURIComponent(yurl)}`;
-        const res   = await fetch(api);
-        const json  = await res.json();
-
-        if (!json?.status || !json?.data?.downloadURL)
-            return reply("❌  Failed to fetch the song. Try again later.");
-
-        /* 3️⃣  Pretty caption */
         const caption =
 `*YT AUDIO DOWNLOADER*
 ╭━━❐━⪼
@@ -90,32 +80,50 @@ async (conn, mek, m, { from, q, reply }) => {
 ┇๏ *Views*    –  ${vid.views}
 ┇๏ *Author*   –  ${vid.author.name}
 ╰━━❑━⪼
-> *© Powered By KHAN-MD ♡*`;
+> *Downloading Audio File ♡*`;
 
-        /* 4️⃣  Send thumbnail + details */
-        await conn.sendMessage(from,
-            { image: { url: thumb }, caption },
-            { quoted: mek });
+        // Step 2: Send video info with thumbnail
+        await conn.sendMessage(from, {
+            image: { url: vid.thumbnail },
+            caption
+        }, { quoted: mek });
 
-        /* 5️⃣  Download and convert audio */
-        const audioResponse = await fetch(json.data.downloadURL);
-        const audioBuffer = await audioResponse.arrayBuffer();
-        const nodeBuffer = Buffer.from(audioBuffer);
-        
-        // Convert to WhatsApp-supported format
-        const convertedAudio = await converter.toAudio(nodeBuffer, 'mp3');
+        // Step 3: Fetch audio URL
+        const apiUrl = `https://api-aswin-sparky.koyeb.app/api/downloader/song?search=${encodeURIComponent(vid.url)}`;
+        const response = await fetch(apiUrl);
+        const data = await response.json();
 
-        /* 6️⃣  Send playable audio */
-        await conn.sendMessage(from,
-            { 
-                audio: convertedAudio, 
-                mimetype: "audio/mpeg",
-                ptt: false 
-            },
-            { quoted: mek });
+        if (!data?.status || !data?.data?.downloadURL) {
+            return reply("❌ Failed to fetch audio. Try again later.");
+        }
 
-    } catch (err) {
-        console.error(err);
-        reply("⚠️  An unexpected error occurred. Please try again later.");
+        // Step 4: Download audio buffer
+        const audioRes = await fetch(data.data.downloadURL);
+        const audioBuffer = await audioRes.buffer();
+
+        // Step 5: Convert to MP3 using toAudio
+        let convertedAudio;
+        try {
+            convertedAudio = await converter.toAudio(audioBuffer, 'mp4');
+        } catch (err) {
+            console.error('Audio conversion failed:', err);
+            return reply("❌ Audio conversion failed. Please try another song.");
+        }
+
+        // Step 6: Send converted audio
+        await conn.sendMessage(from, {
+            audio: convertedAudio,
+            mimetype: 'audio/mpeg',
+            ptt: false,
+            fileName: `${vid.title}.mp3`.replace(/[^\w\s.-]/gi, '')
+        }, { quoted: mek });
+
+        // Step 7: React success
+        await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
+
+    } catch (error) {
+        console.error('Play2 command error:', error);
+        reply("⚠️ An unexpected error occurred. Please try again.");
+        await conn.sendMessage(from, { react: { text: "❌", key: mek.key } });
     }
 });
