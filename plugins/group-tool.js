@@ -2,7 +2,6 @@ const { cmd } = require('../command');
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // remove only member
-
 cmd({
     pattern: "removemembers",
     alias: ["kickall", "endgc", "endgroup"],
@@ -12,18 +11,18 @@ cmd({
     filename: __filename,
 }, 
 async (conn, mek, m, {
-    from, groupMetadata, groupAdmins, isBotAdmins, senderNumber, reply, isGroup
+    from, groupMetadata, groupAdmins, isBotAdmins, senderNumber, reply, isGroup, isCreator
 }) => {
     try {
+        if (!isCreator) {
+            return await conn.sendMessage(from, {
+                text: "*📛 This is an owner command.*"
+            }, { quoted: mek });
+        }
+
         // Check if the command is used in a group
         if (!isGroup) {
             return reply("This command can only be used in groups.");
-        }
-
-        // Get the bot owner's number dynamically
-        const botOwner = conn.user.id.split(":")[0];
-        if (senderNumber !== botOwner) {
-            return reply("Only the bot owner can use this command.");
         }
 
         if (!isBotAdmins) {
@@ -56,7 +55,6 @@ async (conn, mek, m, {
 });
 
 // remove only admins
- 
 cmd({
     pattern: "removeadmins",
     alias: ["kickadmins", "kickall3", "deladmins"],
@@ -66,18 +64,18 @@ cmd({
     filename: __filename,
 }, 
 async (conn, mek, m, {
-    from, isGroup, senderNumber, groupMetadata, groupAdmins, isBotAdmins, reply
+    from, isGroup, senderNumber, groupMetadata, groupAdmins, isBotAdmins, reply, isCreator
 }) => {
     try {
+        if (!isCreator) {
+            return await conn.sendMessage(from, {
+                text: "*📛 This is an owner command.*"
+            }, { quoted: mek });
+        }
+
         // Check if the command is used in a group
         if (!isGroup) {
             return reply("This command can only be used in groups.");
-        }
-
-        // Get the bot owner's number dynamically
-        const botOwner = conn.user.id.split(":")[0];
-        if (senderNumber !== botOwner) {
-            return reply("Only the bot owner can use this command.");
         }
 
         if (!isBotAdmins) {
@@ -85,7 +83,7 @@ async (conn, mek, m, {
         }
 
         const allParticipants = groupMetadata.participants;
-        const adminParticipants = allParticipants.filter(member => groupAdmins.includes(member.id) && member.id !== conn.user.id && member.id !== `${botOwner}@s.whatsapp.net`);
+        const adminParticipants = allParticipants.filter(member => groupAdmins.includes(member.id) && member.id !== conn.user.id && member.id !== `${senderNumber}@s.whatsapp.net`);
 
         if (adminParticipants.length === 0) {
             return reply("There are no admin members to remove.");
@@ -110,7 +108,6 @@ async (conn, mek, m, {
 });
 
 // remove admins and memeber both
-
 cmd({
     pattern: "removeall2",
     alias: ["kickall2", "endgc2", "endgroup2"],
@@ -120,18 +117,18 @@ cmd({
     filename: __filename,
 }, 
 async (conn, mek, m, {
-    from, isGroup, senderNumber, groupMetadata, isBotAdmins, reply
+    from, isGroup, senderNumber, groupMetadata, isBotAdmins, reply, isCreator
 }) => {
     try {
+        if (!isCreator) {
+            return await conn.sendMessage(from, {
+                text: "*📛 This is an owner command.*"
+            }, { quoted: mek });
+        }
+
         // Check if the command is used in a group
         if (!isGroup) {
             return reply("This command can only be used in groups.");
-        }
-
-        // Get the bot owner's number dynamically
-        const botOwner = conn.user.id.split(":")[0];
-        if (senderNumber !== botOwner) {
-            return reply("Only the bot owner can use this command.");
         }
 
         if (!isBotAdmins) {
@@ -146,7 +143,7 @@ async (conn, mek, m, {
 
         // Filter out the bot and bot owner from the list
         const participantsToRemove = allParticipants.filter(
-            participant => participant.id !== conn.user.id && participant.id !== `${botOwner}@s.whatsapp.net`
+            participant => participant.id !== conn.user.id && participant.id !== `${senderNumber}@s.whatsapp.net`
         );
 
         if (participantsToRemove.length === 0) {
