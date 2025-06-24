@@ -1,11 +1,11 @@
 const { cmd } = require('../command');
 
 cmd({
-    pattern: "demote",
-    alias: ["d", "dismiss", "removeadmin"],
-    desc: "Demotes a group admin to a normal member",
+    pattern: "promote",
+    alias: ["p", "makeadmin"],
+    desc: "Promotes a member to group admin",
     category: "admin",
-    react: "⬇️",
+    react: "⬆️",
     filename: __filename
 },
 async(conn, mek, m, {
@@ -26,19 +26,19 @@ async(conn, mek, m, {
     } else if (q && q.includes("@")) {
         number = q.replace(/[@\s]/g, ''); // If manually typing a number
     } else {
-        return reply("❌ Please reply to a message or provide a number to demote.");
+        return reply("❌ Please reply to a message or provide a number to promote.");
     }
 
-    // Prevent demoting the bot itself
-    if (number === botNumber) return reply("❌ The bot cannot demote itself.");
+    // Prevent promoting the bot itself
+    if (number === botNumber) return reply("❌ The bot cannot promote itself.");
 
     const jid = number + "@s.whatsapp.net";
 
     try {
-        await conn.groupParticipantsUpdate(from, [jid], "demote");
-        reply(`✅ Successfully demoted @${number} to a normal member.`, { mentions: [jid] });
+        await conn.groupParticipantsUpdate(from, [jid], "promote");
+        reply(`✅ Successfully promoted @${number} to admin.`, { mentions: [jid] });
     } catch (error) {
-        console.error("Demote command error:", error);
-        reply("❌ Failed to demote the member.");
+        console.error("Promote command error:", error);
+        reply("❌ Failed to promote the member.");
     }
 });
