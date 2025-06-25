@@ -216,6 +216,28 @@ cmd({
     }
 });
 
+cmd({
+    pattern: "anti-call",
+    react: "🫟",
+    alias: ["anticall"],
+    desc: "Enable or disable welcome messages for new members",
+    category: "owner",
+    filename: __filename
+},
+async (conn, mek, m, { from, args, isCreator, reply }) => {
+    if (!isCreator) return reply("*🫟σɴℓу тнє σωɴєʀ ¢αɴ ᴜѕє тнιѕ ¢σммαɴ∂!*");
+
+    const status = args[0]?.toLowerCase();
+    if (status === "on") {
+        config.ANTI_CALL = "true";
+        return reply("*✅ αɴтι-¢αℓℓ нαѕ вєєɴ єɴαвℓє∂*");
+    } else if (status === "off") {
+        config.ANTI_CALL = "false";
+        return reply("*❌ αɴтι-¢αℓℓ нαѕ вєєɴ ∂ιѕαвℓє∂*");
+    } else {
+        return reply(`*🏷️ єχαмρℓє: αɴтι-¢αℓℓ σɴ/σff*`);
+    }
+});
 
 cmd({
     pattern: "autotyping",
@@ -320,7 +342,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 
 cmd({
     pattern: "autostatusview",
-    alias: ["setautoviewstatus","autoviewstatus","setautostatusview"],
+    alias: ["statusview","astatus","setautostatusview"],
     desc: "Enable or disable autoview of statuses",
     category: "settings",
     filename: __filename
@@ -372,7 +394,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 //--------------------------------------------
 cmd({
     pattern: "antibad",
-    alias: ["setantibad"],
+    alias: ["anti-bad"],
     react: "🫟",
     alias: ["antibadword"],
     desc: "enable or disable antibad.",
@@ -399,7 +421,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 //--------------------------------------------
 cmd({
     pattern: "autosticker",
-    alias: ["setautosticker"],
+    alias: ["auto-sticker"],
     react: "🫟",
     alias: ["autosticker"],
     desc: "enable or disable auto-sticker.",
@@ -426,7 +448,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 //--------------------------------------------
 cmd({
     pattern: "autoreply",
-    alias: ["setautoreply"],
+    alias: ["auto-reply"],
     react: "🫟",
     alias: ["autoreply"],
     desc: "enable or disable auto-reply.",
@@ -481,9 +503,9 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 //--------------------------------------------
 
 cmd({
-    pattern: "setautostatusreply",
+    pattern: "autostatusreply",
     react: "🫟",
-    alias: ["autostatusreply"],
+    alias: ["statusreply"],
     desc: "enable or disable status-reply.",
     category: "settings",
     filename: __filename
@@ -545,7 +567,7 @@ cmd({
 cmd({
   pattern: "antilink",
   react: "🫟",
-  alias: ["antilink"],
+  alias: ["anti-link"],
   desc: "Enable or disable anti-link feature in groups",
   category: "group",
   react: "🚫",
@@ -621,38 +643,33 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
     }
 });
 
-
 cmd({
-  pattern: "antilinkkick",
-  alias: ["kicklink"],
-  desc: "Enable or disable ANTI_LINK_KICK in groups",
-  category: "group",
-  react: "⚠️",
-  filename: __filename
-}, async (conn, mek, m, { isGroup, isAdmins, isBotAdmins, args, reply }) => {
-  try {
-    if (!isGroup) return reply('This command can only be used in a group.');
-    if (!isBotAdmins) return reply('Bot must be an admin to use this command.');
-    if (!isAdmins) return reply('You must be an admin to use this command.');
+    pattern: "ownerreact",
+    alias: ["owner-react", "selfreact", "self-react"],
+    react: "👑",
+    desc: "Enable or disable the owner react feature",
+    category: "settings",
+    filename: __filename
+},    
+async (conn, mek, m, { from, args, isCreator, reply }) => {
+    if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+    const status = args[0]?.toLowerCase();
 
     if (args[0] === "on") {
-      config.ANTI_LINK_KICK = "true";
-      reply("✅ ANTI_LINK_KICK has been enabled.");
+        config.OWNER_REACT = "true";
+        await reply("ownerreact feature is now enabled.");
     } else if (args[0] === "off") {
-      config.ANTI_LINK_KICK = "false";
-      reply("❌ ANTI_LINK_KICK has been disabled.");
+        config.OWNER_REACT = "false";
+        await reply("ownerreact feature is now disabled.");
     } else {
-      reply("Usage: *.antilinkkick on/off*");
+        await reply(`*🔥 ᴇxᴀᴍᴘʟᴇ: .ᴏᴡɴᴇʀʀᴇᴀᴄᴛ ᴏɴ*`);
     }
-  } catch (e) {
-    reply(`Error: ${e.message}`);
-  }
 });
-
 
 cmd({
   pattern: "deletelink",
-  alias: ["linksdelete"],
+  alias: ["delete-links"],
   desc: "Enable or disable DELETE_LINKS in groups",
   category: "group",
   react: "❌",
@@ -703,8 +720,8 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 });
 
 cmd({
-  pattern: "setreactemoji",
-  alias: ["customemojis", "cemojis"],
+  pattern: "setreacts",
+  alias: ["customemojis", "emojis", "cemojis"],
   desc: "Set custom reaction emojis for the bot",
   category: "owner",
   react: "🌈",
