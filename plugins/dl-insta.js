@@ -100,53 +100,54 @@ cmd({
 });
 
 cmd({
-  pattern: "ig2",
-  alias: ["insta2"],
-  desc: "Download Instagram videos/reels",
-  react: "🎥",
+  pattern: "igdl2",
+  alias: ["instagram2", "ig2", "instadl2"],
+  react: '📥',
+  desc: "Download videos from Instagram (API v5)",
   category: "download",
+  use: ".igdl5 <Instagram video URL>",
   filename: __filename
-}, async (conn, m, store, { from, q, reply }) => {
+}, async (conn, mek, m, { from, reply, args }) => {
   try {
-    if (!q || !q.startsWith("http")) {
-      return reply("❌ Please provide a valid Instagram URL\nExample: .ig https://www.instagram.com/reel/...");
+    const igUrl = args[0];
+    if (!igUrl || !igUrl.includes("instagram.com")) {
+      return reply('❌ Please provide a valid Instagram video URL.\n\nExample:\n.igdl5 https://instagram.com/reel/...');
     }
 
-    // Show processing indicator
-    await conn.sendMessage(from, { react: { text: "⏳", key: m.key } });
+    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-    // API endpoint
-    const apiUrl = `https://apis.davidcyriltech.my.id/instagram?url=${encodeURIComponent(q)}`;
-    
-    // Fetch data from API
-    const { data } = await axios.get(apiUrl);
+    const apiUrl = `https://jawad-tech.vercel.app/downloader?url=${encodeURIComponent(igUrl)}`;
+    const response = await axios.get(apiUrl);
 
-    // Validate response
-    if (!data?.success || data?.status !== 200 || !data?.downloadUrl) {
-      return reply("⚠️ Failed to fetch media. Please check the link or try again later.");
+    const data = response.data;
+
+    if (!data.status || !data.result || !Array.isArray(data.result)) {
+      return reply('❌ Unable to fetch the video. Please check the URL and try again.');
     }
 
-    // Determine media type
-    const isVideo = data.type === "mp4";
-    const mediaType = isVideo ? "video" : "image";
+    const videoUrl = data.result[0];
+    if (!videoUrl) return reply("❌ No video found in the response.");
 
-    // Send the media
-    await conn.sendMessage(
-      from,
-      {
-        [mediaType]: { url: data.downloadUrl },
-        mimetype: isVideo ? "video/mp4" : "image/jpeg",
-        caption: `> *Powerd By JawadTechX ♥️*`
-      },
-      { quoted: m }
-    );
+    const metadata = data.metadata || {};
+    const author = metadata.author || "Unknown";
+    const caption = metadata.caption ? metadata.caption.slice(0, 300) + "..." : "No caption provided.";
+    const likes = metadata.like || 0;
+    const comments = metadata.comment || 0;
 
+    await reply('Downloading Instagram video...Please wait.📥');
+
+    await conn.sendMessage(from, {
+      video: { url: videoUrl },
+      caption: `📥 *Instagram Reel Downloader*\n👤 *Author:* ${author}\n💬 *Caption:* ${caption}\n❤️ *Likes:* ${likes} | 💭 *Comments:* ${comments}\n\n> Powered By JawadTechX 💜`
+    }, { quoted: mek });
+
+    await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
   } catch (error) {
-    console.error("Instagram Download Error:", error);
-    reply(`❌ Error: ${error.message || "Failed to download media"}`);
+    console.error('IGDL5 Error:', error);
+    reply('❌ Failed to download the Instagram video. Please try again later.');
+    await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
   }
 });
-
 cmd({
     pattern: "ig3",
     alias: ["insta3", "instagram3"],
