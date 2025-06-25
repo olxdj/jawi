@@ -1,5 +1,51 @@
-const { cmd } = require('../command');
-const axios = require('axios');
+const axios = require("axios");
+const { cmd } = require("../command");
+
+// TikTok Downloader v3
+cmd({
+  pattern: "tt3",
+  alias: ["tiktok3", "ttdl3"],
+  react: '📥',
+  desc: "Download videos from TikTok (API v3)",
+  category: "download",
+  use: ".tt3 <TikTok video URL>",
+  filename: __filename
+}, async (conn, mek, m, { from, reply, args }) => {
+  try {
+    const ttUrl = args[0];
+    if (!ttUrl || !ttUrl.includes("tiktok.com")) {
+      return reply('❌ Please provide a valid TikTok video URL.\n\nExample:\n.tt3 https://vt.tiktok.com/...');
+    }
+
+    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+
+    const apiUrl = `https://jawad-tech.vercel.app/downloader?url=${encodeURIComponent(ttUrl)}`;
+    const response = await axios.get(apiUrl);
+
+    const data = response.data;
+    const metadata = data.metadata || {};
+    const author = metadata.author || {};
+
+    if (!data.status || !Array.isArray(data.result) || data.result.length === 0) {
+      return reply(`❌ Video not found or unavailable.\n\n👤 Author: ${author.nickname || "Unknown"}`);
+    }
+
+    const videoUrl = data.result[0];
+
+    await reply(`Downloading TikTok video...`);
+
+    await conn.sendMessage(from, {
+      video: { url: videoUrl },
+      caption: `🎬 *TikTok Downloader*\n👤 *User:* @${author.uniqueId || "unknown"}\n🆔 *ID:* ${author.id || "n/a"}\n\n> Powered By JawadTechX 💜`
+    }, { quoted: mek });
+
+    await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+  } catch (error) {
+    console.error('TT3 Error:', error);
+    reply('❌ Failed to download the TikTok video. Please try again later.');
+    await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+  }
+});
 
 cmd({
     pattern: "tiktok",
