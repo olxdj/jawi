@@ -1,7 +1,7 @@
 const axios = require("axios");
 const { cmd } = require("../command");
 
-// Facebook Downloader v4
+
 cmd({
   pattern: "fb4",
   alias: ["facebook4", "fbdl4"],
@@ -35,11 +35,11 @@ cmd({
 
     if (!video) return reply("❌ Video not found in the response.");
 
-    await reply(`Downloading ${video.quality} video... Please wait.📥`);
+    await reply(`Downloading video Please wait`);
 
     await conn.sendMessage(from, {
       video: { url: video.url },
-      caption: `🎥 *Facebook Video Downloader v4*\n> Quality: ${video.quality}\n\n> Powered By JawadTechX 💜`
+      caption: `🎥 *Facebook Video Downloader*\n\n> Quality: ${video.quality}\n\n> Powered By JawadTechX 💜`
     }, { quoted: mek });
 
     await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
