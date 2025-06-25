@@ -29,7 +29,6 @@ module.exports = {
     AUTO_STATUS_REPLY: process.env.AUTO_STATUS_REPLY || "false",// Reply to status updates?
     AUTO_STATUS_MSG: process.env.AUTO_STATUS_MSG || "*KHAN MD VIEWED YOUR STATUS 🤖*",  // Status reply message
     READ_MESSAGE: process.env.READ_MESSAGE || "false",          // Mark messages as read automatically?
-    ANTI_CALL_MSG: process.env.ANTI_CALL_MSG || "*Call Rejected Automatically 🤖*",  // Status reply message
     // ===== REACTION & STICKER SETTINGS =====
     AUTO_REACT: process.env.AUTO_REACT || "false",              // Auto-react to messages?
     CUSTOM_REACT: process.env.CUSTOM_REACT || "false",          // Use custom emoji reactions?
@@ -40,16 +39,15 @@ module.exports = {
     // ===== MEDIA & AUTOMATION =====
     AUTO_RECORDING: process.env.AUTO_RECORDING || "false",      // Auto-record voice notes?
     AUTO_TYPING: process.env.AUTO_TYPING || "false",            // Show typing indicator?
-     MENTION_REPLY: process.env.MENTION_REPLY || "false",   // reply on mentioned message 
+    MENTION_REPLY: process.env.MENTION_REPLY || "false",   // reply on mentioned message 
     MENU_IMAGE_URL: getConfig("MENU_IMAGE_URL") || "https://files.catbox.moe/7zfdcq.jpg",  // Bot's "alive" menu mention image
 
     // ===== SECURITY & ANTI-FEATURES =====
     ANTI_DELETE: process.env.ANTI_DELETE || "true", // true antidelete to recover deleted messages 
-    ANTI_CALL: process.env.ANTI_CALL || "true", // enble to reject calls automatically 
+    ANTI_CALL: process.env.ANTI_CALL || "false", // enble to reject calls automatically 
     ANTI_BAD_WORD: process.env.ANTI_BAD_WORD || "false",    // Block bad words?
-    ANTI_LINK: process.env.ANTI_LINK || "true",    // Block links in groups?
-    ANTI_LINK_KICK: process.env.ANTI_LINK_KICK || "false",                 // Block links in groups?
-    ANTI_VV: process.env.ANTI_VV || "true",   // Block view-once messages?
+    ANTI_LINK: process.env.ANTI_LINK || "true",    // Block links in groups
+    ANTI_VV: process.env.ANTI_VV || "true",   // Block view-once messages
     DELETE_LINKS: process.env.DELETE_LINKS || "false",          // Auto-delete links?
     ANTI_DEL_PATH: process.env.ANTI_DEL_PATH || "same", // inbox deleted messages (or 'same' to resend)
     ANTI_BOT: process.env.ANTI_BOT || "true",
