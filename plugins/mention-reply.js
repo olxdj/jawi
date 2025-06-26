@@ -22,7 +22,7 @@ cmd({
       "https://cdn.ironman.my.id/i/lz2z87.mp4",
       "https://cdn.ironman.my.id/i/gg5jct.mp4",
 
-      // New URLs you provided
+      // New .mp4
       "https://cdn.ironman.my.id/i/0gup65.mp4",
       "https://cdn.ironman.my.id/i/8mrocq.mp4",
       "https://cdn.ironman.my.id/i/xf29k2.mp4",
@@ -30,6 +30,7 @@ cmd({
       "https://cdn.ironman.my.id/i/1ulm61.mp4",
       "https://cdn.ironman.my.id/i/88x93o.mp4",
 
+      // New .mp3
       "https://files.catbox.moe/bat4dt.mp3",
       "https://files.catbox.moe/nugg7o.mp3",
       "https://files.catbox.moe/fcqzmk.mp3",
@@ -51,10 +52,15 @@ cmd({
       });
       const thumbnailBuffer = Buffer.from(thumbnailRes.data, 'binary');
 
+      // Handle mimetype and PTT based on extension
+      const isMp3 = randomClip.endsWith('.mp3');
+      const mimetype = isMp3 ? 'audio/mpeg' : 'audio/mp4';
+      const ptt = isMp3 ? false : true;
+
       await conn.sendMessage(m.chat, {
         audio: { url: randomClip },
-        mimetype: 'audio/mp4',
-        ptt: true,
+        mimetype,
+        ptt,
         waveform: [99, 0, 99, 0, 99],
         contextInfo: {
           forwardingScore: 999,
