@@ -16,29 +16,29 @@ cmd({
     const botNumber = conn.user.id.split(":")[0] + "@s.whatsapp.net";
     if (!m.mentionedJid.includes(botNumber)) return;
 
-    // Load voice clips from file
+    // Load voice clips
     let voiceClips = [];
     if (fs.existsSync(AUDIO_PATH)) {
       voiceClips = JSON.parse(fs.readFileSync(AUDIO_PATH, "utf-8"));
     }
 
-    if (voiceClips.length === 0) return;
+    if (!voiceClips.length) return;
 
     // Pick a random clip
     const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
 
-    // Download thumbnail image
+    // Download thumbnail
     const thumbnailRes = await axios.get(config.MENU_IMAGE_URL || "https://files.catbox.moe/c836ws.png", {
       responseType: "arraybuffer"
     });
     const thumbnailBuffer = Buffer.from(thumbnailRes.data, "binary");
 
-    // Send audio reply
+    // Force send as voice note regardless of extension
     await conn.sendMessage(m.chat, {
       audio: { url: randomClip },
-      mimetype: "audio/mp4",
+      mimetype: "audio/mp4", // Send as PTT regardless of .mp3 or .mp4
       ptt: true,
-      waveform: [99, 0, 99, 0, 99],
+      waveform: [90, 50, 10, 90, 20],
       contextInfo: {
         forwardingScore: 999,
         isForwarded: true,
@@ -55,6 +55,6 @@ cmd({
     }, { quoted: m });
 
   } catch (e) {
-    console.error("❌ Error in auto mention reply:", e);
+    console.error("❌ Error in mention auto-reply:", e);
   }
 });
