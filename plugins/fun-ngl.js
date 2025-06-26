@@ -28,7 +28,7 @@ cmd({
         // Send the image
         await conn.sendMessage(from, {
             image: { url: apiUrl },
-            caption: `- ✨ Powered By *JawadTechX 🤍*`
+            caption: `- ✨ Powered By *JawadTechX*`
         }, { quoted: mek });
 
     } catch (err) {
