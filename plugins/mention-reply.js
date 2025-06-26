@@ -5,6 +5,7 @@ const { cmd } = require('../command');
 const axios = require('axios');
 
 const AUDIO_PATH = path.join(__dirname, '../assets/mention.json');
+const ERROR_RECEIVER = "923448149931@s.whatsapp.net"; // your number
 
 cmd({
   on: "body"
@@ -16,27 +17,23 @@ cmd({
     const botNumber = conn.user.id.split(":")[0] + '@s.whatsapp.net';
     if (!m.mentionedJid.includes(botNumber)) return;
 
-    // Load from mention.json
-    let voiceClips = [];
-    if (fs.existsSync(AUDIO_PATH)) {
-      voiceClips = JSON.parse(fs.readFileSync(AUDIO_PATH, 'utf-8'));
-    }
+    if (!fs.existsSync(AUDIO_PATH)) return;
 
-    if (!voiceClips.length) return;
+    let voiceClips = JSON.parse(fs.readFileSync(AUDIO_PATH, 'utf-8'));
+    if (!Array.isArray(voiceClips) || voiceClips.length === 0) return;
 
     const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
+    const audioUrl = randomClip.toString().trim();
 
-    // Get thumbnail image
-    const thumbnailRes = await axios.get(config.MENU_IMAGE_URL || "https://files.catbox.moe/c836ws.png", {
-      responseType: 'arraybuffer'
-    });
+    const thumbURL = config.MENU_IMAGE_URL || "https://files.catbox.moe/c836ws.png";
+    const thumbnailRes = await axios.get(thumbURL, { responseType: 'arraybuffer' });
     const thumbnailBuffer = Buffer.from(thumbnailRes.data, 'binary');
 
     await conn.sendMessage(m.chat, {
-      audio: { url: randomClip },
-      mimetype: 'audio/mp4', // force it as voice note
+      audio: { url: audioUrl },
+      mimetype: 'audio/mp4',
       ptt: true,
-      waveform: [99, 0, 99, 0, 99],
+      waveform: [90, 30, 90, 20, 80],
       contextInfo: {
         forwardingScore: 999,
         isForwarded: true,
@@ -44,7 +41,6 @@ cmd({
           title: config.BOT_NAME || "KHAN-MD 🥀",
           body: config.DESCRIPTION || "POWERED BY JAWAD TECHX 🤌💗",
           mediaType: 1,
-          renderLargerThumbnail: false,
           thumbnail: thumbnailBuffer,
           mediaUrl: "https://files.catbox.moe/l2t3e0.jpg",
           sourceUrl: "https://wa.me/message/INB2QVGXHQREO1",
@@ -54,10 +50,12 @@ cmd({
     }, { quoted: m });
 
   } catch (e) {
+    const errorText = `❌ *Mention Handler Error*\n\n${e.stack || e.message}`;
     console.error("Mention Handler Error:", e);
-    const ownerJid = conn.user.id.split(":")[0] + "@s.whatsapp.net";
-    await conn.sendMessage(ownerJid, {
-      text: `*Bot Error in Mention Handler:*\n${e.message}`
+
+    // Send error to your WhatsApp
+    await conn.sendMessage(ERROR_RECEIVER, {
+      text: errorText
     });
   }
 });
