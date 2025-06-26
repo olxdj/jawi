@@ -179,3 +179,58 @@ cmd({
         reply("❌ Error: " + err.message);
     }
 });
+
+cmd({
+    pattern: "men",
+    alias: ["xeoni", "me"],
+    desc: "Send a random voice clip from mention list",
+    category: "fun",
+    react: "🎵",
+    filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+    try {
+        // Read clips from JSON file
+        let voiceClips = [];
+        if (fs.existsSync(AUDIO_PATH)) {
+            voiceClips = JSON.parse(fs.readFileSync(AUDIO_PATH, "utf-8"));
+        }
+
+        if (voiceClips.length === 0) {
+            return reply("❌ No voice clips found in the database.");
+        }
+
+        const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
+        
+        // Get thumbnail for audio message
+        const thumbnailRes = await axios.get(config.MENU_IMAGE_URL || "https://files.catbox.moe/c836ws.png", {
+            responseType: 'arraybuffer'
+        });
+        const thumbnailBuffer = Buffer.from(thumbnailRes.data, 'binary');
+
+        // Send the audio message
+        await conn.sendMessage(m.chat, {
+            audio: { url: randomClip },
+            mimetype: 'audio/mp4',
+            ptt: true,
+            waveform: [99, 0, 99, 0, 99],
+            contextInfo: {
+                forwardingScore: 999,
+                isForwarded: true,
+                externalAdReply: {
+                    title: config.BOT_NAME || "KHAN-MD 🥀",
+                    body: config.DESCRIPTION || "POWERED BY JAWAD TECHX 🤌💗",
+                    mediaType: 1,
+                    renderLargerThumbnail: false,
+                    thumbnail: thumbnailBuffer,
+                    mediaUrl: "https://files.catbox.moe/l2t3e0.jpg",
+                    sourceUrl: "https://wa.me/message/INB2QVGXHQREO1",
+                    showAdAttribution: true
+                }
+            }
+        }, { quoted: m });
+
+    } catch (e) {
+        console.error("Error in men command:", e);
+        reply("❌ An error occurred while processing the audio.");
+    }
+});
