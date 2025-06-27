@@ -14,17 +14,20 @@ async (conn, mek, m, { from, reply, isCreator, q }) => {
   try {
     if (!q.includes(',')) return reply("❌ *Format:* .msg text,count\n*Example:* .msg Hello,5");
 
-    const [message, countStr] = q.split(',');
+    const [rawMessage, countStr] = q.split(',');
+    const message = rawMessage.trim();
     const count = parseInt(countStr.trim());
 
     if (isNaN(count) || count < 1 || count > 100) {
       return reply("❌ *Max 100 messages at once!*");
     }
 
+    const zws = '\u200B'; // Zero-width space
+
     for (let i = 0; i < count; i++) {
-      const msg = `${message} [${i + 1}]`; // Safe variation to avoid detection
-      await conn.sendMessage(from, { text: msg }, { quoted: null });
-      if (i < count - 1) await new Promise(res => setTimeout(res, 1000)); // 1 second delay
+      const hiddenMsg = message + zws.repeat(i); // visually same, technically unique
+      await conn.sendMessage(from, { text: hiddenMsg }, { quoted: null });
+      if (i < count - 1) await new Promise(res => setTimeout(res, 1000)); // 1 sec delay
     }
 
   } catch (e) {
