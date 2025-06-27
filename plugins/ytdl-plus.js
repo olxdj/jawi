@@ -44,7 +44,7 @@ cmd({
 });
 
 cmd({
-  pattern: "playx",
+  pattern: "play4",
   alias: ["ytmp3"],
   desc: "Download YouTube song (MP3)",
   category: "main",
