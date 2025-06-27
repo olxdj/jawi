@@ -5,8 +5,8 @@ const converter = require('../data/play-converter');
 const fetch = require('node-fetch');
 
 cmd({ 
-     pattern: "play", 
-     alias: ["yta"], 
+     pattern: "play3", 
+     alias: ["yta3"], 
      react: "🎵", 
      desc: "Download Youtube song",
      category: "main", 
@@ -129,9 +129,9 @@ cmd({
 });
 
 cmd({ 
-    pattern: "play3", 
-    alias: ["ytv3"], 
-    react: "⚡", 
+    pattern: "play", 
+    alias: ["ytv"], 
+    react: "❄️", 
     desc: "Download YouTube content with options",
     category: "download", 
     use: '.play2 <Youtube URL or Name>', 
