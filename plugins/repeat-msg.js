@@ -1,5 +1,5 @@
 const { sleep } = require('../lib/functions');
-const { cmd, commands } = require("../command");
+const { cmd } = require("../command");
 
 cmd({
   pattern: "repeat",
@@ -7,7 +7,7 @@ cmd({
   desc: "Repeat a message a specified number of times.",
   category: "fun",
   filename: __filename
-}, async (conn, m, store, { args, reply }) => {
+}, async (conn, m, store, { args, reply, from }) => {
   try {
     if (!args[0]) {
       return reply("✳️ Use this command like:\n*Example:* .repeat 10,I love you");
@@ -25,9 +25,13 @@ cmd({
       return reply("❎ Please provide a message to repeat.");
     }
 
-    const repeatedMessage = Array(count).fill(message).join("\n");
+    reply(`🔁 Sending "${message}" ${count} times...`);
 
-    reply(`🔄 Repeated ${count} times:\n\n${repeatedMessage}`);
+    for (let i = 0; i < count; i++) {
+      await conn.sendMessage(from, { text: message }, { quoted: m });
+      await sleep(1000); // 1 second delay to prevent spam block
+    }
+
   } catch (error) {
     console.error("❌ Error in repeat command:", error);
     reply("❎ An error occurred while processing your request.");
