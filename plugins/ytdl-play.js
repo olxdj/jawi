@@ -127,3 +127,140 @@ cmd({
         await conn.sendMessage(from, { react: { text: "❌", key: mek.key } });
     }
 });
+
+cmd({ 
+    pattern: "play3", 
+    alias: ["ytv3"], 
+    react: "🎬", 
+    desc: "Download YouTube content with options",
+    category: "download", 
+    use: '.play2 <Youtube URL or Name>', 
+    filename: __filename }, 
+    async (conn, mek, m, { from, prefix, quoted, q, reply }) => { 
+        try {
+            if (!q) return await reply("Please provide a YouTube URL or video name.");
+
+            const yt = await ytsearch(q);
+            if (yt.results.length < 1) return reply("No results found!");
+            
+            let yts = yt.results[0];  
+            let apiUrl = `https://jawad-tech.vercel.app/download/ytmp4?url=${encodeURIComponent(yts.url)}`;
+            
+            let ytmsg = `*🎬 YOUTUBE DOWNLOADER*
+╭━━❐━⪼
+┇๏ *Title* - ${yts.title}
+┇๏ *Duration* - ${yts.timestamp}
+┇๏ *Views* - ${yts.views}
+┇๏ *Author* - ${yts.author.name}
+╰━━❑━⪼
+📌 *Reply with the number to download*
+1. Video (MP4)
+2. Audio (MP3)
+3. Voice (PTT)
+4. Document (Video)
+5. Document (Audio)
+> *© Powered By KHAN-MD ♡*`;
+
+            // Send video details with thumbnail
+            const sentMsg = await conn.sendMessage(from, { 
+                image: { url: yts.thumbnail }, 
+                caption: ytmsg 
+            }, { quoted: mek });
+
+            const messageID = sentMsg.key.id;
+            let responded = false;
+
+            // Create a listener for the reply
+            const replyHandler = async (msgData) => {
+                const receivedMsg = msgData.messages[0];
+                if (!receivedMsg.message || responded) return;
+
+                const receivedText = receivedMsg.message.conversation || 
+                                    receivedMsg.message.extendedTextMessage?.text;
+                const senderID = receivedMsg.key.remoteJid;
+                const isReplyToBot = receivedMsg.message.extendedTextMessage?.contextInfo?.stanzaId === messageID;
+
+                if (isReplyToBot && senderID === from) {
+                    if (!['1','2','3','4','5'].includes(receivedText)) {
+                        await conn.sendMessage(from, { 
+                            text: "❌ Invalid option! Please reply with 1, 2, 3, 4, or 5." 
+                        }, { quoted: receivedMsg });
+                        return;
+                    }
+
+                    responded = true;
+                    conn.ev.off("messages.upsert", replyHandler);
+
+                    await conn.sendMessage(from, {
+                        react: { text: '⬇️', key: receivedMsg.key }
+                    });
+
+                    const videoUrl = `https://jawad-tech.vercel.app/download/ytmp4?url=${encodeURIComponent(yts.url)}`;
+                    
+                    switch (receivedText) {
+                        case "1":
+                            // Video download
+                            await conn.sendMessage(from, { 
+                                video: { url: videoUrl },
+                                caption: "*Powered By JawadTechX 🤍*"
+                            }, { quoted: receivedMsg });
+                            break;
+                            
+                        case "2":
+    // Audio download
+    await conn.sendMessage(from, { 
+        audio: { url: videoUrl },
+        mimetype: "audio/mpeg"
+    }, { quoted: receivedMsg });
+    break;
+
+case "3":
+    // Voice note (PTT)
+    await conn.sendMessage(from, { 
+        audio: { url: videoUrl },
+        mimetype: "audio/mp4",
+        ptt: true
+    }, { quoted: receivedMsg });
+    break;
+                            
+                        case "4":
+                            // Document (Video)
+                            await conn.sendMessage(from, { 
+                                document: { url: videoUrl },
+                                mimetype: "video/mp4",
+                                fileName: `${yts.title.substring(0, 50)}.mp4`,
+                                caption: "*Powered By JawadTechX 🤍*"
+                            }, { quoted: receivedMsg });
+                            break;
+                            
+                        case "5":
+                            // Document (Audio)
+                            await conn.sendMessage(from, { 
+                                document: { url: videoUrl },
+                                mimetype: "audio/mpeg",
+                                fileName: `${yts.title.substring(0, 50)}.mp3`,
+                                caption: "*Powered By JawadTechX 🤍*"
+                            }, { quoted: receivedMsg });
+                            break;
+                    }
+                }
+            };
+
+            conn.ev.on("messages.upsert", replyHandler);
+
+            // Set timeout to remove listener after 1 minute
+            setTimeout(() => {
+                if (!responded) {
+                    conn.ev.off("messages.upsert", replyHandler);
+                    conn.sendMessage(from, { 
+                        text: "⌛ Download menu expired. Please use the command again." 
+                    }, { quoted: sentMsg });
+                }
+            }, 60000);
+
+        } catch (e) {
+            console.log(e);
+            reply("An error occurred. Please try again later.");
+        }
+    }
+);
