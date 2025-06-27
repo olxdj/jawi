@@ -131,7 +131,7 @@ cmd({
 cmd({ 
     pattern: "play3", 
     alias: ["ytv3"], 
-    react: "🎬", 
+    react: "⚡", 
     desc: "Download YouTube content with options",
     category: "download", 
     use: '.play2 <Youtube URL or Name>', 
@@ -144,7 +144,6 @@ cmd({
             if (yt.results.length < 1) return reply("No results found!");
             
             let yts = yt.results[0];  
-            let apiUrl = `https://jawad-tech.vercel.app/download/ytmp4?url=${encodeURIComponent(yts.url)}`;
             
             let ytmsg = `*🎬 YOUTUBE DOWNLOADER*
 ╭━━❐━⪼
@@ -156,9 +155,9 @@ cmd({
 📌 *Reply with the number to download*
 1. Video (MP4)
 2. Audio (MP3)
-3. Voice (PTT)
-4. Document (Video)
-5. Document (Audio)
+3. Voice Note (PTT)
+4. Document (MP4)
+5. Document (MP3)
 > *© Powered By KHAN-MD ♡*`;
 
             // Send video details with thumbnail
@@ -195,53 +194,67 @@ cmd({
                         react: { text: '⬇️', key: receivedMsg.key }
                     });
 
-                    const videoUrl = `https://jawad-tech.vercel.app/download/ytmp4?url=${encodeURIComponent(yts.url)}`;
-                    
-                    switch (receivedText) {
-                        case "1":
-                            // Video download
-                            await conn.sendMessage(from, { 
-                                video: { url: videoUrl },
-                                caption: "*Powered By JawadTechX 🤍*"
-                            }, { quoted: receivedMsg });
-                            break;
-                            
-                        case "2":
-    // Audio download
-    await conn.sendMessage(from, { 
-        audio: { url: videoUrl },
-        mimetype: "audio/mpeg"
-    }, { quoted: receivedMsg });
-    break;
+                    try {
+                        // Get fresh download URL for each request
+                        const apiResponse = await fetch(`https://jawad-tech.vercel.app/download/ytmp4?url=${encodeURIComponent(yts.url)}`);
+                        const apiData = await apiResponse.json();
+                        
+                        if (!apiData.status || !apiData.result.download) {
+                            throw new Error("Failed to get download URL");
+                        }
 
-case "3":
-    // Voice note (PTT)
-    await conn.sendMessage(from, { 
-        audio: { url: videoUrl },
-        mimetype: "audio/mp4",
-        ptt: true
-    }, { quoted: receivedMsg });
-    break;
-                            
-                        case "4":
-                            // Document (Video)
-                            await conn.sendMessage(from, { 
-                                document: { url: videoUrl },
-                                mimetype: "video/mp4",
-                                fileName: `${yts.title.substring(0, 50)}.mp4`,
-                                caption: "*Powered By JawadTechX 🤍*"
-                            }, { quoted: receivedMsg });
-                            break;
-                            
-                        case "5":
-                            // Document (Audio)
-                            await conn.sendMessage(from, { 
-                                document: { url: videoUrl },
-                                mimetype: "audio/mpeg",
-                                fileName: `${yts.title.substring(0, 50)}.mp3`,
-                                caption: "*Powered By JawadTechX 🤍*"
-                            }, { quoted: receivedMsg });
-                            break;
+                        const downloadUrl = apiData.result.download;
+                        const sanitizedTitle = yts.title.replace(/[^\w\s]/gi, '').substring(0, 50);
+
+                        switch (receivedText) {
+                            case "1":
+                                // Video download
+                                await conn.sendMessage(from, { 
+                                    video: { url: downloadUrl },
+                                    caption: "*Download completed!*"
+                                }, { quoted: receivedMsg });
+                                break;
+                                
+                            case "2":
+                                // Audio download
+                                await conn.sendMessage(from, { 
+                                    audio: { url: downloadUrl },
+                                    mimetype: "audio/mpeg"
+                                }, { quoted: receivedMsg });
+                                break;
+                                
+                            case "3":
+                                // Voice note (PTT)
+                                await conn.sendMessage(from, { 
+                                    audio: { url: downloadUrl },
+                                    mimetype: "audio/mp4",
+                                    ptt: true
+                                }, { quoted: receivedMsg });
+                                break;
+                                
+                            case "4":
+                                // Document (Video)
+                                await conn.sendMessage(from, { 
+                                    document: { url: downloadUrl },
+                                    mimetype: "video/mp4",
+                                    fileName: `${sanitizedTitle}.mp4`
+                                }, { quoted: receivedMsg });
+                                break;
+                                
+                            case "5":
+                                // Document (Audio)
+                                await conn.sendMessage(from, { 
+                                    document: { url: downloadUrl },
+                                    mimetype: "audio/mpeg",
+                                    fileName: `${sanitizedTitle}.mp3`
+                                }, { quoted: receivedMsg });
+                                break;
+                        }
+                    } catch (error) {
+                        console.error("Download error:", error);
+                        await conn.sendMessage(from, { 
+                            text: "❌ Failed to download. Please try again later." 
+                        }, { quoted: receivedMsg });
                     }
                 }
             };
@@ -263,4 +276,4 @@ case "3":
             reply("An error occurred. Please try again later.");
         }
     }
-);
+);https://jawad-tech.vercel.app/download/ytmp4?url=${encodeURIComponent(yts.url)
