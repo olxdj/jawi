@@ -2,43 +2,6 @@ const converter = require('../data/converter');
 const stickerConverter = require('../data/sticker-converter');
 const { cmd } = require('../command');
 
-cmd({
-  pattern: 'tomp4',
-  alias: ['tovideo'],
-  desc: 'Convert voice/audio/video to video (.mp4)',
-  category: 'video',
-  react: '🎞️',
-  filename: __filename
-}, async (client, match, message, { from, reply }) => {
-  try {
-    const quoted = match.quoted;
-    if (!quoted || !['audioMessage', 'videoMessage'].includes(quoted.mtype)) {
-      return await reply("🎧 *Please reply to an audio, voice note, or video.*");
-    }
-
-    if (quoted.seconds > 300) {
-      return await reply("⏱️ *File too long! Max 5 minutes allowed.*");
-    }
-
-    await client.sendMessage(from, { react: { text: '⏳', key: message.key } });
-
-    const buffer = await quoted.download();
-    const ext = quoted.mtype === 'videoMessage' ? 'mp4' : 'mp3';
-    const videoBuffer = await converter.toVideo(buffer, ext);
-
-    await client.sendMessage(from, {
-      video: videoBuffer,
-      mimetype: 'video/mp4'
-    }, { quoted: message });
-
-    await client.sendMessage(from, { react: { text: '✅', key: message.key } });
-
-  } catch (e) {
-    console.error('❌ tomp4 error:', e.message);
-    await reply("❌ *Failed to convert to MP4.*");
-    await client.sendMessage(from, { react: { text: '❌', key: message.key } });
-  }
-});
 
 cmd({
     pattern: 'convert',
