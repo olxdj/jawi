@@ -25,17 +25,7 @@ cmd({
     "https://cdn.ironman.my.id/i/xf29k2.mp4",
     "https://cdn.ironman.my.id/i/aof4z4.mp4",
     "https://cdn.ironman.my.id/i/1ulm61.mp4",
-    "https://cdn.ironman.my.id/i/88x93o.mp4",
-    "https://files.catbox.moe/bat4dt.mp3",
-    "https://files.catbox.moe/nugg7o.mp3",
-    "https://files.catbox.moe/fcqzmk.mp3",
-    "https://files.catbox.moe/tqzlfl.mp3",
-    "https://files.catbox.moe/w94n86.mp3",
-    "https://files.catbox.moe/cuk967.mp3",
-    "https://files.catbox.moe/7ajubx.mp3",
-    "https://files.catbox.moe/2fi10f.mp3",
-    "https://files.catbox.moe/78isfb.mp3",
-    "https://files.catbox.moe/lcrt4a.mp3"
+    "https://cdn.ironman.my.id/i/88x93o.mp4"
     ];
 
     const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
