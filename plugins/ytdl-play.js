@@ -127,7 +127,7 @@ cmd({
         await conn.sendMessage(from, { react: { text: "❌", key: mek.key } });
     }
 });
-
+ 
 cmd({ 
     pattern: "play3", 
     alias: ["jadu", "music", "dlyt", "playx"], 
@@ -215,7 +215,7 @@ cmd({
                                 // Video download (no conversion needed)
                                 await conn.sendMessage(from, { 
                                     video: mediaBuffer,
-                                    caption: "*Download completed!*"
+                                    caption: "> *Powered By JawadTechX 🤍*"
                                 }, { quoted: receivedMsg });
                                 break;
                                 
