@@ -277,3 +277,204 @@ cmd({
         }
     }
 );
+
+
+cmd({ 
+    pattern: "play4", 
+    alias: ["ytv4"], 
+    react: "❄️", 
+    desc: "Download YouTube content with options",
+    category: "download", 
+    use: '.play2 <Youtube URL or Name>', 
+    filename: __filename }, 
+    async (conn, mek, m, { from, prefix, quoted, q, reply }) => { 
+        try {
+            if (!q) return await reply("Please provide a YouTube URL or video name.");
+
+            const yt = await ytsearch(q);
+            if (yt.results.length < 1) return reply("No results found!");
+            
+            let yts = yt.results[0];  
+            
+            let ytmsg = `*🎬 YOUTUBE DOWNLOADER*
+╭━━❐━⪼
+┇๏ *Title* - ${yts.title}
+┇๏ *Duration* - ${yts.timestamp}
+┇๏ *Views* - ${yts.views}
+┇๏ *Author* - ${yts.author.name}
+╰━━❑━⪼
+📌 *Reply with the number to download*
+1. Video (MP4)
+2. Audio (MP3) 
+3. Voice Note (PTT) 
+4. Document (MP4)
+5. Document (MP3) 
+> *© Powered By KHAN-MD ♡*`;
+
+            // Send video details with thumbnail
+            const sentMsg = await conn.sendMessage(from, { 
+                image: { url: yts.thumbnail }, 
+                caption: ytmsg 
+            }, { quoted: mek });
+
+            const messageID = sentMsg.key.id;
+            let responded = false;
+
+            // Create a listener for the reply
+            const replyHandler = async (msgData) => {
+                const receivedMsg = msgData.messages[0];
+                if (!receivedMsg.message || responded) return;
+
+                const receivedText = receivedMsg.message.conversation || 
+                                    receivedMsg.message.extendedTextMessage?.text;
+                const senderID = receivedMsg.key.remoteJid;
+                const isReplyToBot = receivedMsg.message.extendedTextMessage?.contextInfo?.stanzaId === messageID;
+
+                if (isReplyToBot && senderID === from) {
+                    if (!['1','2','3','4','5'].includes(receivedText)) {
+                        await conn.sendMessage(from, { 
+                            text: "❌ Invalid option! Please reply with 1, 2, 3, 4, or 5." 
+                        }, { quoted: receivedMsg });
+                        return;
+                    }
+
+                    responded = true;
+                    conn.ev.off("messages.upsert", replyHandler);
+
+                    await conn.sendMessage(from, {
+                        react: { text: '⬇️', key: receivedMsg.key }
+                    });
+
+                    try {
+                        // Get fresh download URL for each request
+                        const apiResponse = await fetch(`https://jawad-tech.vercel.app/download/ytmp4?url=${encodeURIComponent(yts.url)}`);
+                        const apiData = await apiResponse.json();
+                        
+                        if (!apiData.status || !apiData.result.download) {
+                            throw new Error("Failed to get download URL");
+                        }
+
+                        const downloadUrl = apiData.result.download;
+                        const sanitizedTitle = yts.title.replace(/[^\w\s]/gi, '').substring(0, 50);
+
+                        // Download the media file first
+                        const mediaRes = await fetch(downloadUrl);
+                        const mediaBuffer = await mediaRes.buffer();
+
+                        switch (receivedText) {
+                            case "1":
+                                // Video download (no conversion needed)
+                                await conn.sendMessage(from, { 
+                                    video: mediaBuffer,
+                                    caption: "*Download completed!*"
+                                }, { quoted: receivedMsg });
+                                break;
+                                
+                            case "2":
+                                // Audio download (convert to compressed MP3)
+                                try {
+                                    const convertedAudio = await converter.toAudio(mediaBuffer, 'mp4', {
+                                        bitrate: '96k', // Lower bitrate for smaller size
+                                        sampleRate: 22050, // Lower sample rate
+                                        channels: 1 // Mono instead of stereo
+                                    });
+                                    await conn.sendMessage(from, { 
+                                        audio: convertedAudio,
+                                        mimetype: "audio/mpeg",
+                                        fileName: `${sanitizedTitle}.mp3`
+                                    }, { quoted: receivedMsg });
+                                } catch (convError) {
+                                    console.error('Audio conversion failed:', convError);
+                                    // Fallback to original with lower quality
+                                    const fallbackAudio = await converter.toAudio(mediaBuffer, 'mp4');
+                                    await conn.sendMessage(from, { 
+                                        audio: fallbackAudio,
+                                        mimetype: "audio/mpeg",
+                                        fileName: `${sanitizedTitle}.mp3`
+                                    }, { quoted: receivedMsg });
+                                }
+                                break;
+                                
+                            case "3":
+                                // Voice note (PTT - convert to compressed OPUS)
+                                try {
+                                    const convertedPTT = await converter.toPTT(mediaBuffer, 'mp4', {
+                                        bitrate: '64k', // Very low bitrate for voice
+                                        frameSize: 20, // Smaller frame size
+                                        complexity: 5 // Lower complexity
+                                    });
+                                    await conn.sendMessage(from, { 
+                                        audio: convertedPTT,
+                                        mimetype: "audio/ogg; codecs=opus",
+                                        ptt: true,
+                                        fileName: `${sanitizedTitle}.opus`
+                                    }, { quoted: receivedMsg });
+                                } catch (pttError) {
+                                    console.error('PTT conversion failed:', pttError);
+                                    // Fallback to regular compressed audio
+                                    const fallbackPTT = await converter.toPTT(mediaBuffer, 'mp4');
+                                    await conn.sendMessage(from, { 
+                                        audio: fallbackPTT,
+                                        ptt: true
+                                    }, { quoted: receivedMsg });
+                                }
+                                break;
+                                
+                            case "4":
+                                // Document (Video - no conversion needed)
+                                await conn.sendMessage(from, { 
+                                    document: mediaBuffer,
+                                    mimetype: "video/mp4",
+                                    fileName: `${sanitizedTitle}.mp4`
+                                }, { quoted: receivedMsg });
+                                break;
+                                
+                            case "5":
+                                // Document (Audio - convert to compressed MP3)
+                                try {
+                                    const convertedAudio = await converter.toAudio(mediaBuffer, 'mp4', {
+                                        bitrate: '96k',
+                                        sampleRate: 22050,
+                                        channels: 1
+                                    });
+                                    await conn.sendMessage(from, { 
+                                        document: convertedAudio,
+                                        mimetype: "audio/mpeg",
+                                        fileName: `${sanitizedTitle}.mp3`
+                                    }, { quoted: receivedMsg });
+                                } catch (convError) {
+                                    console.error('Audio conversion failed:', convError);
+                                    // Fallback to original with lower quality
+                                    const fallbackAudio = await converter.toAudio(mediaBuffer, 'mp4');
+                                    await conn.sendMessage(from, { 
+                                        document: fallbackAudio,
+                                        mimetype: "audio/mpeg",
+                                        fileName: `${sanitizedTitle}.mp3`
+                                    }, { quoted: receivedMsg });
+                                }
+                                break;
+                        }
+                    } catch (error) {
+                        console.error("Download error:", error);
+                        await conn.sendMessage(from, { 
+                            text: "❌ Failed to download. Please try again later." 
+                        }, { quoted: receivedMsg });
+                    }
+                }
+            };
+
+            conn.ev.on("messages.upsert", replyHandler);
+
+            // Set timeout to remove listener after 1 minute (silently)
+            setTimeout(() => {
+                if (!responded) {
+                    conn.ev.off("messages.upsert", replyHandler);
+                }
+            }, 60000);
+
+        } catch (e) {
+            console.log(e);
+            reply("An error occurred. Please try again later.");
+        }
+    }
+);
