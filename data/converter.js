@@ -77,6 +77,20 @@ class AudioConverter {
         ], ext, 'mp3');
     }
 
+    toVideo(buffer, ext) {
+    return this.convert(buffer, [
+        '-loop', '1',
+        '-f', 'lavfi',
+        '-i', 'color=c=black:s=640x360:d=10',
+        '-i', '-',
+        '-c:v', 'libx264',
+        '-c:a', 'aac',
+        '-b:a', '192k',
+        '-shortest',
+        '-pix_fmt', 'yuv420p'
+    ], ext, 'mp4');
+    }
+
     toPTT(buffer, ext) {
         return this.convert(buffer, [
             '-vn',
