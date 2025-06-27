@@ -276,4 +276,4 @@ cmd({
             reply("An error occurred. Please try again later.");
         }
     }
-);https://jawad-tech.vercel.app/download/ytmp4?url=${encodeURIComponent(yts.url)
+);
