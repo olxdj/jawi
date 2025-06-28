@@ -5,6 +5,41 @@ const converter = require('../data/play-converter');
 const fetch = require('node-fetch');
 
 cmd({ 
+    pattern: "play4", 
+    alias: ["yta4"], 
+    react: "☘️", 
+    desc: "Download YouTube song via JawadTech API", 
+    category: "main", 
+    use: '.play2 <query>', 
+    filename: __filename 
+}, async (conn, mek, m, { from, sender, reply, q }) => { 
+    try {
+        if (!q) return reply("*Please provide a song name.*");
+
+        const yt = await ytsearch(q);
+        if (!yt.results.length) return reply("No results found!");
+
+        const song = yt.results[0];
+        const apiUrl = `https://jawad-tech.vercel.app/download/ytmp3?url=${encodeURIComponent(song.url)}`;
+        
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+
+        if (!data?.result) return reply("Download failed. Try again later.");
+
+        await conn.sendMessage(from, {
+            audio: { url: data.result },
+            mimetype: "audio/mpeg",
+            fileName: `${data.metadata.title || song.title}.mp3`
+        }, { quoted: mek });
+
+    } catch (error) {
+        console.error(error);
+        reply("An error occurred. Please try again.");
+    }
+});
+
+cmd({ 
     pattern: "yta", 
     alias: ["play", "audio"], 
     react: "🎧", 
