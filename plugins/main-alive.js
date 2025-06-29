@@ -4,7 +4,7 @@ const config = require('../config');
 
 cmd({
     pattern: "alive",
-    alias: ["status", "online", "x", "mee"],
+    alias: ["status", "online", "x", "me"],
     desc: "Check bot is alive or not",
     category: "main",
     react: "⚡",
