@@ -1,66 +1,33 @@
-const { cmd } = require("../command");
-const { sleep } = require("../lib/functions");
+const config = require('../config');
+const { cmd, commands } = require('../command');
+const { sleep } = require('../lib/functions');
 
 cmd({
     pattern: "update",
-    alias: ["upgrade", "sync"],
-    desc: "Update and restart the bot system",
+    alias: ["sync", "up"],
+    react: "📡",
+    desc: "update the bot",
     category: "owner",
-    react: "🚀",
     filename: __filename
 },
-async (conn, mek, m, { from, reply, isCreator }) => {
+async (conn, mek, m, {
+    from, quoted, body, isCmd, command, args, q,
+    isGroup, sender, senderNumber, botNumber2, botNumber,
+    pushname, isMe, isOwner, isCreator, groupMetadata,
+    groupName, participants, groupAdmins, isBotAdmins,
+    isAdmins, reply
+}) => {
     try {
         if (!isCreator) {
-            return reply("*📛 This is an owner-only command!*");
+            return reply("🚫 *This command is only for the bot owner (creator).*");
         }
 
-        // Initial message
-        const updateMsg = await conn.sendMessage(from, {
-            text: '*🚀 Initiating System Update...*'
-        }, { quoted: mek });
-
-        // Update steps with emojis
-        const updateSteps = [
-            "*🔍 Checking System Status...*",
-            "*🛠️ Preparing Update Components...*",
-            "*📦 Finalizing Packages...*",
-            "*⚡ Optimizing Performance...*",
-            "*🔃 Ready for Restart...*",
-            "*♻️ Restarting Services...*"
-        ];
-
-        // Show each step with delay
-        for (const step of updateSteps) {
-            await sleep(1500);
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: updateMsg.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: step,
-                        },
-                    },
-                },
-                {}
-            );
-        }
-
-        // Final message before restart
-        await conn.sendMessage(from, {
-            text: '- *✅ Update Completed Restarting*'
-        }, { quoted: mek });
-
-        // Execute restart after a short delay
-        await sleep(1000);
-        require('child_process').exec("pm2 restart all");
-
+        const { exec } = require("child_process");
+        reply("♻️ Updating the bot...");
+        await sleep(1500);
+        exec("pm2 restart all");
     } catch (e) {
-        console.error(e);
-        await conn.sendMessage(from, {
-            text: `*❌ Update Failed!*\n_Error:_ ${e.message}\n\n*Try manually:*\n\`\`\`pm2 restart all\`\`\``
-        }, { quoted: mek });
+        console.log(e);
+        reply(`${e}`);
     }
 });
