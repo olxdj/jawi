@@ -243,7 +243,9 @@ conn.ev.on('call', async (calls) => {
 	
 //=========WELCOME & GOODBYE =======
 	
-conn.ev.on("group-participants.update", (update) => GroupEvents(conn, update));
+conn.ev.on('presence.update', async (update) => {
+    await PresenceControl(conn, update);
+});
 
 // always Online 
 
