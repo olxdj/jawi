@@ -3,16 +3,16 @@ const { isJidGroup } = require('@whiskeysockets/baileys');
 
 cmd({
     pattern: "promote",
-    alias: ["p", "admon"],
+    alias: ["p", "dfm"],
     desc: "Promote a member to admin",
     category: "group",
     react: "⬆️",
     filename: __filename
 },
-async (conn, mek, m, { from, args, q, reply, react, isGroup, isBotAdmin, isAdmins, participants, metadata }) => {
+async (conn, mek, m, { from, args, q, reply, react, isGroup, isBotAdmins, isAdmins, participants, metadata }) => {
     try {
         if (!isGroup) return reply("❌ This command only works in groups");
-        if (!isBotAdmin) return reply("❌ I need to be an admin to use this command.");
+        if (!isBotAdmins) return reply("❌ I need to be an admin to use this command.");
         if (!isAdmins) return reply("❌ Only group admins can use this command.");
 
         const botOwner = conn.user.id.split(":")[0] + "@s.whatsapp.net";
@@ -50,10 +50,10 @@ cmd({
     react: "⬇️",
     filename: __filename
 },
-async (conn, mek, m, { from, args, q, reply, react, isGroup, isBotAdmin, isAdmins, participants, metadata }) => {
+async (conn, mek, m, { from, args, q, reply, react, isGroup, isBotAdmins, isAdmins, participants, metadata }) => {
     try {
         if (!isGroup) return reply("❌ This command only works in groups");
-        if (!isBotAdmin) return reply("❌ I need to be an admin to use this command.");
+        if (!isBotAdmins) return reply("❌ I need to be an admin to use this command.");
         if (!isAdmins) return reply("❌ Only group admins can use this command.");
 
         const botOwner = conn.user.id.split(":")[0] + "@s.whatsapp.net";
