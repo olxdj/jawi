@@ -184,7 +184,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 
 cmd({
     pattern: "mode",
-    alias: ["setmode"],
+    alias: ["setmode", "mod"],
     react: "🔐",
     desc: "Set bot mode to private or public.",
     category: "settings",
@@ -241,7 +241,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 
 cmd({
     pattern: "autotyping",
-    alias: ["setautotyping"],
+    alias: ["auto-typing", "typing"],
     react: "🫟",
     description: "Enable or disable auto-typing feature.",
     category: "settings",
@@ -263,7 +263,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 //--------------------------------------------
 cmd({
     pattern: "alwaysonline",
-    alias: ["online"],
+    alias: ["online", "always-online"],
     react: "🫟",
     desc: "Enable or disable auto-viewing of statuses",
     category: "settings",
@@ -289,7 +289,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 //--------------------------------------------
 cmd({
     pattern: "autorecoding",
-    alias: ["recoding"],
+    alias: ["recoding", "auto-recoding"],
     react: "🫟",
     desc: "Enable or disable auto-viewing of statuses",
     category: "settings",
@@ -315,7 +315,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 //--------------------------------------------
 cmd({
     pattern: "autostatusreact",
-    alias: ["setautoreactstatus","sreact"],
+    alias: ["status-react", "statusreact", "sreact"],
     react: "🫟",
     desc: "Enable or disable auto-viewing of statuses",
     category: "settings",
@@ -342,7 +342,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 
 cmd({
     pattern: "autostatusview",
-    alias: ["statusview","astatus","setautostatusview"],
+    alias: ["status-view","sview","statusview"],
     desc: "Enable or disable autoview of statuses",
     category: "settings",
     filename: __filename
@@ -505,7 +505,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 cmd({
     pattern: "autostatusreply",
     react: "🫟",
-    alias: ["statusreply"],
+    alias: ["statusreply", "status-reply"],
     desc: "enable or disable status-reply.",
     category: "settings",
     filename: __filename
