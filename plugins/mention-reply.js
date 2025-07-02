@@ -7,8 +7,16 @@ cmd({
   try {
     if (config.MENTION_REPLY !== 'true' || !isGroup) return;
 
-    const mentioned = m.mentionedJid || [];
-    const botNumber = conn.user.id.split(":")[0] + '@s.whatsapp.net';
+    // More reliable mention detection
+    const mentioned = m.message?.extendedTextMessage?.contextInfo?.mentionedJid ||
+                      m.mentionedJid ||
+                      [];
+
+    // Safer bot number extraction
+    const botNumber = conn.user.id.includes('@') ? 
+                      conn.user.id : 
+                      conn.user.id.split(':')[0] + '@s.whatsapp.net';
+
     if (!mentioned.includes(botNumber)) return;
 
     const voiceClips = [
