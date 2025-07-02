@@ -6,7 +6,10 @@ cmd({
 }, async (conn, m, { isGroup }) => {
   try {
     if (config.MENTION_REPLY !== 'true' || !isGroup) return;
-    if (!m.mentionedJid || m.mentionedJid.length === 0) return;
+
+    const mentioned = m.mentionedJid || [];
+    const botNumber = conn.user.id.split(":")[0] + '@s.whatsapp.net';
+    if (!mentioned.includes(botNumber)) return;
 
     const voiceClips = [
       "https://cdn.ironman.my.id/i/7p5plg.mp4",
@@ -22,20 +25,22 @@ cmd({
     ];
 
     const randomClip = voiceClips[Math.floor(Math.random() * voiceClips.length)];
-    const botNumber = conn.user.id.split(":")[0] + '@s.whatsapp.net';
 
-    if (m.mentionedJid.includes(botNumber)) {
-      await conn.sendMessage(m.chat, {
-        audio: { url: randomClip },
-        mimetype: 'audio/mp4',
-        ptt: true
-      }, { quoted: m });
-    }
+    await conn.sendMessage(m.chat, {
+      audio: { url: randomClip },
+      mimetype: 'audio/mp4',
+      ptt: true,
+      waveform: [99, 0, 99, 0, 99],
+      contextInfo: {
+        forwardingScore: 999,
+        isForwarded: true
+      }
+    }, { quoted: m });
+
   } catch (e) {
     console.error(e);
   }
 });
-
 
 cmd({
     pattern: "me",
