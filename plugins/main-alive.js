@@ -48,41 +48,29 @@ async (conn, mek, m, { from, reply }) => {
         });
         const thumbnailBuffer = Buffer.from(thumbnailRes.data, 'binary');
 
-        // Custom fake contact quoted message with dynamic displayName
-        let fgg = {
-            key: {
-                fromMe: false,
-                participant: `0@s.whatsapp.net`,
-                remoteJid: 'status@broadcast'
+        await reply(
+            { 
+                audio: { url: rClip },
+                mimetype: 'audio/mp4',
+                ptt: true,
+                waveform: [99, 0, 99, 0, 99],
+                contextInfo: {
+                    forwardingScore: 999,
+                    isForwarded: true,
+                    externalAdReply: {
+                        title: `${config.BOT_NAME} IS ONLINE`,
+                        body: `${config.DESCRIPTION}`,
+                        mediaType: 1,
+                        renderLargerThumbnail: false,
+                        thumbnail: thumbnailBuffer,
+                        mediaUrl: "https://files.catbox.moe/l2t3e0.jpg",
+                        sourceUrl: "https://wa.me/message/INB2QVGXHQREO1",
+                        showAdAttribution: true
+                    }
+                }
             },
-            message: {
-                contactMessage: {
-                    displayName: `${config.BOT_NAME}`,
-                    vcard: `BEGIN:VCARD\nVERSION:3.0\nN:;${config.BOT_NAME};;;\nFN:${config.BOT_NAME}\nitem1.TEL;waid=${m.sender.split('@')[0]}:${m.sender.split('@')[0]}\nitem1.X-ABLabel:JawadTechX\nEND:VCARD`
-                }
-            }
-        };
-
-        await conn.sendMessage(from, {
-            audio: { url: rClip },
-            mimetype: 'audio/mp4',
-            ptt: true,
-            waveform: [99, 0, 99, 0, 99],
-            contextInfo: {
-                forwardingScore: 999,
-                isForwarded: true,
-                externalAdReply: {
-                    title: `${config.BOT_NAME} IS ONLINE`,
-                    body: `${config.DESCRIPTION}`,
-                    mediaType: 1,
-                    renderLargerThumbnail: false,
-                    thumbnail: thumbnailBuffer,
-                    mediaUrl: "https://files.catbox.moe/l2t3e0.jpg",
-                    sourceUrl: "https://wa.me/message/INB2QVGXHQREO1",
-                    showAdAttribution: true
-                }
-            }
-        }, { quoted: fgg });
+            { quoted: m }
+        );
 
     } catch (e) {
         console.error("Alive Error:", e);
