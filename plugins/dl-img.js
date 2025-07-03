@@ -37,7 +37,7 @@ cmd({
                 from,
                 { 
                     image: { url: image.images_url },
-                    caption: `📷 Result for: ${query}\n> © Powered by ZenzzXD API`
+                    caption: `*📷 Result for*: ${query}\n> *© Powered by KHAN-MD*`
                 },
                 { quoted: mek }
             );
