@@ -1,84 +1,78 @@
+// Jawad Tech Inc
 const axios = require("axios");
-const FormData = require('form-data');
+const FormData = require("form-data");
 const fs = require('fs');
 const os = require('os');
-const path = require("path");
-const { cmd, commands } = require("../command");
+const path = require('path');
+const { cmd } = require("../command");
 
 cmd({
-  'pattern': "tourl",
-  'alias': ["imgtourl", "imgurl", "url", "geturl", "upload"],
-  'react': '🖇',
-  'desc': "Convert media to Catbox URL",
-  'category': "utility",
-  'use': ".tourl [reply to media]",
-  'filename': __filename
-}, async (client, message, args, { reply }) => {
+  pattern: "tourl",
+  alias: ["url", "imgbburl", "urlbb"],
+  react: '🖇️',
+  desc: "Convert an image to a URL using imgbb.",
+  category: "utility",
+  use: ".tourl",
+  filename: __filename
+}, async (conn, mek, m, { from, quoted, reply, sender }) => {
   try {
-    // Check if quoted message exists and has media
-    const quotedMsg = message.quoted ? message.quoted : message;
-    const mimeType = (quotedMsg.msg || quotedMsg).mimetype || '';
-    
-    if (!mimeType) {
-      throw "Please reply to an image, video, or audio file";
+    const targetMessage = mek.quoted ? mek.quoted : mek;
+    const mimeType = (targetMessage.msg || targetMessage).mimetype || '';
+
+    console.log("Image mime type:", mimeType);
+
+    if (!mimeType || !mimeType.startsWith("image")) {
+      throw "🌻 Please reply to an image.";
     }
 
-    // Download the media
-    const mediaBuffer = await quotedMsg.download();
-    const tempFilePath = path.join(os.tmpdir(), `catbox_upload_${Date.now()}`);
-    fs.writeFileSync(tempFilePath, mediaBuffer);
+    // Download the image
+    const imageBuffer = await targetMessage.download();
+    const tempFilePath = path.join(os.tmpdir(), "khan-md");
+    fs.writeFileSync(tempFilePath, imageBuffer);
 
-    // Get file extension based on mime type
-    let extension = '';
-    if (mimeType.includes('image/jpeg')) extension = '.jpg';
-    else if (mimeType.includes('image/png')) extension = '.png';
-    else if (mimeType.includes('video')) extension = '.mp4';
-    else if (mimeType.includes('audio')) extension = '.mp3';
-    
-    const fileName = `file${extension}`;
+    console.log("Temporary file saved at:", tempFilePath);
+    console.log("Image size:", imageBuffer.length, "bytes");
 
-    // Prepare form data for Catbox
+    // Prepare form data for upload
     const form = new FormData();
-    form.append('fileToUpload', fs.createReadStream(tempFilePath), fileName);
-    form.append('reqtype', 'fileupload');
+    form.append("image", fs.createReadStream(tempFilePath));
 
-    // Upload to Catbox
-    const response = await axios.post("https://catbox.moe/user/api.php", form, {
-      headers: form.getHeaders()
-    });
-
-    if (!response.data) {
-      throw "Error uploading to Catbox";
-    }
-
-    const mediaUrl = response.data;
-    fs.unlinkSync(tempFilePath);
-
-    // Determine media type for response
-    let mediaType = 'File';
-    if (mimeType.includes('image')) mediaType = 'Image';
-    else if (mimeType.includes('video')) mediaType = 'Video';
-    else if (mimeType.includes('audio')) mediaType = 'Audio';
-
-    // Send response
-    await reply(
-      `*${mediaType} Uploaded Successfully*\n\n` +
-      `*Size:* ${formatBytes(mediaBuffer.length)}\n` +
-      `*URL:* ${mediaUrl}\n\n` +
-      `> © Uploaded by JawadTechX 💜`
+    // Upload the image to imgbb
+    const response = await axios.post(
+      "https://api.imgbb.com/1/upload?key=f07b8d2d9f0593bc853369f251a839de",
+      form,
+      { headers: form.getHeaders() }
     );
 
+    console.log("API Response:", response.data);
+
+    if (!response.data || !response.data.data || !response.data.data.url) {
+      throw "❌ Failed to upload the file.";
+    }
+
+    const imageUrl = response.data.data.url;
+
+    // Delete the temporary image file
+    fs.unlinkSync(tempFilePath);
+
+    const contextInfo = {
+      mentionedJid: [sender],
+      forwardingScore: 999,
+      isForwarded: true,
+      forwardedNewsletterMessageInfo: {
+        newsletterJid: '120363417971954983@newsletter',
+        newsletterName: "JAWAD EXTRA 🔥",
+        serverMessageId: 143
+      }
+    };
+
+    // Send the URL back to the user using reply
+    await reply(`*✅ Image Uploaded Successfully 📸*\nSize: ${imageBuffer.length} bytes\n*URL:* ${imageUrl}\n\n> ⚖️ Uploaded via KHAN-MD`, {
+      contextInfo
+    });
+
   } catch (error) {
-    console.error(error);
-    await reply(`Error: ${error.message || error}`);
+    reply("Error: " + error);
+    console.error("Error occurred:", error);
   }
 });
-
-// Helper function to format bytes
-function formatBytes(bytes) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
