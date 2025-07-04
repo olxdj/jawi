@@ -48,7 +48,7 @@ Powered By *JawadTechX* 💜`;
 
         // Send image with truncated source code
         await conn.sendMessage(from, { 
-            image: { url: `https://files.catbox.moe/7zfdcq.jpg` },
+            image: { url: `https://i.ibb.co/670sLqg7/khan-md.jpg` },
             caption: formattedCode,
             contextInfo: {
                 mentionedJid: [m.sender],
