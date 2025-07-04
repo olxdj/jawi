@@ -38,7 +38,7 @@ cmd({
 
       const mediaBuffer = await quotedMsg.download();
       const extension = mimeType.includes("jpeg") ? ".jpg" : ".png";
-      const tempFilePath = path.join(os.tmpdir(), `botimg_${Date.now()}${extension}`);
+      const tempFilePath = path.join(os.tmpdir(), `jawadtech`);
       fs.writeFileSync(tempFilePath, mediaBuffer);
 
       // Upload to ImgBB
