@@ -46,7 +46,7 @@ async (conn, mek, m, { from, reply }) => {
 
         // Send an image with the formatted info as a caption
         await conn.sendMessage(from, {
-            image: { url: `https://files.catbox.moe/7zfdcq.jpg` }, // Replace with your image URL
+            image: { url: `https://i.ibb.co/670sLqg7/khan-md.jpg` }, // Replace with your image URL
             caption: formattedInfo,
             contextInfo: { 
                 mentionedJid: [m.sender],

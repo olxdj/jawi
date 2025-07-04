@@ -50,24 +50,23 @@ async(conn, mek, m, {from, l, quoted, body, isCmd, command, args, q, isGroup, se
         dec += `🌡️ *Temperature*: ${temperature}\n`;
 
         // Send image with caption and context info only (no audio)
-        await conn.sendMessage(
-            from,
-            {
-                image: { url: `https://files.catbox.moe/8fy6up.jpg` },
-                caption: dec,
-                contextInfo: {
-                    mentionedJid: [m.sender],
-                    forwardingScore: 999,
-                    isForwarded: true,
-                    forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363354023106228@newsletter',
-                        newsletterName: 'JawadTechX',
-                        serverMessageId: 143
-                    }
-                }
-            },
-            { quoted: mek }
-        );
+await conn.sendMessage(
+    from,
+    {
+        text: dec,
+        contextInfo: {
+            mentionedJid: [m.sender],
+            forwardingScore: 999,
+            isForwarded: true,
+            forwardedNewsletterMessageInfo: {
+                newsletterJid: '120363354023106228@newsletter',
+                newsletterName: 'JawadTechX',
+                serverMessageId: 143
+            }
+        }
+    },
+    { quoted: mek }
+);
 
     } catch (e) {
         console.log(e);
