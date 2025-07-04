@@ -1,7 +1,7 @@
 {
   "name": "KHAN-MD",
   "description": "Javascript WhatsApp bot made by Jᴀᴡᴀᴅ TᴇᴄʜX",
-  "logo": "https://files.catbox.moe/neni8p.jpg",
+  "logo": "https://i.ibb.co/670sLqg7/khan-md.jpg",
   "keywords": ["KHAN-MD"],
   "success_url": "/",
 
@@ -124,7 +124,7 @@
     "MENU_IMAGE_URL": {
       "description": "add url for mention reply and menu if want.",
       "required": false,
-      "value": "https://files.catbox.moe/7zfdcq.jpg"
+      "value": "https://i.ibb.co/670sLqg7/khan-md.jpg"
     },
     
      "DESCRIPTION": {

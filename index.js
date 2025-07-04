@@ -189,7 +189,7 @@ async function connectToWA() {
 ╰─🚀 *Powered by JawadTechX*`;
                     
                     await conn.sendMessage(conn.user.id, { 
-                        image: { url: `https://files.catbox.moe/7zfdcq.jpg` }, 
+                        image: { url: `https://i.ibb.co/670sLqg7/khan-md.jpg` }, 
                         caption: upMessage 
                     });
                     
