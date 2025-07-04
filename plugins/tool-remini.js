@@ -38,21 +38,23 @@ cmd({
     const tempFilePath = path.join(os.tmpdir(), `remini_input_${Date.now()}${extension}`);
     fs.writeFileSync(tempFilePath, mediaBuffer);
 
-    // Upload to Catbox
+    // Upload to ImgBB
     const form = new FormData();
-    form.append('fileToUpload', fs.createReadStream(tempFilePath), `image${extension}`);
-    form.append('reqtype', 'fileupload');
+    form.append('image', fs.createReadStream(tempFilePath));
 
-    const uploadResponse = await axios.post("https://catbox.moe/user/api.php", form, {
-      headers: form.getHeaders()
-    });
+    const uploadResponse = await axios.post(
+      "https://api.imgbb.com/1/upload?key=b9dc9d120cc17e0d9bef7071126818e9",
+      form,
+      { headers: form.getHeaders() }
+    );
 
-    const imageUrl = uploadResponse.data;
     fs.unlinkSync(tempFilePath); // Clean up temp file
 
-    if (!imageUrl) {
-      throw "Failed to upload image to Catbox";
+    if (!uploadResponse.data || !uploadResponse.data.data || !uploadResponse.data.data.url) {
+      throw "Failed to upload image to ImgBB";
     }
+
+    const imageUrl = uploadResponse.data.data.url;
 
     // Enhance image using Remini API
     const apiUrl = `https://apis.davidcyriltech.my.id/remini?url=${encodeURIComponent(imageUrl)}`;
@@ -74,7 +76,7 @@ cmd({
     await reply("🔄 Enhancing image quality...");
     await client.sendMessage(message.chat, {
       image: fs.readFileSync(outputPath),
-      caption: "✅ Image enhanced successfully!",
+      caption: "✅ Image enhanced successfully!\n\nPowered by ImgBB & Remini AI",
     }, { quoted: message });
 
     // Clean up
