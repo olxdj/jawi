@@ -5,15 +5,6 @@ const os = require('os');
 const path = require("path");
 const { cmd } = require("../command");
 
-// Helper function to format bytes
-function formatBytes(bytes) {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-}
-
 cmd({
   pattern: "imgscan",
   alias: ["scanimg", "imagescan", "analyzeimg"],
@@ -34,7 +25,6 @@ cmd({
 
     // Download the media
     const mediaBuffer = await quotedMsg.download();
-    const fileSize = formatBytes(mediaBuffer.length);
     
     // Get file extension based on mime type
     let extension = '';
@@ -47,21 +37,23 @@ cmd({
     const tempFilePath = path.join(os.tmpdir(), `imgscan_${Date.now()}${extension}`);
     fs.writeFileSync(tempFilePath, mediaBuffer);
 
-    // Upload to Catbox
+    // Upload to ImgBB
     const form = new FormData();
-    form.append('fileToUpload', fs.createReadStream(tempFilePath), `image${extension}`);
-    form.append('reqtype', 'fileupload');
+    form.append('image', fs.createReadStream(tempFilePath));
+    
+    const uploadResponse = await axios.post(
+      "https://api.imgbb.com/1/upload?key=f07b8d2d9f0593bc853369f251a839de",
+      form,
+      { headers: form.getHeaders() }
+    );
 
-    const uploadResponse = await axios.post("https://catbox.moe/user/api.php", form, {
-      headers: form.getHeaders()
-    });
-
-    const imageUrl = uploadResponse.data;
     fs.unlinkSync(tempFilePath); // Clean up temp file
 
-    if (!imageUrl) {
-      throw "Failed to upload image to Catbox";
+    if (!uploadResponse.data || !uploadResponse.data.data || !uploadResponse.data.data.url) {
+      throw "Failed to upload image to ImgBB";
     }
+
+    const imageUrl = uploadResponse.data.data.url;
 
     // Scan the image using the API
     const scanUrl = `https://apis.davidcyriltech.my.id/imgscan?url=${encodeURIComponent(imageUrl)}`;
@@ -71,7 +63,7 @@ cmd({
       throw scanResponse.data.message || "Failed to analyze image";
     }
 
-    // Format the response
+    // Simplified response with only analysis results
     await reply(
       `🔍 *Image Analysis Results*\n\n` +
       `${scanResponse.data.result}\n\n` +
