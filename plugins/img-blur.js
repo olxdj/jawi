@@ -15,17 +15,17 @@ function formatBytes(bytes) {
 }
 
 cmd({
-  pattern: "imgscan",
-  alias: ["scanimg", "imagescan", "analyzeimg"],
-  react: '🔍',
-  desc: "Scan and analyze images using AI",
-  category: "utility",
-  use: ".imgscan [reply to image]",
+  pattern: "blur",
+  alias: ["bluredit"],
+  react: '📸',
+  desc: "Scan and remove bg from images",
+  category: "img_edit",
+  use: ".blur [reply to image]",
   filename: __filename
-}, async (client, message, { reply, quoted }) => {
+}, async (conn, message, m,  { reply, mek }) => {
   try {
     // Check if quoted message exists and has media
-    const quotedMsg = quoted || message;
+    const quotedMsg = message.quoted ? message.quoted : message;
     const mimeType = (quotedMsg.msg || quotedMsg).mimetype || '';
     
     if (!mimeType || !mimeType.startsWith('image/')) {
@@ -64,22 +64,22 @@ cmd({
     }
 
     // Scan the image using the API
-    const scanUrl = `https://apis.davidcyriltech.my.id/imgscan?url=${encodeURIComponent(imageUrl)}`;
-    const scanResponse = await axios.get(scanUrl);
+    const apiUrl = `https://api.popcat.xyz/v2/blur?image=${encodeURIComponent(imageUrl)}`;
+    const response = await axios.get(apiUrl, { responseType: "arraybuffer" });
 
-    if (!scanResponse.data.success) {
-      throw scanResponse.data.message || "Failed to analyze image";
+    if (!response || !response.data) {
+      return reply("Error: The API did not return a valid image. Try again later.");
     }
 
-    // Format the response
-    await reply(
-      `🔍 *Image Analysis Results*\n\n` +
-      `${scanResponse.data.result}\n\n` +
-      `> © Powered by JawadTechX 💜`
-    );
+    const imageBuffer = Buffer.from(response.data, "binary");
+
+    await conn.sendMessage(m.chat, {
+      image: imageBuffer,
+      caption: `> *Powered by JawadTechX*`
+    });
 
   } catch (error) {
-    console.error('Image Scan Error:', error);
-    await reply(`❌ Error: ${error.message || error}`);
+    console.error("Blur Error:", error);
+    reply(`An error occurred: ${error.response?.data?.message || error.message || "Unknown error"}`);
   }
 });

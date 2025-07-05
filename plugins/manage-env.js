@@ -16,11 +16,11 @@ const axios = require('axios');
 const FormData = require('form-data');
 const { setConfig, getConfig } = require("../lib/configdb");
 
-// SET BOT IMAGE using ImgBB
+// SET BOT IMAGE
 cmd({
   pattern: "setbotimage",
   alias: ["botdp", "botpic", "botimage"],
-  desc: "Set the bot's image URL using ImgBB",
+  desc: "Set the bot's image URL",
   category: "owner",
   react: "✅",
   filename: __filename
@@ -38,26 +38,24 @@ cmd({
 
       const mediaBuffer = await quotedMsg.download();
       const extension = mimeType.includes("jpeg") ? ".jpg" : ".png";
-      const tempFilePath = path.join(os.tmpdir(), `jawadtech`);
+      const tempFilePath = path.join(os.tmpdir(), `botimg_${Date.now()}${extension}`);
       fs.writeFileSync(tempFilePath, mediaBuffer);
 
-      // Upload to ImgBB
       const form = new FormData();
-      form.append("image", fs.createReadStream(tempFilePath));
-      
-      const response = await axios.post(
-        "https://api.imgbb.com/1/upload?key=b9dc9d120cc17e0d9bef7071126818e9", // Replace with your ImgBB API key
-        form,
-        { headers: form.getHeaders() }
-      );
+      form.append("fileToUpload", fs.createReadStream(tempFilePath), `botimage${extension}`);
+      form.append("reqtype", "fileupload");
+
+      const response = await axios.post("https://catbox.moe/user/api.php", form, {
+        headers: form.getHeaders()
+      });
 
       fs.unlinkSync(tempFilePath);
 
-      if (!response.data || !response.data.data || !response.data.data.url) {
-        throw new Error("ImgBB upload failed: " + JSON.stringify(response.data));
+      if (typeof response.data !== 'string' || !response.data.startsWith('https://')) {
+        throw new Error(`Catbox upload failed: ${response.data}`);
       }
 
-      imageUrl = response.data.data.url;
+      imageUrl = response.data;
     }
 
     if (!imageUrl || !imageUrl.startsWith("http")) {
@@ -66,7 +64,7 @@ cmd({
 
     await setConfig("MENU_IMAGE_URL", imageUrl);
 
-    await reply(`✅ Bot image updated successfully!\n\n*Image URL:* ${imageUrl}\n\n♻️ Restarting bot to apply changes...`);
+    await reply(`✅ Bot image updated.\n\n*New URL:* ${imageUrl}\n\n♻️ Restarting...`);
     setTimeout(() => exec("pm2 restart all"), 2000);
 
   } catch (err) {
