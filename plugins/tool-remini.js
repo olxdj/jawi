@@ -7,9 +7,9 @@ const { cmd } = require("../command");
 
 cmd({
   pattern: "remini",
-  alias: ["enhance", "hq", "qualityup"],
+  alias: ["enhance", "hd", "upscale"],
   react: '✨',
-  desc: "Enhance photo quality using Remini AI",
+  desc: "Enhance photo quality using AI",
   category: "utility",
   use: ".remini [reply to image]",
   filename: __filename
@@ -54,8 +54,8 @@ cmd({
       throw "Failed to upload image to Catbox";
     }
 
-    // Enhance image using Remini API
-    const apiUrl = `https://apis.davidcyriltech.my.id/remini?url=${encodeURIComponent(imageUrl)}`;
+    // Enhance image using new API
+    const apiUrl = `https://api.kimkiro.my.id/tool/upscale?url=${encodeURIComponent(imageUrl)}`;
     const response = await axios.get(apiUrl, { 
       responseType: 'arraybuffer',
       timeout: 60000 // 1 minute timeout
@@ -74,14 +74,14 @@ cmd({
     await reply("🔄 Enhancing image quality...");
     await client.sendMessage(message.chat, {
       image: fs.readFileSync(outputPath),
-      caption: "✅ Image enhanced successfully!",
+      caption: "- *✅ Image enhanced successfully!*",
     }, { quoted: message });
 
     // Clean up
     fs.unlinkSync(outputPath);
 
   } catch (error) {
-    console.error('Remini Error:', error);
+    console.error('Image Enhancement Error:', error);
     await reply(`❌ Error: ${error.message || "Failed to enhance image. The image might be too large or the API is unavailable."}`);
   }
 });
