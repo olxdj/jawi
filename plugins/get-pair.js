@@ -1,5 +1,75 @@
-const { cmd, commands } = require('../command');
+const { cmd } = require('../command');
 const axios = require('axios');
+const config = require('../config');
+const proto = require('@whiskeysockets/baileys').proto;
+
+cmd({
+    pattern: "pair2",
+    alias: ["getpair2", "clonebot2"],
+    react: "✅",
+    desc: "Get pairing code for KHAN-MD bot",
+    category: "download",
+    use: ".pair 923427582XXX",
+    filename: __filename
+}, async (conn, mek, m, { from, q, senderNumber, reply }) => {
+    try {
+        const phoneNumber = q ? q.trim().replace(/[^0-9]/g, '') : senderNumber.replace(/[^0-9]/g, '');
+
+        if (!phoneNumber || phoneNumber.length < 10 || phoneNumber.length > 15) {
+            return await reply("❌ Please provide a valid phone number without `+`\nExample: `.pair 923427582XXX`");
+        }
+
+        const response = await axios.get(`https://khanmd-pair.onrender.com/code?number=${encodeURIComponent(phoneNumber)}`);
+        if (!response.data || !response.data.code) {
+            return await reply("❌ Failed to retrieve pairing code. Please try again later.");
+        }
+
+        const pairingCode = response.data.code;
+
+        const msg = await conn.generateWAMessageFromContent(from, {
+            viewOnceMessage: {
+                message: {
+                    messageContextInfo: {
+                        deviceListMetadata: {},
+                        deviceListMetadataVersion: 2
+                    },
+                    interactiveMessage: proto.Message.InteractiveMessage.create({
+                        body: proto.Message.InteractiveMessage.Body.create({
+                            text: `> *KHAN-MD PAIRING COMPLETED*\n\n✅ *Number:* ${phoneNumber}\n\nClick the copy button below!`
+                        }),
+                        footer: proto.Message.InteractiveMessage.Footer.create({
+                            text: "KHAN-MD BOT"
+                        }),
+                        header: proto.Message.InteractiveMessage.Header.create({
+                            hasMediaAttachment: true,
+                            imageMessage: {
+                                url: config.MENU_IMAGE_URL
+                            }
+                        }),
+                        nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                            buttons: [
+                                {
+                                    name: "cta_copy",
+                                    buttonParamsJson: JSON.stringify({
+                                        display_text: "📋 Copy Pair Code",
+                                        id: pairingCode,
+                                        copy_code: pairingCode
+                                    })
+                                }
+                            ]
+                        })
+                    })
+                }
+            }
+        }, {});
+
+        return await conn.relayMessage(msg.key.remoteJid, msg.message, { messageId: msg.key.id });
+
+    } catch (error) {
+        console.error("Pair interactive command error:", error);
+        await reply("❌ An error occurred while generating pairing code. Please try again later.");
+    }
+});
 
 cmd({
     pattern: "pair",
