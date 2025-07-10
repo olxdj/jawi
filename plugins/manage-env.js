@@ -185,7 +185,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 cmd({
     pattern: "mode",
     alias: ["setmode", "mod"],
-    react: "🔐",
+    react: "✅",
     desc: "Set bot mode to private or public.",
     category: "settings",
     filename: __filename,
