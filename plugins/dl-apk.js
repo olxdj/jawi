@@ -38,7 +38,7 @@ async (conn, mek, m, { from, q, reply }) => {
             document: { url: app.dllink },
             mimetype: "application/vnd.android.package-archive",
             fileName: `${app.name}.apk`,
-            caption: `✅ *${app.name}*\n📝 Version: ${app.version}\n💾 Size: ${app.size}\n\n🚀 Powered By JawadTechX`
+            caption: `✅ *APK successfully downloaded*\nPowered By JawadTechX 🤍`
         }, { quoted: mek });
 
         // ✅ React - success
