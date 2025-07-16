@@ -9,14 +9,20 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { from, sender, pushname, reply }) => {
+async (conn, mek, m, { from, sender, pushname, reply, isCreator }) => {
     try {
+        if (!isCreator) {
+            return await conn.sendMessage(from, {
+                text: "*📛 This is an owner command.*"
+            }, { quoted: mek });
+        }
+
         const bugMenu = `*╭────⬡ BUG MENU ⬡────*
 *├▢ 🐞* *android*
 *├▢ 📱* *android2 92xxxx*
 *├▢ 🔥* *android3 92*
 *├▢ 🔒* *otplock*
-*├▢ 🍏* *ios*
+*├▢ �* *ios*
 *├▢ 🪲* *bugcall*
 *├▢ 💣* *bugpv*
 *├▢ 👥* *buggroup*
@@ -66,11 +72,14 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
-
-
 
 cmd({
     pattern: "android3",
@@ -79,10 +88,14 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
-
 
 cmd({
     pattern: "android2",
@@ -91,10 +104,14 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
-
 
 cmd({
     pattern: "android",
@@ -103,10 +120,14 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
-
 
 cmd({
     pattern: "ios",
@@ -115,8 +136,13 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
 
 cmd({
@@ -126,8 +152,13 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
 
 cmd({
@@ -137,8 +168,13 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
 
 cmd({
@@ -148,11 +184,14 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
-
-
 
 cmd({
     pattern: "bugblock",
@@ -161,11 +200,14 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
-
-
 
 cmd({
     pattern: "bugauto",
@@ -174,11 +216,14 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
-
-
 
 cmd({
     pattern: "buglag",
@@ -187,11 +232,14 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
-
-
 
 cmd({
     pattern: "bugspam",
@@ -200,8 +248,13 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
 
 cmd({
@@ -211,8 +264,13 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
 
 cmd({
@@ -222,8 +280,13 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
 
 cmd({
@@ -233,8 +296,13 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
 
 cmd({
@@ -244,11 +312,14 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
-
-
 
 cmd({
     pattern: "bug",
@@ -257,11 +328,14 @@ cmd({
     react: "🐞",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
-    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\nhttps://wa.me/message/C5OJ7S4CYLZ5E1`);
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
+    reply(`*🚀 This command only premium user can use*\n*Contact developer to get premium connection*\n\n> DM - ${config.OWNER_NUMBER}`);
 });
-
-
 
 cmd({
     pattern: "buybug",
@@ -271,6 +345,11 @@ cmd({
     react: "💸",
     filename: __filename
 },
-async (conn, mek, m, { reply }) => {
+async (conn, mek, m, { from, reply, isCreator }) => {
+    if (!isCreator) {
+        return await conn.sendMessage(from, {
+            text: "*📛 This is an owner command.*"
+        }, { quoted: mek });
+    }
     reply(`*🚀 This feature is under development. It will be available soon.*`);
 });
