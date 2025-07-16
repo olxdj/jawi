@@ -16,19 +16,29 @@ async (conn, mek, m, { from, q, reply }) => {
         // ⏳ React - processing
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-        const { data } = await axios.get(`https://apis.davidcyriltech.my.id/download/apk?text=${encodeURIComponent(q)}`);
-
-        if (!data.success || !data.download_link) {
+        // Search the app on bk9
+        const search = await axios.get(`https://bk9.fun/search/apk?q=${encodeURIComponent(q)}`);
+        if (!search.data.BK9 || search.data.BK9.length === 0) {
             await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return reply("❌ *App not found or API error.*");
+            return reply("❌ *No app found with that name, please try again.*");
         }
 
-        // Send APK file directly
+        // Fetch APK details
+        const id = search.data.BK9[0].id;
+        const details = await axios.get(`https://bk9.fun/download/apk?id=${id}`);
+        const app = details.data.BK9;
+
+        if (!app || !app.dllink) {
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            return reply("❌ *Unable to find download link for this app.*");
+        }
+
+        // Send APK file
         await conn.sendMessage(from, {
-            document: { url: data.download_link },
+            document: { url: app.dllink },
             mimetype: "application/vnd.android.package-archive",
-            fileName: `${data.apk_name}.apk`,
-            caption: "✅ *APK successfully uploaded!*\nPowered By JawadTechX 🤍"
+            fileName: `${app.name}.apk`,
+            caption: `✅ *${app.name}*\n📝 Version: ${app.version}\n💾 Size: ${app.size}\n\n🚀 Powered By JawadTechX`
         }, { quoted: mek });
 
         // ✅ React - success
