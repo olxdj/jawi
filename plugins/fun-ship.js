@@ -1,42 +1,48 @@
-const { cmd } = require("../command");
-
 cmd({
-  pattern: "ship",
-  alias: ["match", "love"],
-  desc: "Randomly pairs the command user with another group member.",
-  react: "❤️",
-  category: "fun",
-  filename: __filename
-}, async (conn, m, store, { from, isGroup, groupMetadata, reply, sender }) => {
-  try {
-    if (!isGroup) return reply("❌ This command can only be used in groups.");
+    pattern: "fing",
+    alias: ['fingering', 'hath', 'ungli', 'touch', 'moan'],
+    desc: "Funny girl animation (owner only)",
+    category: "tools",
+    react: "👅",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply }) => {
+    try {
+        const loadingMessage = await conn.sendMessage(from, { text: '👀 Starting... 🍑💦' });
+        
+        const animationFrames = [
+            "👆🏻 🍑", 
+            "👆🏻 🍑", 
+            "👆🏻 🍑", 
+            "👆🏻 🍑", 
+            "👆🏻 🍑", 
+            "👆🏻 🍑", 
+            "👆🏻🍑", 
+            "👉🏻🍑", 
+            "👉🏻💦🍑", 
+            "👉🏻💦💦🍑", 
+            "👉🏻💦💦💦🍑", 
+            "💦🍑💦 *Awf 🥵* 😮‍💨"
+        ];
 
-    const participants = groupMetadata.participants.map(user => user.id);
-    
-    // Filter out the sender to avoid self-pairing
-    const otherParticipants = participants.filter(id => id !== sender);
-    
-    if (otherParticipants.length === 0) {
-      return reply("❌ Not enough participants to make a pair.");
+        for (const frame of animationFrames) {
+            await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+            await conn.relayMessage(
+                from,
+                {
+                    protocolMessage: {
+                        key: loadingMessage.key,
+                        type: 14,
+                        editedMessage: {
+                            conversation: frame,
+                        },
+                    },
+                },
+                {}
+            );
+        }
+    } catch (e) {
+        console.log(e);
+        reply(`❌ *Error!* ${e.message}`);
     }
-
-    // Get random participant (excluding sender)
-    const randomPair = otherParticipants[Math.floor(Math.random() * otherParticipants.length)];
-
-    const user1 = sender.split("@")[0];
-    const user2 = randomPair.split("@")[0];
-    
-    const message = `💘 *Match Found!* 💘\n❤️ @${user1} + @${user2}\n💖 Congratulations! 🎉`;
-
-    await conn.sendMessage(from, {
-      text: message,
-      contextInfo: {
-        mentionedJid: [sender, randomPair]
-      }
-    }, { quoted: m });
-
-  } catch (error) {
-    console.error("❌ Error in ship command:", error);
-    reply("⚠️ An error occurred while processing the command. Please try again.");
-  }
 });
