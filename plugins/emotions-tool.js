@@ -2,6 +2,59 @@ const { cmd } = require("../command");
 const { sleep } = require("../lib/functions");
 
 cmd({
+  pattern: "fing",
+  alias: ['fingering', 'hath', 'ungli', 'touch', 'moan'],
+  desc: "Funny girl animation (owner only)",
+  category: "tools",
+  react: "👅",
+  filename: __filename
+}, async (conn, mek, m, { from, reply, isCreator }) => {
+  try {
+    if (!isCreator) {
+      return await conn.sendMessage(from, {
+        text: "*📛 This is an owner-only command.*"
+      }, { quoted: mek });
+    }
+
+    const msg = await conn.sendMessage(from, {
+      text: "👀 *Starting...* 🍑💦"
+    });
+
+    const animation = [
+      "👆🏻      🍑",
+      "👆🏻     🍑",
+      "👆🏻    🍑",
+      "👆🏻   🍑",
+      "👆🏻  🍑",
+      "👆🏻 🍑",
+      "👆🏻🍑",
+      "👉🏻🍑",
+      "👉🏻💦🍑",
+      "👉🏻💦💦🍑",
+      "👉🏻💦💦💦🍑",
+      "💦🍑💦 *Awf 🥵* 😮‍💨"
+    ];
+
+    for (const frame of animation) {
+      await new Promise(res => setTimeout(res, 800));
+      await conn.relayMessage(from, {
+        protocolMessage: {
+          key: msg.key,
+          type: 14,
+          editedMessage: {
+            conversation: frame
+          }
+        }
+      }, {});
+    }
+
+  } catch (err) {
+    console.log(err);
+    reply("❌ *Error:* " + err.message);
+  }
+});
+
+cmd({
     pattern: "muth",
     alias: ["handjob", "hand"],
     desc: "Displays a simple handjob animation",
