@@ -7,31 +7,36 @@ cmd({
   react: "❤️",
   category: "fun",
   filename: __filename
-}, async (conn, m, store, { from, isGroup, groupMetadata, sender }) => {
+}, async (conn, m, store, { from, isGroup, groupMetadata, reply, sender }) => {
   try {
-    if (!isGroup) return m.reply("❌ This command can only be used in groups.");
+    if (!isGroup) return reply("❌ This command can only be used in groups.");
 
-    const participants = groupMetadata.participants
-      .map(user => user.id)
-      .filter(id => id !== sender); // Exclude sender
-
-    if (participants.length === 0) {
-      return m.reply("❌ Not enough members to match with.");
+    const participants = groupMetadata.participants.map(user => user.id);
+    
+    // Filter out the sender to avoid self-pairing
+    const otherParticipants = participants.filter(id => id !== sender);
+    
+    if (otherParticipants.length === 0) {
+      return reply("❌ Not enough participants to make a pair.");
     }
 
-    const randomPair = participants[Math.floor(Math.random() * participants.length)];
+    // Get random participant (excluding sender)
+    const randomPair = otherParticipants[Math.floor(Math.random() * otherParticipants.length)];
 
-    const message = `💘 *Match Found!* 💘\n❤️ @${sender.split("@")[0]} + @${randomPair.split("@")[0]}\n💖 Congratulations! 🎉`;
+    const user1 = sender.split("@")[0];
+    const user2 = randomPair.split("@")[0];
+    
+    const message = `💘 *Match Found!* 💘\n❤️ @${user1} + @${user2}\n💖 Congratulations! 🎉`;
 
     await conn.sendMessage(from, {
       text: message,
-      mentions: [sender, randomPair]
-    }, {
-      quoted: m
-    });
+      contextInfo: {
+        mentionedJid: [sender, randomPair]
+      }
+    }, { quoted: m });
 
   } catch (error) {
     console.error("❌ Error in ship command:", error);
-    m.reply("⚠️ An error occurred while processing the command. Please try again.");
+    reply("⚠️ An error occurred while processing the command. Please try again.");
   }
 });
