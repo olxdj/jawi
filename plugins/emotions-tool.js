@@ -32,7 +32,7 @@ cmd({
       "👉🏻💦🍑",
       "👉🏻💦💦🍑",
       "👉🏻💦💦💦🍑",
-      "💦🍑💦 *Awf 🥵* 😮‍💨"
+      "💦🍑💦 *Awf 🥵💋👅*"
     ];
 
     for (const frame of animation) {
