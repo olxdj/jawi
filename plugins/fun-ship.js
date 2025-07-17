@@ -23,17 +23,11 @@ cmd({
 
     const message = `💘 *Match Found!* 💘\n❤️ @${sender.split("@")[0]} + @${randomPair.split("@")[0]}\n💖 Congratulations! 🎉`;
 
-    await m.reply(message, {
-      mentions: [sender, randomPair],
-      contextInfo: {
-        forwardingScore: 999,
-        isForwarded: true,
-        forwardedNewsletterMessageInfo: {
-          newsletterJid: "120363354023106228@newsletter",
-          newsletterName: "JawadTechX",
-          serverMessageId: 143
-        }
-      }
+    await conn.sendMessage(from, {
+      text: message,
+      mentions: [sender, randomPair]
+    }, {
+      quoted: m
     });
 
   } catch (error) {
