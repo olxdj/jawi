@@ -2,56 +2,52 @@ const { cmd } = require("../command");
 const { sleep } = require("../lib/functions");
 
 cmd({
-  pattern: "fing",
-  alias: ['fingering', 'hath', 'ungli', 'touch', 'moan'],
-  desc: "Funny girl animation (owner only)",
-  category: "tools",
-  react: "👅",
-  filename: __filename
-}, async (conn, mek, m, { from, reply, isCreator }) => {
-  try {
-    if (!isCreator) {
-      return await conn.sendMessage(from, {
-        text: "*📛 This is an owner-only command.*"
-      }, { quoted: mek });
-    }
+    pattern: "fing",
+    alias: ['fingering', 'hath', 'ungli', 'touch', 'moan'],
+    desc: "Funny girl animation (owner only)",
+    category: "tools",
+    react: "👅",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply }) => {
+    try {
+        const loadingMessage = await conn.sendMessage(from, { text: '👀 Starting... 🍑💦' });
+        
+        const animationFrames = [
+            "👆🏻 🍑", 
+            "👆🏻 🍑", 
+            "👆🏻 🍑", 
+            "👆🏻 🍑", 
+            "👆🏻 🍑", 
+            "👆🏻 🍑", 
+            "👆🏻🍑", 
+            "👉🏻🍑", 
+            "👉🏻💦🍑", 
+            "👉🏻💦💦🍑", 
+            "👉🏻💦💦💦🍑", 
+            "💦🍑💦 *Awf 🥵* 😮‍💨"
+        ];
 
-    const msg = await conn.sendMessage(from, {
-      text: "👀 *Starting...* 🍑💦"
-    });
-
-    const animation = [
-      "👆🏻      🍑",
-      "👆🏻     🍑",
-      "👆🏻    🍑",
-      "👆🏻   🍑",
-      "👆🏻  🍑",
-      "👆🏻 🍑",
-      "👆🏻🍑",
-      "👉🏻🍑",
-      "👉🏻💦🍑",
-      "👉🏻💦💦🍑",
-      "👉🏻💦💦💦🍑",
-      "💦🍑💦 *Awf 🥵💋👅*"
-    ];
-
-    for (const frame of animation) {
-      await new Promise(res => setTimeout(res, 800));
-      await conn.relayMessage(from, {
-        protocolMessage: {
-          key: msg.key,
-          type: 14,
-          editedMessage: {
-            conversation: frame
-          }
+        for (const frame of animationFrames) {
+            await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
+            await conn.relayMessage(
+                from,
+                {
+                    protocolMessage: {
+                        key: loadingMessage.key,
+                        type: 14,
+                        editedMessage: {
+                            conversation: frame,
+                        },
+                    },
+                },
+                {}
+            );
         }
-      }, {});
+    } catch (e) {
+        console.log(e);
+        reply(`❌ *Error!* ${e.message}`);
     }
-
-  } catch (err) {
-    console.log(err);
-    reply("❌ *Error:* " + err.message);
-  }
 });
 
 cmd({
