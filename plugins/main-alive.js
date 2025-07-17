@@ -7,7 +7,7 @@ cmd({
     alias: ["status", "a"],
     desc: "Check if bot is alive.",
     category: "misc",
-    react: "🙂💋",
+    react: "✅",
     filename: __filename
 },
 async (conn, mek, m, { from, args, q, reply, react }) => {
@@ -16,7 +16,7 @@ async (conn, mek, m, { from, args, q, reply, react }) => {
 
 👑 Owner: ${config.OWNER_NAME}
 ⏱️ Uptime: ${runtime(process.uptime())}
-🚀 Mode: Public
+🚀 Mode: ${config.MODE}
 💠 Prefix: ${config.PREFIX}
 
 💖 Powered by *JawadTechX*`;
