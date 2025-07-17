@@ -1,36 +1,42 @@
-const { cmd } = require('../command');
 const config = require('../config');
+const { cmd, commands } = require('../command');
 const { runtime } = require('../lib/functions');
 
 cmd({
     pattern: "alive",
-    alias: ["status", "a"],
-    desc: "Check if bot is alive.",
-    category: "misc",
-    react: "✅",
-    filename: __filename
-},
-async (conn, mek, m, { from, args, q, reply, react }) => {
+    alias: ["status", "live"],
+    desc: "Check if the bot is running.",
+    react: "🟢",
+    category: "info",
+    filename: __filename,
+}, async (conn, mek, m, { from, reply }) => {
+    try {
+        let totalCommands = Object.keys(commands).length;
 
-    let aliveText = `✨ *${config.BOT_NAME} is Online!*
+        const aliveInfo = `
+╭─〔 *🤖 KHAN-MD STATUS* 〕
+│
+├─ *🌐 Platform:* Heroku
+├─ *📦 Mode:* ${config.MODE}
+├─ *👑 Owner:* ${config.OWNER_NAME}
+├─ *🔹 Prefix:* ${config.PREFIX}
+├─ *🧩 Version:* 5.0.0 Beta
+├─ *📁 Total Commands:* ${totalCommands}
+├─ *⏱ Runtime:* ${runtime(process.uptime())}
+│
+╰─ *⚡ Powered by KHAN-MD*
+        `.trim();
 
-👑 Owner: ${config.OWNER_NAME}
-⏱️ Uptime: ${runtime(process.uptime())}
-🚀 Mode: ${config.MODE}
-💠 Prefix: ${config.PREFIX}
-
-💖 Powered by *JawadTechX*`;
-
-    await conn.sendMessage(from, { text: aliveText, 
-        contextInfo: {
-            mentionedJid: [],
-            forwardingScore: 999,
-            isForwarded: true,
-            forwardedNewsletterMessageInfo: {
-                newsletterJid: '120363354023106228@newsletter',
-                newsletterName: "JawadTechX",
-                serverMessageId: 143
+        await conn.sendMessage(from, {
+            text: aliveInfo,
+            contextInfo: {
+                forwardingScore: 999,
+                isForwarded: true
             }
-        }
-    }, { quoted: m });
+        }, { quoted: mek });
+
+    } catch (err) {
+        console.error("Error in alive command:", err);
+        reply("❌ Bot status check failed.");
+    }
 });
