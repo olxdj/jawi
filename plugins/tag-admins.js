@@ -4,6 +4,7 @@ const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, 
 
 cmd({
     pattern: "tagadmins",
+    alias: ["admin", "tagadmin"],
     react: "👑",
     alias: ["gc_tagadmins"],
     desc: "To Tag all Admins of the Group",
