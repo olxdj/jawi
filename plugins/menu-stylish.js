@@ -1,6 +1,8 @@
 const config = require('../config');
 const { cmd, commands } = require('../command');
 const { runtime } = require('../lib/functions');
+const fs = require('fs');
+const path = require('path');
 
 const commonContextInfo = (sender) => ({
     mentionedJid: [sender],
@@ -51,11 +53,24 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 
 > Reply with the number to select menu (1-14)`;
 
+        // Send menu image with caption
         const sentMsg = await conn.sendMessage(from, {
             image: { url: config.MENU_IMAGE_URL },
             caption: caption,
             contextInfo: commonContextInfo(sender)
         }, { quoted: mek });
+
+        // Send audio voice message
+        const audioPath = path.join(__dirname, '../assets/menux.m4a');
+        if (fs.existsSync(audioPath)) {
+            await conn.sendMessage(from, {
+                audio: { url: audioPath },
+                mimetype: 'audio/mp4',
+                ptt: true
+            }, { quoted: mek });
+        } else {
+            console.log("Menu audio file not found");
+        }
 
         const messageID = sentMsg.key.id;
 
@@ -96,7 +111,7 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
                         }, { quoted: receivedMsg });
                         break;
 
-                    case "2": // Prayer Time
+                    case "2": // Setting Menu
                         await conn.sendMessage(senderID, {
                             image: { url: config.MENU_IMAGE_URL },
                             caption: `*╭────⬡ *SETTING MENU* ⬡────⭓
