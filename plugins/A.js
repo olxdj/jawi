@@ -1,7 +1,7 @@
 const { cmd } = require("../command");
 
 cmd({
-  pattern: "demote",
+  pattern: "demote2",
   alias: ["d2", "dismiss", "removeadmin"],
   desc: "Demote a group admin",
   category: "group",
@@ -22,6 +22,7 @@ cmd({
     if (!isBotAdmins) return reply("❌ I must be *admin* to demote someone.");
     if (!isAdmins && !isCreator) return reply("🔐 Only *group admins* or *owner* can use this command.");
 
+    // Your user extraction logic
     if (!m.quoted && (!m.mentionedJid || m.mentionedJid.length === 0)) {
       return reply("❓ You did not give me a user!?");
     }
@@ -39,12 +40,7 @@ cmd({
 
     if (users === ownerJid) return reply("👑 That's the *Owner's Number!* I can't demote that.");
 
-    // 🔥 Fixed check
-    const cleanJid = (jid) => jid?.split("@")[0] + "@s.whatsapp.net";
-    const isTargetAdmin = participants.find(p => cleanJid(p.id) === cleanJid(users))?.admin;
-
-    if (!isTargetAdmin) return reply("❌ That user is *not an admin*.");
-
+    // No admin check — always try to demote
     await conn.groupParticipantsUpdate(from, [users], "demote");
 
     reply(`@${parts} is no longer an *admin*. 🎗️`, { mentions: [users] });
