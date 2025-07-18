@@ -4,6 +4,8 @@ const os = require("os")
 const {runtime} = require('../lib/functions')
 const axios = require('axios')
 const {sleep} = require('../lib/functions')
+const fs = require('fs')
+const path = require('path')
 
 cmd({
     pattern: "repo",
@@ -60,10 +62,21 @@ async (conn, mek, m, { from, reply }) => {
             }
         }, { quoted: mek });
 
+        // Send audio voice message after sending repo info
+        const audioPath = path.join(__dirname, '../assets/menux.m4a');
+        
+        if (fs.existsSync(audioPath)) {
+            await conn.sendMessage(from, {
+                audio: { url: audioPath },
+                mimetype: 'audio/mp4',
+                ptt: true
+            }, { quoted: mek });
+        } else {
+            console.error("Audio file not found at path:", audioPath);
+        }
+
     } catch (error) {
         console.error("Error in repo command:", error);
         reply("❌ Sorry, something went wrong while fetching the repository information. Please try again later.");
     }
 });
-
-
