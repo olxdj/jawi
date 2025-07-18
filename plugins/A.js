@@ -1,8 +1,8 @@
 const { cmd } = require("../command");
 
 cmd({
-  pattern: "demote2",
-  alias: ["d2", "dismiss", "removeadmin"],
+  pattern: "demote",
+  alias: ["d", "dismiss", "removeadmin"],
   desc: "Demote a group admin",
   category: "group",
   react: "🔻",
@@ -43,7 +43,7 @@ cmd({
     // No admin check — always try to demote
     await conn.groupParticipantsUpdate(from, [users], "demote");
 
-    reply(`@${parts} is no longer an *admin*. 🎗️`, { mentions: [users] });
+    reply(`*✅ Admin Successfully demoted to a normal member.*`, { mentions: [users] });
 
   } catch (err) {
     console.error(err);
