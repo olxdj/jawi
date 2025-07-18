@@ -1,43 +1,55 @@
-const { cmd } = require('../command');
+const { cmd } = require("../command");
 
 cmd({
-    pattern: "remove",
-    alias: ["kick", "k"],
-    desc: "Removes a member from the group",
-    category: "admin",
-    react: "❌",
-    filename: __filename
-},
-async (conn, mek, m, {
-    from, q, isGroup, isBotAdmins, reply, quoted, isCreator
+  pattern: "kick",
+  alias: ["k", "remove", "boot"],
+  desc: "Remove a user from the group",
+  category: "group",
+  react: "💀",
+  filename: __filename
+}, async (conn, mek, m, {
+  from,
+  isCreator,
+  isBotAdmins,
+  isAdmins,
+  isGroup,
+  quoted,
+  reply,
+  botNumber
 }) => {
-    // Check if the command is used in a group
-    if (!isGroup) return reply("❌ This command can only be used in groups.");
+  try {
+    if (!isGroup) return reply("⚠️ This command only works in *groups*.");
+    if (!isBotAdmins) return reply("❌ I must be *admin* to remove someone.");
+    if (!isAdmins && !isCreator) return reply("🔐 Only *group admins* or *owner* can use this command.");
 
-    // Restrict to only bot owner
-    if (!isCreator) {
-        return reply("*📛 This is an owner command.*");
+    // User extraction logic
+    if (!m.quoted && (!m.mentionedJid || m.mentionedJid.length === 0)) {
+      return reply("❓ You did not give me a user to remove!");
     }
 
-    // Check if the bot is an admin
-    if (!isBotAdmins) return reply("❌ I need to be an admin to use this command.");
+    let users = m.mentionedJid[0]
+      ? m.mentionedJid[0]
+      : m.quoted
+      ? m.quoted.sender
+      : null;
 
-    let number;
-    if (m.quoted) {
-        number = m.quoted.sender.split("@")[0]; // If replying to a message
-    } else if (q && q.includes("@")) {
-        number = q.replace(/[@\s]/g, ''); // If mentioning a user
-    } else {
-        return reply("❌ Please reply to a message or mention a user to remove.");
-    }
+    if (!users) return reply("⚠️ Couldn't determine target user.");
 
-    const jid = number + "@s.whatsapp.net";
+    // Prevent kicking the bot itself
+    if (users === botNumber) return reply("❌ The bot cannot remove itself.");
 
-    try {
-        await conn.groupParticipantsUpdate(from, [jid], "remove");
-        reply(`✅ Successfully removed @${number}`, { mentions: [jid] });
-    } catch (error) {
-        console.error("Remove command error:", error);
-        reply("❌ Failed to remove the member.");
-    }
+    const ownerJid = conn.user.id.split(":")[0] + '@s.whatsapp.net';
+    
+    // Prevent kicking the owner
+    if (users === ownerJid) return reply("👑 That's the *Owner's Number!* I can't remove that.");
+
+    // Kick the user
+    await conn.groupParticipantsUpdate(from, [users], "remove");
+
+    reply(`*✅ Successfully removed from group.*`, { mentions: [users] });
+
+  } catch (err) {
+    console.error(err);
+    reply("❌ Failed to remove user. Something went wrong.");
+  }
 });
