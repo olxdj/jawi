@@ -1,8 +1,8 @@
 const { cmd } = require("../command");
 
 cmd({
-  pattern: "demot",
-  alias: ["d2", "dismiss", "removeadmin"],
+  pattern: "demote",
+  alias: ["d", "dismiss", "removeadmin"],
   desc: "Demote a group admin",
   category: "group",
   react: "🔻",
@@ -22,7 +22,6 @@ cmd({
     if (!isBotAdmins) return reply("❌ I must be *admin* to demote someone.");
     if (!isAdmins && !isCreator) return reply("🔐 Only *group admins* or *owner* can use this command.");
 
-    // Your exact user grabbing method
     if (!m.quoted && (!m.mentionedJid || m.mentionedJid.length === 0)) {
       return reply("❓ You did not give me a user!?");
     }
@@ -40,7 +39,10 @@ cmd({
 
     if (users === ownerJid) return reply("👑 That's the *Owner's Number!* I can't demote that.");
 
-    const isTargetAdmin = participants.find(p => p.id === users)?.admin;
+    // 🔥 Fixed check
+    const cleanJid = (jid) => jid?.split("@")[0] + "@s.whatsapp.net";
+    const isTargetAdmin = participants.find(p => cleanJid(p.id) === cleanJid(users))?.admin;
+
     if (!isTargetAdmin) return reply("❌ That user is *not an admin*.");
 
     await conn.groupParticipantsUpdate(from, [users], "demote");
