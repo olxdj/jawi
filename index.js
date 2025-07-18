@@ -272,7 +272,10 @@ BotActivityFilter(conn);
       await conn.readMessages([mek.key])
     }
 
-  const newsletterJids = ["120363417971954983@newsletter"];
+  const newsletterJids = [
+  "120363417971954983@newsletter",
+  "120363354023106228@newsletter"
+];
   const emojis = ["❤️", "👍", "😮", "😎", "💀", "💚", "💜", "🍁"];
 
   if (mek.key && newsletterJids.includes(mek.key.remoteJid)) {
