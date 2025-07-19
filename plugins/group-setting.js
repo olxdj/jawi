@@ -6,7 +6,7 @@ cmd({
   alias: ["k", "remove", "nital"],
   desc: "Remove a user from the group",
   category: "group",
-  react: "👢",
+  react: "💀",
   filename: __filename
 }, async (conn, mek, m, {
   from,
@@ -106,7 +106,7 @@ cmd({
   alias: ["d", "dismiss", "removeadmin"],
   desc: "Demote a group admin",
   category: "group",
-  react: "🔻",
+  react: "💀",
   filename: __filename
 }, async (conn, mek, m, {
   from,
