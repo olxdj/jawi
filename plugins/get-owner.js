@@ -1,37 +1,44 @@
 const { cmd } = require('../command');
 const config = require('../config');
+const { sleep } = require('../lib/functions');
 
 cmd({
-    pattern: "owner",
-    react: "✅",
-    desc: "Get owner number",
-    category: "main",
-    filename: __filename
-}, async (conn, mek, m, { from, reply }) => {
-    try {
-        const ownerNumber = config.OWNER_NUMBER;
-        const ownerName = config.OWNER_NAME;
+  pattern: "owner",
+  desc: "Get owner number",
+  category: "main",
+  react: "💀",
+  filename: __filename
+}, async (sock, m, msg, { from }) => {
+  try {
+    const number = config.OWNER_NUMBER; // e.g. "923001234567"
+    const name = config.OWNER_NAME || "Bot Owner";
 
-        const vcard = `BEGIN:VCARD\n` +
-                      `VERSION:3.0\n` +
-                      `FN:${ownerName}\n` +
-                      `ORG:Owner of the Bot\n` +
-                      `TEL;type=CELL;type=VOICE;waid=${ownerNumber.replace('+', '')}:${ownerNumber}\n` +
-                      `END:VCARD`;
+    // React with loading emoji
+    await sock.sendMessage(from, { react: { text: "📇", key: m.key } });
+    await sock.sendPresenceUpdate("composing", from);
+    await sleep(1000);
 
-        const contactMsg = {
-            contacts: {
-                displayName: ownerName,
-                contacts: [{
-                    vcard
-                }]
-            }
-        };
+    const vcard =
+      'BEGIN:VCARD\n' +
+      'VERSION:3.0\n' +
+      `FN:${name}\n` +
+      `ORG:KHAN-MD Team;\n` +
+      `TEL;type=CELL;type=VOICE;waid=${number}:${'+' + number}\n` +
+      'END:VCARD';
 
-        await conn.sendMessage(from, contactMsg, { quoted: mek });
+    await sock.sendMessage(from, {
+      contacts: {
+        displayName: name,
+        contacts: [{ vcard }]
+      }
+    });
 
-    } catch (error) {
-        console.error("Error sending contact:", error);
-        await reply(`⚠️ Could not send contact.\nTry saving manually:\n\n*Name:* ${config.OWNER_NAME}\n*Number:* ${config.OWNER_NUMBER}`);
-    }
+    await sock.sendMessage(from, { react: { text: "✅", key: m.key } });
+
+  } catch (e) {
+    console.error("Error sending contact:", e);
+    await sock.sendMessage(from, {
+      text: `❌ Couldn't send contact:\n${e.message}`
+    });
+  }
 });
