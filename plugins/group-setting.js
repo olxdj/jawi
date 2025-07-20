@@ -1,101 +1,86 @@
 const { cmd } = require("../command");
 
+// ============== UNIVERSAL PROTECTION LOGIC ==============
+const protectBotAndOwner = (conn, targetJid, botNumber, reply) => {
+    // Get clean bot JID (remove any server suffix)
+    const cleanBotJid = conn.user.id.split(':')[0] + '@s.whatsapp.net';
+    
+    // Get clean owner JID from botNumber (remove any prefixes)
+    const cleanOwnerJid = botNumber.includes('@') 
+        ? botNumber.split('@')[0] + '@s.whatsapp.net'
+        : botNumber + '@s.whatsapp.net';
+
+    // Clean target JID
+    const cleanTarget = targetJid.includes(':') 
+        ? targetJid.split(':')[0] + '@s.whatsapp.net'
+        : targetJid;
+
+    // Compare numbers only (ignore any formatting differences)
+    const targetNumber = cleanTarget.split('@')[0];
+    const botNumberClean = cleanBotJid.split('@')[0];
+    const ownerNumberClean = cleanOwnerJid.split('@')[0];
+
+    if (targetNumber === botNumberClean) {
+        reply("🤖 I can't modify myself!");
+        return false;
+    }
+    if (targetNumber === ownerNumberClean) {
+        reply("👑 I can't modify my owner!");
+        return false;
+    }
+    return true;
+};
+
 // ==================== KICK COMMAND ====================
 cmd({
   pattern: "kick",
-  alias: ["k", "remove", "boot"],
-  desc: "Remove a user from the group",
+  alias: ["k", "remove"],
+  desc: "Remove user from group",
   category: "group",
   react: "👢",
   filename: __filename
-}, async (conn, mek, m, {
-  from,
-  isCreator,
-  isBotAdmins,
-  isAdmins,
-  isGroup,
-  quoted,
-  reply,
-  botNumber
-}) => {
+}, async (conn, mek, m, { from, isBotAdmins, isAdmins, isGroup, quoted, reply, botNumber }) => {
   try {
-    // Basic validation
-    if (!isGroup) return reply("⚠️ This command only works in groups.");
-    if (!isBotAdmins) return reply("❌ I need admin rights to kick.");
-    if (!isAdmins && !isCreator) return reply("🔐 Only admins can use this.");
+    if (!isGroup) return reply("⚠️ Group only command");
+    if (!isBotAdmins) return reply("❌ I need admin rights");
+    if (!isAdmins) return reply("🔐 Admin-only command");
 
-    // Get target user (works for both mentions and replies)
-    let user = m.mentionedJid?.[0] || m.quoted?.sender;
-    if (!user) return reply("❌ Mention or reply to a user!");
+    const user = m.mentionedJid?.[0] || m.quoted?.sender;
+    if (!user) return reply("❌ Mention/reply to user");
 
-    // Convert all JIDs to standard format
-    const normalizeJid = (jid) => {
-      return jid.includes(':') ? jid.split(':')[0] + '@s.whatsapp.net' : jid;
-    };
+    if (!protectBotAndOwner(conn, user, botNumber, reply)) return;
 
-    // Critical protection
-    const botJid = normalizeJid(conn.user.id);
-    const ownerJid = normalizeJid(botNumber);
-    user = normalizeJid(user);
-
-    if (user === botJid || user === ownerJid) {
-      return reply("🚫 I can't modify myself or my owner!");
-    }
-
-    // Execute action
     await conn.groupParticipantsUpdate(from, [user], "remove");
-    reply(`✅ Removed @${user.split('@')[0]}`, { mentions: [user] });
-
-  } catch (error) {
-    console.error("Kick error:", error);
-    reply("❌ Failed to kick user");
+    reply(`🗑️ Removed @${user.split('@')[0]}`, { mentions: [user] });
+  } catch (e) {
+    console.error("Kick error:", e);
+    reply("❌ Kick failed");
   }
 });
 
 // ==================== PROMOTE COMMAND ====================
 cmd({
   pattern: "promote",
-  alias: ["p", "admin", "makeadmin"],
-  desc: "Promote user to admin",
+  alias: ["p", "admin"],
+  desc: "Promote to admin",
   category: "group",
-  react: "🔺", 
+  react: "🔺",
   filename: __filename
-}, async (conn, mek, m, {
-  from,
-  isCreator,
-  isBotAdmins,
-  isAdmins,
-  isGroup,
-  quoted,
-  reply,
-  botNumber
-}) => {
+}, async (conn, mek, m, { from, isBotAdmins, isAdmins, isGroup, quoted, reply, botNumber }) => {
   try {
     if (!isGroup) return reply("⚠️ Group only command");
     if (!isBotAdmins) return reply("❌ I need admin rights");
-    if (!isAdmins && !isCreator) return reply("🔐 Admin-only command");
+    if (!isAdmins) return reply("🔐 Admin-only command");
 
-    let user = m.mentionedJid?.[0] || m.quoted?.sender;
-    if (!user) return reply("❌ Mention or reply to a user!");
+    const user = m.mentionedJid?.[0] || m.quoted?.sender;
+    if (!user) return reply("❌ Mention/reply to user");
 
-    // Normalize JIDs
-    const normalizeJid = (jid) => {
-      return jid.includes(':') ? jid.split(':')[0] + '@s.whatsapp.net' : jid;
-    };
-
-    const botJid = normalizeJid(conn.user.id);
-    const ownerJid = normalizeJid(botNumber);
-    user = normalizeJid(user);
-
-    if (user === botJid || user === ownerJid) {
-      return reply("🚫 I can't promote myself or my owner!");
-    }
+    if (!protectBotAndOwner(conn, user, botNumber, reply)) return;
 
     await conn.groupParticipantsUpdate(from, [user], "promote");
     reply(`⭐ Promoted @${user.split('@')[0]}`, { mentions: [user] });
-
-  } catch (error) {
-    console.error("Promote error:", error);
+  } catch (e) {
+    console.error("Promote error:", e);
     reply("❌ Promotion failed");
   }
 });
@@ -103,47 +88,138 @@ cmd({
 // ==================== DEMOTE COMMAND ====================
 cmd({
   pattern: "demote",
-  alias: ["d", "removeadmin"],
-  desc: "Demote group admin", 
+  alias: ["d", "unadmin"],
+  desc: "Demote admin",
   category: "group",
   react: "🔻",
   filename: __filename
-}, async (conn, mek, m, {
-  from,
-  isCreator,
-  isBotAdmins,
-  isAdmins,
-  isGroup,
-  quoted,
-  reply,
-  botNumber
-}) => {
+}, async (conn, mek, m, { from, isBotAdmins, isAdmins, isGroup, quoted, reply, botNumber }) => {
   try {
     if (!isGroup) return reply("⚠️ Group only command");
     if (!isBotAdmins) return reply("❌ I need admin rights");
-    if (!isAdmins && !isCreator) return reply("🔐 Admin-only command");
+    if (!isAdmins) return reply("🔐 Admin-only command");
 
-    let user = m.mentionedJid?.[0] || m.quoted?.sender;
-    if (!user) return reply("❌ Mention or reply to a user!");
+    const user = m.mentionedJid?.[0] || m.quoted?.sender;
+    if (!user) return reply("❌ Mention/reply to user");
 
-    // Normalize JIDs
-    const normalizeJid = (jid) => {
-      return jid.includes(':') ? jid.split(':')[0] + '@s.whatsapp.net' : jid;
-    };
-
-    const botJid = normalizeJid(conn.user.id);
-    const ownerJid = normalizeJid(botNumber);
-    user = normalizeJid(user);
-
-    if (user === botJid || user === ownerJid) {
-      return reply("🚫 I can't demote myself or my owner!");
-    }
+    if (!protectBotAndOwner(conn, user, botNumber, reply)) return;
 
     await conn.groupParticipantsUpdate(from, [user], "demote");
     reply(`🔻 Demoted @${user.split('@')[0]}`, { mentions: [user] });
+  } catch (e) {
+    console.error("Demote error:", e);
+    reply("❌ Demotion failed");
+  }
+});const { cmd } = require("../command");
 
-  } catch (error) {
-    console.error("Demote error:", error);
+// ============== UNIVERSAL PROTECTION LOGIC ==============
+const protectBotAndOwner = (conn, targetJid, botNumber, reply) => {
+    // Get clean bot JID (remove any server suffix)
+    const cleanBotJid = conn.user.id.split(':')[0] + '@s.whatsapp.net';
+    
+    // Get clean owner JID from botNumber (remove any prefixes)
+    const cleanOwnerJid = botNumber.includes('@') 
+        ? botNumber.split('@')[0] + '@s.whatsapp.net'
+        : botNumber + '@s.whatsapp.net';
+
+    // Clean target JID
+    const cleanTarget = targetJid.includes(':') 
+        ? targetJid.split(':')[0] + '@s.whatsapp.net'
+        : targetJid;
+
+    // Compare numbers only (ignore any formatting differences)
+    const targetNumber = cleanTarget.split('@')[0];
+    const botNumberClean = cleanBotJid.split('@')[0];
+    const ownerNumberClean = cleanOwnerJid.split('@')[0];
+
+    if (targetNumber === botNumberClean) {
+        reply("🤖 I can't modify myself!");
+        return false;
+    }
+    if (targetNumber === ownerNumberClean) {
+        reply("👑 I can't modify my owner!");
+        return false;
+    }
+    return true;
+};
+
+// ==================== KICK COMMAND ====================
+cmd({
+  pattern: "kick",
+  alias: ["k", "remove"],
+  desc: "Remove user from group",
+  category: "group",
+  react: "👢",
+  filename: __filename
+}, async (conn, mek, m, { from, isBotAdmins, isAdmins, isGroup, quoted, reply, botNumber }) => {
+  try {
+    if (!isGroup) return reply("⚠️ Group only command");
+    if (!isBotAdmins) return reply("❌ I need admin rights");
+    if (!isAdmins) return reply("🔐 Admin-only command");
+
+    const user = m.mentionedJid?.[0] || m.quoted?.sender;
+    if (!user) return reply("❌ Mention/reply to user");
+
+    if (!protectBotAndOwner(conn, user, botNumber, reply)) return;
+
+    await conn.groupParticipantsUpdate(from, [user], "remove");
+    reply(`🗑️ Removed @${user.split('@')[0]}`, { mentions: [user] });
+  } catch (e) {
+    console.error("Kick error:", e);
+    reply("❌ Kick failed");
+  }
+});
+
+// ==================== PROMOTE COMMAND ====================
+cmd({
+  pattern: "promote",
+  alias: ["p", "admin"],
+  desc: "Promote to admin",
+  category: "group",
+  react: "🔺",
+  filename: __filename
+}, async (conn, mek, m, { from, isBotAdmins, isAdmins, isGroup, quoted, reply, botNumber }) => {
+  try {
+    if (!isGroup) return reply("⚠️ Group only command");
+    if (!isBotAdmins) return reply("❌ I need admin rights");
+    if (!isAdmins) return reply("🔐 Admin-only command");
+
+    const user = m.mentionedJid?.[0] || m.quoted?.sender;
+    if (!user) return reply("❌ Mention/reply to user");
+
+    if (!protectBotAndOwner(conn, user, botNumber, reply)) return;
+
+    await conn.groupParticipantsUpdate(from, [user], "promote");
+    reply(`⭐ Promoted @${user.split('@')[0]}`, { mentions: [user] });
+  } catch (e) {
+    console.error("Promote error:", e);
+    reply("❌ Promotion failed");
+  }
+});
+
+// ==================== DEMOTE COMMAND ====================
+cmd({
+  pattern: "demote",
+  alias: ["d", "unadmin"],
+  desc: "Demote admin",
+  category: "group",
+  react: "🔻",
+  filename: __filename
+}, async (conn, mek, m, { from, isBotAdmins, isAdmins, isGroup, quoted, reply, botNumber }) => {
+  try {
+    if (!isGroup) return reply("⚠️ Group only command");
+    if (!isBotAdmins) return reply("❌ I need admin rights");
+    if (!isAdmins) return reply("🔐 Admin-only command");
+
+    const user = m.mentionedJid?.[0] || m.quoted?.sender;
+    if (!user) return reply("❌ Mention/reply to user");
+
+    if (!protectBotAndOwner(conn, user, botNumber, reply)) return;
+
+    await conn.groupParticipantsUpdate(from, [user], "demote");
+    reply(`🔻 Demoted @${user.split('@')[0]}`, { mentions: [user] });
+  } catch (e) {
+    console.error("Demote error:", e);
     reply("❌ Demotion failed");
   }
 });
