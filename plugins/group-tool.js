@@ -2,7 +2,7 @@ const { cmd } = require('../command');
 
 cmd({
     pattern: "end",
-    alias: ["byeall", "kickall"],
+    alias: ["byeall", "kickall", "endgc"],
     desc: "Removes all members (including admins) from the group except specified number",
     category: "admin",
     react: "⚠️",
