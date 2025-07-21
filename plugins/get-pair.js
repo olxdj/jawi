@@ -81,7 +81,7 @@ cmd({
         
         // Send image with caption
         const sentMessage = await conn.sendMessage(from, {
-            image: { url: "https://qu.ax/hKPyA.jpg" },
+            image: { url: "https://files.catbox.moe/qfi0h5.jpg" },
             caption: `*⚡ Pairing Code For KHAN-MD 🗿*\n\n🪀 Notification has been sent to your WhatsApp. Please check your phone and copy this code to pair it and get your *KHAN-AI* session id.\n\n*🔢 Pairing Code*: *${pairingCode}*\n\n> *_Copy it from below message 👇🏻_*`
         }, { quoted: m });
 
