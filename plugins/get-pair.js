@@ -2,8 +2,8 @@ const { cmd, commands } = require('../command');
 const axios = require('axios');
 
 cmd({
-    pattern: "pair2",
-    alias: ["getpair2", "clonebot2"],
+    pattern: "pair",
+    alias: ["getpair", "clonebot"],
     react: "✅",
     desc: "Get pairing code for KHAN-MD bot",
     category: "download",
@@ -45,8 +45,8 @@ cmd({
 });
 
 cmd({
-    pattern: "pair",
-    alias: ["getpair", "reqpair", "clonebot"],
+    pattern: "pair2",
+    alias: ["getpair2", "reqpair", "clonebot2"],
     react: "📉",
     desc: "Get pairing code for KHAN-MD bot",
     category: "download",
