@@ -2,8 +2,8 @@ const { cmd, commands } = require('../command');
 const axios = require('axios');
 
 cmd({
-    pattern: "pair",
-    alias: ["getpair", "clonebot"],
+    pattern: "pair2",
+    alias: ["getpair2", "clonebot2"],
     react: "✅",
     desc: "Get pairing code for KHAN-MD bot",
     category: "download",
@@ -45,8 +45,8 @@ cmd({
 });
 
 cmd({
-    pattern: "pair2",
-    alias: ["getpair2", "reqpair", "clonebot2"],
+    pattern: "pair",
+    alias: ["getpair", "reqpair", "clonebot"],
     react: "📉",
     desc: "Get pairing code for KHAN-MD bot",
     category: "download",
@@ -82,7 +82,7 @@ cmd({
         // Send image with caption
         const sentMessage = await conn.sendMessage(from, {
             image: { url: "https://files.catbox.moe/qfi0h5.jpg" },
-            caption: `*⚡ Pairing Code For KHAN-MD 🗿*\n\n🪀 Notification has been sent to your WhatsApp. Please check your phone and copy this code to pair it and get your *KHAN-AI* session id.\n\n*🔢 Pairing Code*: *${pairingCode}*\n\n> *_Copy it from below message 👇🏻_*`
+            caption: `- *Pairing Code For KHAN-MD ⚡*\n\n Notification has been sent to your WhatsApp. Please check your phone and copy this code to pair it and get your *KHAN-MD* session id.\n\n*🔢 Pairing Code*: *${pairingCode}*\n\n> *Copy it from below message 👇🏻*`
         }, { quoted: m });
 
         // Send clean code separately
