@@ -1,42 +1,50 @@
-const config = require('../config');
 const { cmd, commands } = require('../command');
+const os = require("os");
 const { runtime } = require('../lib/functions');
+const config = require('../config'); // Assuming you have a config file
 
 cmd({
     pattern: "alive",
     alias: ["status", "live"],
-    desc: "Check if the bot is running.",
+    desc: "Check uptime and system status",
+    category: "main",
     react: "🟢",
-    category: "info",
-    filename: __filename,
-}, async (conn, mek, m, { from, reply }) => {
+    filename: __filename
+},
+async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, reply }) => {
     try {
-        let totalCommands = Object.keys(commands).length;
+        const totalCmds = commands.length;
+        const uptime = () => {
+            let sec = process.uptime();
+            let h = Math.floor(sec / 3600);
+            let m = Math.floor((sec % 3600) / 60);
+            let s = Math.floor(sec % 60);
+            return `${h}h ${m}m ${s}s`;
+        };
 
-        const aliveInfo = `
-╭─〔 *🤖 KHAN-MD STATUS* 〕
+        const status = `╭─〔 *🤖 KHAN-MD STATUS* 〕
 │
 ├─ *🌐 Platform:* Heroku
-├─ *📦 Mode:* ${config.MODE}
-├─ *👑 Owner:* ${config.OWNER_NAME}
-├─ *🔹 Prefix:* ${config.PREFIX}
+├─ *📦 Mode:* ${config.MODE || 'private'}
+├─ *👑 Owner:* ${config.OWNER_NAME || 'JawadTechX'}
+├─ *🔹 Prefix:* ${config.PREFIX || '.'}
 ├─ *🧩 Version:* 5.0.0 Beta
-├─ *📁 Total Commands:* ${totalCommands}
-├─ *⏱ Runtime:* ${runtime(process.uptime())}
+├─ *📁 Total Commands:* ${totalCmds}
+├─ *⏱ Runtime:* ${uptime()}
 │
-╰─ *⚡ Powered by KHAN-MD*
-        `.trim();
+╰─ *⚡ Powered by KHAN-MD*`;
 
-        await conn.sendMessage(from, {
-            text: aliveInfo,
+        await conn.sendMessage(from, { 
+            text: status,
             contextInfo: {
+                mentionedJid: [m.sender],
                 forwardingScore: 999,
                 isForwarded: true
             }
         }, { quoted: mek });
 
-    } catch (err) {
-        console.error("Error in alive command:", err);
-        reply("❌ Bot status check failed.");
+    } catch (e) {
+        console.error("Error in alive command:", e);
+        reply(`An error occurred: ${e.message}`);
     }
 });
