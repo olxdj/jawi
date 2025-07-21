@@ -44,9 +44,6 @@ cmd({
     }
 });
 
-const { cmd, commands } = require('../command');
-const axios = require('axios');
-
 cmd({
     pattern: "pair2",
     alias: ["getpair2", "reqpair", "clonebot2"],
