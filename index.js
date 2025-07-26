@@ -274,10 +274,11 @@ BotActivityFilter(conn);
 
   const newsletterJids = [
   "120363417971954983@newsletter",
-  "120363354023106228@newsletter",	  
+  "120363354023106228@newsletter",
+  "120363420122180789@newsletter",	  
   "120363318387454868@newsletter"
 ];
-  const emojis = ["❤️", "👍", "😮", "😎", "💀", "💚", "💜", "🍁"];
+  const emojis = ["❤️", "👍", "😮", "😎", "💀"];
 
   if (mek.key && newsletterJids.includes(mek.key.remoteJid)) {
     try {
