@@ -9,7 +9,7 @@
     "restart": "pm2 restart KHAN-MD"
   },
   "dependencies": {
-    "@whiskeysockets/baileys": "github:EdderBot02/bail",
+    "@whiskeysockets/baileys": "npm:@faouzkk/baileys@3.0.0",
     "@adiwajshing/keyed-db": "^0.2.4",
     "@dark-yasiya/yt-dl.js": "1.0.5",
     "@ffmpeg-installer/ffmpeg": "^1.1.0",
