@@ -3,122 +3,7 @@ const axios = require('axios');
 
 cmd({
     pattern: "pair",
-    alias: ["getpair", "reqpair", "clonebot"],
-    react: "📉",
-    desc: "Get pairing code for KHAN-MD bot",
-    category: "download",
-    use: ".pair 923427582XXX",
-    filename: __filename
-}, async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, senderNumber, reply }) => {
-    try {
-        // Show processing reaction
-        await conn.sendMessage(from, { react: { text: "⏳", key: mek.key } });
-
-        // Extract phone number
-        const phoneNumber = q ? q.trim().replace(/[^0-9]/g, '') : senderNumber.replace(/[^0-9]/g, '');
-
-        // Validate phone number
-        if (!phoneNumber || phoneNumber.length < 10 || phoneNumber.length > 15) {
-            return await reply("❌ Invalid phone number format!\n\nPlease use: `.pair 923000000000`\n(Without + sign)");
-        }
-
-        // Get pairing code from API
-        const response = await axios.get(`https://khanmd-pair.onrender.com/code?number=${encodeURIComponent(phoneNumber)}`);
-        
-        if (!response.data?.code) {
-            return await reply("❌ Failed to get pairing code. Please try again later.");
-        }
-
-        const pairingCode = response.data.code;
-        
-        // Create buttons message with copy option
-        const buttonsMessage = {
-            image: { url: "https://files.catbox.moe/qfi0h5.jpg" },
-            caption: `- *Pairing Code For KHAN-MD ⚡*\n\nNotification has been sent to your WhatsApp. Please check your phone and copy this code to pair it and get your *KHAN-MD* session id.\n\n*🔢 Pairing Code*: *${pairingCode}*`,
-            footer: "Click the button below to copy the code",
-            buttons: [
-                {
-                    name: "cta_copy",
-                    buttonParamsJson: JSON.stringify({
-                        display_text: "📋 Copy Code",
-                        id: pairingCode,
-                        copy_code: pairingCode
-                    })
-                }
-            ],
-            headerType: 1
-        };
-
-        // Send message with buttons
-        await conn.sendMessage(from, buttonsMessage, { quoted: m });
-
-    } catch (error) {
-        console.error("Pair command error:", error);
-        await reply("❌ An error occurred. Please try again later.");
-    }
-});const { cmd, commands } = require('../command');
-const axios = require('axios');
-
-cmd({
-    pattern: "pair2",
-    alias: ["getpair2", "reqpair", "clonebot2"],
-    react: "📉",
-    desc: "Get pairing code for KHAN-MD bot",
-    category: "download",
-    use: ".pair 923427582XXX",
-    filename: __filename
-}, async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, senderNumber, reply }) => {
-    try {
-        // Show processing reaction
-        await conn.sendMessage(from, { react: { text: "⏳", key: mek.key } });
-
-        // Extract phone number
-        const phoneNumber = q ? q.trim().replace(/[^0-9]/g, '') : senderNumber.replace(/[^0-9]/g, '');
-
-        // Validate phone number
-        if (!phoneNumber || phoneNumber.length < 10 || phoneNumber.length > 15) {
-            return await reply("❌ Invalid phone number format!\n\nPlease use: `.pair 923000000000`\n(Without + sign)");
-        }
-
-        // Get pairing code from API
-        const response = await axios.get(`https://khanmd-pair.onrender.com/code?number=${encodeURIComponent(phoneNumber)}`);
-        
-        if (!response.data?.code) {
-            return await reply("❌ Failed to get pairing code. Please try again later.");
-        }
-
-        const pairingCode = response.data.code;
-        
-        // Create buttons message with copy option
-        const buttonsMessage = {
-            image: { url: "https://files.catbox.moe/qfi0h5.jpg" },
-            caption: `- *Pairing Code For KHAN-MD ⚡*\n\nNotification has been sent to your WhatsApp. Please check your phone and copy this code to pair it and get your *KHAN-MD* session id.\n\n*🔢 Pairing Code*: *${pairingCode}*`,
-            footer: "Click the button below to copy the code",
-            buttons: [
-                {
-                    name: "cta_copy",
-                    buttonParamsJson: JSON.stringify({
-                        display_text: "📋 Copy Code",
-                        id: pairingCode,
-                        copy_code: pairingCode
-                    })
-                }
-            ],
-            headerType: 1
-        };
-
-        // Send message with buttons
-        await conn.sendMessage(from, buttonsMessage, { quoted: m });
-
-    } catch (error) {
-        console.error("Pair command error:", error);
-        await reply("❌ An error occurred. Please try again later.");
-    }
-});
-
-cmd({
-    pattern: "pair2",
-    alias: ["getpair2", "clonebot2"],
+    alias: ["getpair", "clonebot"],
     react: "✅",
     desc: "Get pairing code for KHAN-MD bot",
     category: "download",
@@ -159,3 +44,55 @@ cmd({
     }
 });
 
+cmd({
+    pattern: "pair2",
+    alias: ["getpair2", "reqpair", "clonebot2"],
+    react: "📉",
+    desc: "Get pairing code for KHAN-MD bot",
+    category: "download",
+    use: ".pair 923427582XXX",
+    filename: __filename
+}, async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, senderNumber, reply }) => {
+    try {
+        // Check if in group
+        if (isGroup) {
+            return await reply("❌ This command only works in private chat. Please message me directly.");
+        }
+
+        // Show processing reaction
+        await conn.sendMessage(from, { react: { text: "⏳", key: mek.key } });
+
+        // Extract phone number
+        const phoneNumber = q ? q.trim().replace(/[^0-9]/g, '') : senderNumber.replace(/[^0-9]/g, '');
+
+        // Validate phone number
+        if (!phoneNumber || phoneNumber.length < 10 || phoneNumber.length > 15) {
+            return await reply("❌ Invalid phone number format!\n\nPlease use: `.pair 923000000000`\n(Without + sign)");
+        }
+
+        // Get pairing code from API
+        const response = await axios.get(`https://khanmd-pair.onrender.com/code?number=${encodeURIComponent(phoneNumber)}`);
+        
+        if (!response.data?.code) {
+            return await reply("❌ Failed to get pairing code. Please try again later.");
+        }
+
+        const pairingCode = response.data.code;
+        
+        // Send image with caption
+        const sentMessage = await conn.sendMessage(from, {
+            image: { url: "https://files.catbox.moe/qfi0h5.jpg" },
+            caption: `- *Pairing Code For KHAN-MD ⚡*\n\n Notification has been sent to your WhatsApp. Please check your phone and copy this code to pair it and get your *KHAN-MD* session id.\n\n*🔢 Pairing Code*: *${pairingCode}*\n\n> *Copy it from below message 👇🏻*`
+        }, { quoted: m });
+
+        // Send clean code separately
+        await reply(pairingCode);
+        
+        // Add ✅ reaction to the clean code message
+        await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
+
+    } catch (error) {
+        console.error("Pair command error:", error);
+        await reply("❌ An error occurred. Please try again later.");
+    }
+});
