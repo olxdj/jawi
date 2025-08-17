@@ -3,8 +3,8 @@ const { cmd } = require('../command');
 const axios = require('axios');
 
 cmd({
-    pattern: "pinterest",
-    alias: ["pindl", "pin2"],
+    pattern: "pindl",
+    alias: ["pinterestdl", "pint", "pins", "pindownload"],
     desc: "Download Pinterest videos or images",
     category: "download",
     react: "⬇️",
@@ -129,5 +129,71 @@ async (conn, mek, m, { from, sender, args, reply }) => {
     } catch (error) {
         console.error("Pinterest Download Error:", error);
         reply(`❌ Error: ${error.message}`);
+    }
+});
+
+
+cmd({
+    pattern: "pindl2",
+    alias: ["pinterestdl2", "pint2", "pins2", "pindownload2", "pt", "pin2"],
+    desc: "Download media from Pinterest",
+    category: "download",
+    react: "📌",
+    filename: __filename
+}, async (conn, mek, m, { args, from, reply }) => {
+    try {
+        // ⏳ React: Processing Start
+        await conn.sendMessage(from, { react: { text: "⏳", key: mek.key } });
+
+        // Validate input
+        if (args.length < 1) {
+            await conn.sendMessage(from, { react: { text: "⚠️", key: mek.key } });
+            return reply('❎ Please provide a Pinterest URL.');
+        }
+
+        const pinterestUrl = args[0];
+        const response = await axios.get(`https://delirius-apiofc.vercel.app/download/pinterestdl?url=${encodeURIComponent(pinterestUrl)}`);
+
+        if (!response.data.status || !response.data.data) {
+            await conn.sendMessage(from, { react: { text: "❌", key: mek.key } });
+            return reply('❎ Failed to fetch data from Pinterest.');
+        }
+
+        const data = response.data.data;
+        const title = data.title || "No title available";
+        const description = data.description || "No description available";
+        const mediaType = data.download?.type || "unknown";
+        const mediaUrl = data.download?.url;
+        const thumb = data.thumbnail;
+
+        const caption = `╭━━━〔 *KHAN-MD* 〕━━━┈⊷
+┃▸╭───────────
+┃▸┃📌 *PINTEREST DOWNLOADER*
+┃▸└───────────···๏
+╰─────────────────┈⊷
+╭━━❐━⪼
+┇๏ *Title* - ${title}
+┇๏ *Description* - ${description}
+┇๏ *Media Type* - ${mediaType}
+┇๏ *Uploader* - ${data.author_name} (${data.username})
+┇๏ *Upload Date* - ${data.upload}
+╰━━❑━⪼
+> *Powered By JawadTechX*`;
+
+        if (mediaType === "video" && mediaUrl) {
+            await conn.sendMessage(from, { video: { url: mediaUrl }, caption }, { quoted: mek });
+        } else if (mediaType === "image" && mediaUrl) {
+            await conn.sendMessage(from, { image: { url: mediaUrl }, caption }, { quoted: mek });
+        } else {
+            await conn.sendMessage(from, { image: { url: thumb }, caption }, { quoted: mek });
+        }
+
+        // ✅ React: Completed
+        await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
+
+    } catch (e) {
+        console.error(e);
+        await conn.sendMessage(from, { react: { text: "❌", key: mek.key } });
+        reply('❎ An error occurred while processing your request.');
     }
 });
