@@ -166,19 +166,7 @@ cmd({
         const mediaUrl = data.download?.url;
         const thumb = data.thumbnail;
 
-        const caption = `╭━━━〔 *KHAN-MD* 〕━━━┈⊷
-┃▸╭───────────
-┃▸┃📌 *PINTEREST DOWNLOADER*
-┃▸└───────────···๏
-╰─────────────────┈⊷
-╭━━❐━⪼
-┇๏ *Title* - ${title}
-┇๏ *Description* - ${description}
-┇๏ *Media Type* - ${mediaType}
-┇๏ *Uploader* - ${data.author_name} (${data.username})
-┇๏ *Upload Date* - ${data.upload}
-╰━━❑━⪼
-> *Powered By JawadTechX*`;
+        const caption = `> *Powered By JawadTechX*`;
 
         if (mediaType === "video" && mediaUrl) {
             await conn.sendMessage(from, { video: { url: mediaUrl }, caption }, { quoted: mek });
