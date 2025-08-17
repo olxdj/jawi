@@ -1,115 +1,146 @@
 const config = require('../config');
 const { cmd } = require('../command');
-const fetch = require('node-fetch');
-const { runtime } = require('../lib/functions');
+const axios = require('axios');
 
 cmd({
     pattern: "pinterest",
-    alias: ["pindl", "pin2"],
-    desc: "Download Pinterest videos/images",
+    alias: ["pindl", "pin"],
+    desc: "Download Pinterest videos or images",
     category: "download",
     react: "⬇️",
     filename: __filename
 },
-async (conn, mek, m, { from, sender, reply, args }) => {
+async (conn, mek, m, { from, sender, args, reply }) => {
     try {
         if (!args[0]) return reply("Please provide a Pinterest URL\nExample: .pinterest https://pin.it/example");
-        
-        const encodedUrl = encodeURIComponent(args[0]);
-        const apiUrl = `https://rest-lily.vercel.app/api/downloader/pinterestdl?url=${encodedUrl}`;
-        
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-        
-        if (!data.status || !data.data.medias) {
-            return reply("❌ Failed to fetch Pinterest media. Please check the URL and try again.");
+
+        const url = args[0].includes("pin.it") || args[0].includes("pinterest.com") ? args[0] : null;
+        if (!url) return reply("Invalid Pinterest URL");
+
+        // Show processing indicator
+        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+
+        const apiUrl = `https://delirius-apiofc.vercel.app/download/pinterestdl?url=${encodeURIComponent(url)}`;
+        const response = await axios.get(apiUrl);
+
+        if (!response.data.status || !response.data.data) {
+            return reply("Failed to fetch Pinterest data. Please try again later.");
         }
-        
-        const { title, medias } = data.data;
-        const videoMedias = medias.filter(m => m.extension === 'mp4');
-        const imageMedias = medias.filter(m => m.extension === 'jpg' || m.extension === 'png');
-        
-        // Find highest quality video
-        const bestVideo = videoMedias.reduce((prev, current) => 
-            (parseInt(prev.quality) > parseInt(current.quality)) ? prev : current, {});
-        
-        // Find highest quality image
-        const bestImage = imageMedias.reduce((prev, current) => 
-            (parseInt(prev.quality) > parseInt(current.quality)) ? prev : current, {});
-        
+
+        const pinData = response.data.data;
+        const isVideo = pinData.download.type === "video";
+
+        // Create buttons
+        const buttons = [
+            {
+                buttonId: `${config.PREFIX}pindl image ${url}`,
+                buttonText: { displayText: "📷 Download Image" },
+                type: 1
+            }
+        ];
+
+        if (isVideo) {
+            buttons.push({
+                buttonId: `${config.PREFIX}pindl video ${url}`,
+                buttonText: { displayText: "🎬 Download Video" },
+                type: 1
+            });
+        }
+
         // Send message with buttons
         await conn.sendMessage(from, {
-            text: `*${title || 'Pinterest Download'}*\n\nSelect download option:`,
+            image: { url: pinData.thumbnail },
+            caption: `*📌 Pinterest Downloader*\n\n` +
+                     `*🔹 Title:* ${pinData.title}\n` +
+                     `*🔸 Author:* ${pinData.author_name} (${pinData.username})\n` +
+                     `*🔹 Likes:* ${pinData.likes}\n` +
+                     `*🔸 Upload Date:* ${pinData.upload}\n\n` +
+                     `_Select download option below_`,
             footer: config.BOT_NAME,
-            buttons: [
-                {
-                    buttonId: '#pin-image',
-                    buttonText: { displayText: '📷 Download Image' },
-                    type: 1
-                },
-                {
-                    buttonId: '#pin-video',
-                    buttonText: { displayText: '🎬 Download Video' },
-                    type: 1
-                }
-            ],
-            headerType: 1
+            buttons: buttons,
+            headerType: 4
         }, { quoted: mek });
-        
-        // Store media data temporarily for button handling
-        conn.pinData = conn.pinData || {};
-        conn.pinData[sender] = {
-            bestImage: bestImage.url || imageMedias[0]?.url,
-            bestVideo: bestVideo.url || videoMedias[0]?.url,
-            timestamp: Date.now()
-        };
-        
-        // Clean up old data
-        setTimeout(() => {
-            if (conn.pinData[sender]) {
-                delete conn.pinData[sender];
-            }
-        }, 300000); // 5 minutes
-        
-    } catch (e) {
-        console.error(e);
-        reply(`❌ Error:\n${e.message}`);
+
+    } catch (error) {
+        console.error("Pinterest Download Error:", error);
+        reply(`❌ Error: ${error.message}`);
     }
 });
 
-// Handle button responses
-module.exports.button = async (conn, mek, m) => {
+// Handler for button selections
+cmd({
+    pattern: "pindl",
+    dontAddCommandList: true,
+    fromMe: true
+},
+async (conn, mek, m, { from, sender, args, reply }) => {
     try {
-        const sender = mek.key.remoteJid;
-        const message = mek.message.buttonsResponseMessage;
-        
-        if (!message || !conn.pinData[sender]) return;
-        
-        const selectedButtonId = message.selectedButtonId;
-        const pinData = conn.pinData[sender];
-        
-        if (Date.now() - pinData.timestamp > 300000) {
-            delete conn.pinData[sender];
-            return conn.sendMessage(sender, { text: "Session expired. Please run the command again." });
+        if (args.length < 2) return;
+
+        const type = args[0].toLowerCase();
+        const url = args.slice(1).join(" ");
+
+        if (!["image", "video"].includes(type)) return;
+        if (!url.includes("pin.it") && !url.includes("pinterest.com")) return;
+
+        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+
+        const apiUrl = `https://delirius-apiofc.vercel.app/download/pinterestdl?url=${encodeURIComponent(url)}`;
+        const response = await axios.get(apiUrl);
+
+        if (!response.data.status || !response.data.data) {
+            return reply("Failed to fetch Pinterest data. Please try again later.");
         }
-        
-        if (selectedButtonId === '#pin-image' && pinData.bestImage) {
-            await conn.sendMessage(sender, {
-                image: { url: pinData.bestImage },
-                caption: "Here's your Pinterest image download"
+
+        const pinData = response.data.data;
+
+        if (type === "video") {
+            if (pinData.download.type !== "video") {
+                return reply("This pin doesn't contain a video.");
+            }
+            
+            await conn.sendMessage(from, {
+                video: { url: pinData.download.url },
+                caption: `*📌 Pinterest Video*\n\n` +
+                         `*🔹 Title:* ${pinData.title}\n` +
+                         `*🔸 Author:* ${pinData.author_name}\n` +
+                         `*🔹 Source:* ${pinData.source}`,
+                contextInfo: {
+                    externalAdReply: {
+                        title: pinData.title,
+                        body: `By ${pinData.author_name}`,
+                        thumbnailUrl: pinData.thumbnail,
+                        sourceUrl: pinData.source,
+                        mediaType: 2,
+                        mediaUrl: pinData.download.url,
+                        showAdAttribution: true
+                    }
+                }
             }, { quoted: mek });
-        } 
-        else if (selectedButtonId === '#pin-video' && pinData.bestVideo) {
-            await conn.sendMessage(sender, {
-                video: { url: pinData.bestVideo },
-                caption: "Here's your Pinterest video download"
+        } else {
+            // For image, we use the thumbnail which is usually higher quality than the actual image
+            await conn.sendMessage(from, {
+                image: { url: pinData.thumbnail },
+                caption: `*📌 Pinterest Image*\n\n` +
+                         `*🔹 Title:* ${pinData.title}\n` +
+                         `*🔸 Author:* ${pinData.author_name}\n` +
+                         `*🔹 Source:* ${pinData.source}`,
+                contextInfo: {
+                    externalAdReply: {
+                        title: pinData.title,
+                        body: `By ${pinData.author_name}`,
+                        thumbnailUrl: pinData.thumbnail,
+                        sourceUrl: pinData.source,
+                        mediaType: 1,
+                        mediaUrl: pinData.thumbnail,
+                        showAdAttribution: true
+                    }
+                }
             }, { quoted: mek });
         }
-        
-        // Clean up
-        delete conn.pinData[sender];
-        
-    } catch (e) {
-        console.error("Button handler error:", e);
+
+    } catch (error) {
+        console.error("Pinterest Download Error:", error);
+        reply(`❌ Error: ${error.message}`);
     }
-};
+});
