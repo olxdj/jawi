@@ -4,7 +4,7 @@ const axios = require('axios');
 
 cmd({
     pattern: "pinterest",
-    alias: ["pindl", "pin"],
+    alias: ["pindl", "pin2"],
     desc: "Download Pinterest videos or images",
     category: "download",
     react: "⬇️",
