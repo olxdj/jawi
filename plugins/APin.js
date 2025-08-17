@@ -33,7 +33,7 @@ async (conn, mek, m, { from, sender, args, reply }) => {
         // Create buttons
         const buttons = [
             {
-                buttonId: `${config.PREFIX}pindl image ${url}`,
+                buttonId: `pindl-image-${url}`,
                 buttonText: { displayText: "📷 Download Image" },
                 type: 1
             }
@@ -41,7 +41,7 @@ async (conn, mek, m, { from, sender, args, reply }) => {
 
         if (isVideo) {
             buttons.push({
-                buttonId: `${config.PREFIX}pindl video ${url}`,
+                buttonId: `pindl-video-${url}`,
                 buttonText: { displayText: "🎬 Download Video" },
                 type: 1
             });
@@ -69,76 +69,56 @@ async (conn, mek, m, { from, sender, args, reply }) => {
 
 // Handler for button selections
 cmd({
-    pattern: "pindl",
-    dontAddCommandList: true,
-    fromMe: true
+    on: "button",
+    fromMe: true,
+    dontAddCommandList: true
 },
 async (conn, mek, m, { from, sender, args, reply }) => {
     try {
-        if (args.length < 2) return;
-
-        const type = args[0].toLowerCase();
-        const url = args.slice(1).join(" ");
-
-        if (!["image", "video"].includes(type)) return;
-        if (!url.includes("pin.it") && !url.includes("pinterest.com")) return;
-
-        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
-
-        const apiUrl = `https://delirius-apiofc.vercel.app/download/pinterestdl?url=${encodeURIComponent(url)}`;
-        const response = await axios.get(apiUrl);
-
-        if (!response.data.status || !response.data.data) {
-            return reply("Failed to fetch Pinterest data. Please try again later.");
-        }
-
-        const pinData = response.data.data;
-
-        if (type === "video") {
-            if (pinData.download.type !== "video") {
-                return reply("This pin doesn't contain a video.");
-            }
+        if (!mek.message?.buttonsMessage) return;
+        
+        const selectedButtonId = mek.message.buttonsMessage.selectedButtonId;
+        if (!selectedButtonId) return;
+        
+        if (selectedButtonId.startsWith('pindl-image-') || selectedButtonId.startsWith('pindl-video-')) {
+            const type = selectedButtonId.includes('image') ? 'image' : 'video';
+            const url = selectedButtonId.split('-').slice(2).join('-');
             
-            await conn.sendMessage(from, {
-                video: { url: pinData.download.url },
-                caption: `*📌 Pinterest Video*\n\n` +
-                         `*🔹 Title:* ${pinData.title}\n` +
-                         `*🔸 Author:* ${pinData.author_name}\n` +
-                         `*🔹 Source:* ${pinData.source}`,
-                contextInfo: {
-                    externalAdReply: {
-                        title: pinData.title,
-                        body: `By ${pinData.author_name}`,
-                        thumbnailUrl: pinData.thumbnail,
-                        sourceUrl: pinData.source,
-                        mediaType: 2,
-                        mediaUrl: pinData.download.url,
-                        showAdAttribution: true
-                    }
-                }
-            }, { quoted: mek });
-        } else {
-            // For image, we use the thumbnail which is usually higher quality than the actual image
-            await conn.sendMessage(from, {
-                image: { url: pinData.thumbnail },
-                caption: `*📌 Pinterest Image*\n\n` +
-                         `*🔹 Title:* ${pinData.title}\n` +
-                         `*🔸 Author:* ${pinData.author_name}\n` +
-                         `*🔹 Source:* ${pinData.source}`,
-                contextInfo: {
-                    externalAdReply: {
-                        title: pinData.title,
-                        body: `By ${pinData.author_name}`,
-                        thumbnailUrl: pinData.thumbnail,
-                        sourceUrl: pinData.source,
-                        mediaType: 1,
-                        mediaUrl: pinData.thumbnail,
-                        showAdAttribution: true
-                    }
-                }
-            }, { quoted: mek });
-        }
+            if (!url) return reply("Invalid URL");
+            
+            await conn.sendMessage(from, { react: { text: '⏳', key: mek.key } });
+            
+            const apiUrl = `https://delirius-apiofc.vercel.app/download/pinterestdl?url=${encodeURIComponent(url)}`;
+            const response = await axios.get(apiUrl);
 
+            if (!response.data.status || !response.data.data) {
+                return reply("Failed to fetch Pinterest data. Please try again later.");
+            }
+
+            const pinData = response.data.data;
+
+            if (type === "video") {
+                if (pinData.download.type !== "video") {
+                    return reply("This pin doesn't contain a video.");
+                }
+                
+                await conn.sendMessage(from, {
+                    video: { url: pinData.download.url },
+                    caption: `*📌 Pinterest Video*\n\n` +
+                             `*🔹 Title:* ${pinData.title}\n` +
+                             `*🔸 Author:* ${pinData.author_name}\n` +
+                             `*🔹 Source:* ${pinData.source}`
+                }, { quoted: mek });
+            } else {
+                await conn.sendMessage(from, {
+                    image: { url: pinData.thumbnail },
+                    caption: `*📌 Pinterest Image*\n\n` +
+                             `*🔹 Title:* ${pinData.title}\n` +
+                             `*🔸 Author:* ${pinData.author_name}\n` +
+                             `*🔹 Source:* ${pinData.source}`
+                }, { quoted: mek });
+            }
+        }
     } catch (error) {
         console.error("Pinterest Download Error:", error);
         reply(`❌ Error: ${error.message}`);
