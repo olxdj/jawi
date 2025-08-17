@@ -38,7 +38,7 @@ async (conn, mek, m, { from, sender, args, reply }) => {
                   `*🔹 Likes:* ${pinData.likes}\n` +
                   `*🔸 Upload Date:* ${pinData.upload}\n\n` +
                   `_Select download option below_`,
-            footer: config.BOT_NAME,
+            footer: config.DESCRIPTION,
             buttons: [
                 {
                     buttonId: `pin-image-${url}`,
@@ -101,16 +101,14 @@ async (conn, mek, m, { from, sender, args, reply }) => {
                             video: { url: freshData.download.url },
                             caption: `*📌 Pinterest Video*\n\n` +
                                      `*🔹 Title:* ${freshData.title}\n` +
-                                     `*🔸 Author:* ${freshData.author_name}\n` +
-                                     `*🔹 Source:* ${freshData.source}`
+                                     `*🔸 Author:* ${freshData.author_name}`
                         }, { quoted: receivedMsg });
                     } else {
                         await conn.sendMessage(from, {
                             image: { url: freshData.thumbnail },
                             caption: `*📌 Pinterest Image*\n\n` +
                                      `*🔹 Title:* ${freshData.title}\n` +
-                                     `*🔸 Author:* ${freshData.author_name}\n` +
-                                     `*🔹 Source:* ${freshData.source}`
+                                     `*🔸 Author:* ${freshData.author_name}`
                         }, { quoted: receivedMsg });
                     }
                 } catch (error) {
