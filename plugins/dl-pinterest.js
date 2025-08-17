@@ -32,7 +32,7 @@ async (conn, mek, m, { from, sender, args, reply }) => {
 
         // Create buttons message
         const buttonsMessage = {
-            text: `*📌 Pinterest Downloader*\n\n` +
+            text: `- *📌 KHAN-MD Pinterest Downloader*\n\n` +
                   `*🔹 Title:* ${pinData.title}\n` +
                   `*🔸 Author:* ${pinData.author_name} (${pinData.username})\n` +
                   `*🔹 Likes:* ${pinData.likes}\n` +
