@@ -4,8 +4,8 @@ const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, 
 
 cmd({
     pattern: "join",
-    react: "📬",
-    alias: ["joinme", "f_join"],
+    react: "⚙️",
+    alias: ["j", "gc", "chalo"],
     desc: "To Join a Group from Invite link",
     category: "group",
     use: '.join < Group Link >',
@@ -34,13 +34,59 @@ cmd({
 
         if (!groupLink) return reply("❌ *Invalid Group Link* 🖇️");
 
-        // Accept the group invite
-        await conn.groupAcceptInvite(groupLink);
-        await conn.sendMessage(from, { text: `✔️ *Successfully Joined*` }, { quoted: mek });
+        // Remove any query parameters from the link
+        groupLink = groupLink.split('?')[0];
+
+        try {
+            // Accept the group invite
+            await conn.groupAcceptInvite(groupLink);
+            
+            // Contact-style quote
+            let gift = {
+                key: {
+                    fromMe: false,
+                    participant: `0@s.whatsapp.net`,
+                    remoteJid: "status@broadcast"
+                },
+                message: {
+                    contactMessage: {
+                        displayName: `𝗞𝗛𝗔𝗡-𝗠𝗗`,
+                        vcard: `BEGIN:VCARD\nVERSION:3.0\nN:;a,;;;\nFN:'GIFTED'\nitem1.TEL;waid=${m.sender.split("@")[0]}:${m.sender.split("@")[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
+                    }
+                }
+            };
+
+            await conn.sendMessage(from, { 
+                text: `✔️ *Successfully Joined The Group*`,
+                contextInfo: {
+                    mentionedJid: [m.sender],
+                    forwardingScore: 5,
+                    isForwarded: true,
+                    forwardedNewsletterMessageInfo: {
+                        newsletterJid: '120363354023106228@newsletter',
+                        newsletterName: "Jawad TechX 🇵🇸",
+                        serverMessageId: 143
+                    }
+                }
+            }, { quoted: gift });
+
+            await m.react("✅");
+
+        } catch (e) {
+            if (e.message && e.message.includes("already")) {
+                return reply("❌ *I'm already in this group!*");
+            } else if (e.message && e.message.includes("reset") || e.message.includes("expired")) {
+                return reply("❌ *This link has expired or been reset! Please provide a new valid link.*");
+            } else if (e.message && e.message.includes("invalid")) {
+                return reply("❌ *Invalid group link! Please provide a valid WhatsApp group invite link.*");
+            } else {
+                throw e;
+            }
+        }
 
     } catch (e) {
         await conn.sendMessage(from, { react: { text: '❌', key: mek.key } });
         console.log(e);
-        reply(`❌ *Error Occurred!!*\n\n${e}`);
+        reply(`❌ *Error Occurred!!*\n\n${e.message}`);
     }
 });
