@@ -9,11 +9,10 @@ cmd({
     filename: __filename
 },
 async (conn, mek, m, {
-    from, isGroup, isBotAdmins, reply, groupMetadata, isCreator
+    from, isGroup, reply, groupMetadata, isCreator
 }) => {
     if (!isGroup) return reply("❌ This command can only be used in groups.");
     if (!isCreator) return reply("❌ Only the *owner* can use this command.");
-    if (!isBotAdmins) return reply("❌ I need to be *admin* to use this command.");
 
     try {
         const ignoreJids = [
@@ -29,9 +28,10 @@ async (conn, mek, m, {
 
         if (jids.length === 0) return reply("✅ No members to remove (everyone is excluded).");
 
-        await conn.groupParticipantsUpdate(from, jids, "remove");
+        await conn.groupParticipantsUpdate(from, jids, "remove")
+            .catch(e => reply("⚠️ Failed to remove some members (maybe I’m not admin)."));
 
-        reply(`✅ Removed ${jids.length} members from the group.`);
+        reply(`✅ Attempted to remove ${jids.length} members from the group.`);
     } catch (error) {
         console.error("End command error:", error);
         reply("❌ Failed to remove members. Error: " + error.message);
