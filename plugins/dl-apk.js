@@ -16,29 +16,32 @@ async (conn, mek, m, { from, q, reply }) => {
         // ⏳ React - processing
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-        // Search the app on bk9
-        const search = await axios.get(`https://bk9.fun/search/apk?q=${encodeURIComponent(q)}`);
-        if (!search.data.BK9 || search.data.BK9.length === 0) {
+        // Fetch APK from PrinceTech API
+        const res = await axios.get(`https://api.princetechn.com/api/download/apkdl?apikey=prince&appName=${encodeURIComponent(q)}`);
+        const data = res.data;
+
+        if (!data.success || !data.result || !data.result.download_url) {
             await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
             return reply("❌ *No app found with that name, please try again.*");
         }
 
-        // Fetch APK details
-        const id = search.data.BK9[0].id;
-        const details = await axios.get(`https://bk9.fun/download/apk?id=${id}`);
-        const app = details.data.BK9;
+        const app = data.result;
 
-        if (!app || !app.dllink) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return reply("❌ *Unable to find download link for this app.*");
-        }
-
-        // Send APK file
+        // Send APK with thumbnail
         await conn.sendMessage(from, {
-            document: { url: app.dllink },
-            mimetype: "application/vnd.android.package-archive",
-            fileName: `${app.name}.apk`,
-            caption: `✅ *APK successfully downloaded*\nPowered By JawadTechX 🤍`
+            document: { url: app.download_url },
+            mimetype: app.mimetype || "application/vnd.android.package-archive",
+            fileName: `${app.appname}.apk`,
+            caption: `✅ *APK successfully downloaded*\n\n📱 *App:* ${app.appname}\n👨‍💻 *Developer:* ${app.developer}\n\nPowered By KHAN-MD 💚`,
+            contextInfo: {
+                externalAdReply: {
+                    title: app.appname,
+                    body: `Developer: ${app.developer}`,
+                    thumbnailUrl: app.appicon,
+                    mediaType: 1,
+                    renderLargerThumbnail: true
+                }
+            }
         }, { quoted: mek });
 
         // ✅ React - success
