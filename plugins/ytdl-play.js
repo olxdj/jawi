@@ -42,12 +42,12 @@ cmd({
             footer: config.DESCRIPTION || "YouTube Downloader",
             buttons: [
                 {
-                    buttonId: `yt-audio-${video.url}`,
+                    buttonId: `yt-audio-${video.url}-${from}`,
                     buttonText: { displayText: "🎵 Download Audio" },
                     type: 1
                 },
                 {
-                    buttonId: `yt-video-${video.url}`,
+                    buttonId: `yt-video-${video.url}-${from}`,
                     buttonText: { displayText: "🎬 Download Video" },
                     type: 1
                 }
@@ -64,19 +64,28 @@ cmd({
     }
 });
 
-// Separate handler for button responses
-conn.ev.on("messages.upsert", async (msgData) => {
+// Global button handler
+const handleYouTubeButton = async (conn, receivedMsg) => {
     try {
-        const receivedMsg = msgData.messages[0];
         if (!receivedMsg.message?.buttonsResponseMessage) return;
 
         const buttonId = receivedMsg.message.buttonsResponseMessage.selectedButtonId;
         const from = receivedMsg.key.remoteJid;
+        const sender = receivedMsg.key.participant || receivedMsg.key.remoteJid;
         
         // Check if it's a YouTube download button
-        if (buttonId.startsWith('yt-audio-') || buttonId.startsWith('yt-video-')) {
-            const type = buttonId.startsWith('yt-audio-') ? 'audio' : 'video';
-            const videoUrl = buttonId.split('-').slice(2).join('-');
+        if (buttonId && (buttonId.includes('yt-audio-') || buttonId.includes('yt-video-'))) {
+            const type = buttonId.includes('yt-audio-') ? 'audio' : 'video';
+            
+            // Extract URL from button ID (format: yt-audio-URL-fromJid)
+            const parts = buttonId.split('-');
+            const urlPart = parts.slice(2, -1).join('-');
+            const originalFrom = parts[parts.length - 1];
+            
+            // Verify the button was meant for this chat
+            if (originalFrom !== from) return;
+            
+            const videoUrl = decodeURIComponent(urlPart);
 
             // Show processing reaction
             await conn.sendMessage(from, { react: { text: '⏳', key: receivedMsg.key } });
@@ -88,21 +97,24 @@ conn.ev.on("messages.upsert", async (msgData) => {
                 const data = await response.json();
 
                 if (!data?.status || !data?.result) {
-                    return conn.sendMessage(from, { text: "Failed to fetch download links. Please try again later." }, { quoted: receivedMsg });
+                    return conn.sendMessage(from, { text: "❌ Failed to fetch download links. Please try again later." }, { quoted: receivedMsg });
                 }
 
                 if (type === "audio") {
                     // Download audio and convert to MP3
                     const audioRes = await fetch(data.result.mp3);
-                    const audioBuffer = await audioRes.buffer();
+                    if (!audioRes.ok) throw new Error('Failed to download audio');
+                    
+                    const audioBuffer = await audioRes.arrayBuffer();
+                    const buffer = Buffer.from(audioBuffer);
 
                     let convertedAudio;
                     try {
-                        convertedAudio = await converter.toAudio(audioBuffer, 'mp4');
+                        convertedAudio = await converter.toAudio(buffer, 'mp4');
                     } catch (err) {
                         console.error('Audio conversion failed:', err);
                         // Fallback to original audio if conversion fails
-                        convertedAudio = audioBuffer;
+                        convertedAudio = buffer;
                     }
 
                     await conn.sendMessage(from, {
@@ -125,6 +137,18 @@ conn.ev.on("messages.upsert", async (msgData) => {
         }
     } catch (error) {
         console.error("Button handler error:", error);
+    }
+};
+
+// Listen for button responses
+conn.ev.on('messages.upsert', async (m) => {
+    try {
+        const msg = m.messages[0];
+        if (msg) {
+            await handleYouTubeButton(conn, msg);
+        }
+    } catch (error) {
+        console.error('Error in message upsert:', error);
     }
 });
 
