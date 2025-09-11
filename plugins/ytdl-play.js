@@ -5,6 +5,138 @@ const converter = require('../data/play-converter');
 const fetch = require('node-fetch');
 
 cmd({ 
+    pattern: "play", 
+    alias: ["yta", "ytv"], 
+    react: "🎧", 
+    desc: "Download YouTube audio or video", 
+    category: "main", 
+    use: '.play <query>', 
+    filename: __filename 
+}, async (conn, mek, m, { from, sender, reply, q }) => { 
+    try {
+        if (!q) return reply("*Please provide a song/video name..*");
+
+        // Show searching indicator
+        await conn.sendMessage(from, { react: { text: '🔍', key: m.key } });
+        
+        const yt = await ytsearch(q);
+        if (!yt.results.length) return reply("No results found!");
+
+        const video = yt.results[0];
+        const apiUrl = `https://api.hanggts.xyz/download/ytdl?url=${encodeURIComponent(video.url)}`;
+        
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+
+        if (!data?.status || !data?.result) return reply("Failed to fetch video data. Try again later.");
+
+        // Create buttons message
+        const buttonsMessage = {
+            text: `*🎵 YouTube Downloader*\n\n` +
+                  `*🔹 Title:* ${data.result.title}\n` +
+                  `*🔸 Duration:* ${video.duration || 'N/A'}\n` +
+                  `*🔹 Views:* ${video.views || 'N/A'}\n` +
+                  `*🔸 Uploaded:* ${video.uploaded || 'N/A'}\n\n` +
+                  `_Select download option below_`,
+            footer: config.DESCRIPTION || "YouTube Downloader",
+            buttons: [
+                {
+                    buttonId: `yt-audio-${video.url}`,
+                    buttonText: { displayText: "🎵 Download Audio" },
+                    type: 1
+                },
+                {
+                    buttonId: `yt-video-${video.url}`,
+                    buttonText: { displayText: "🎬 Download Video" },
+                    type: 1
+                }
+            ],
+            headerType: 4,
+            contextInfo: {
+                mentionedJid: [sender],
+                forwardingScore: 999,
+                isForwarded: true,
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: '120363354023106228@newsletter',
+                    newsletterName: 'YouTube Downloader',
+                    serverMessageId: 143
+                }
+            }
+        };
+
+        // Add thumbnail if available
+        if (video.thumbnail) {
+            buttonsMessage.image = { url: video.thumbnail };
+        }
+
+        // Send message with buttons
+        const sentMsg = await conn.sendMessage(from, buttonsMessage, { quoted: mek });
+        const messageId = sentMsg.key.id;
+
+        // Create a listener for button responses
+        const buttonHandler = async (msgData) => {
+            const receivedMsg = msgData.messages[0];
+            if (!receivedMsg.message?.buttonsResponseMessage) return;
+
+            const buttonId = receivedMsg.message.buttonsResponseMessage.selectedButtonId;
+            const senderId = receivedMsg.key.remoteJid;
+            const isReplyToBot = receivedMsg.message.buttonsResponseMessage.contextInfo?.stanzaId === messageId;
+
+            if (isReplyToBot && senderId === from) {
+                // Remove listener to prevent multiple triggers
+                conn.ev.off("messages.upsert", buttonHandler);
+
+                // Show processing reaction
+                await conn.sendMessage(from, { react: { text: '⏳', key: receivedMsg.key } });
+
+                try {
+                    const type = buttonId.startsWith('yt-audio-') ? 'audio' : 'video';
+                    const videoUrl = buttonId.split('-').slice(2).join('-');
+
+                    // Make fresh API request
+                    const freshApiUrl = `https://api.hanggts.xyz/download/ytdl?url=${encodeURIComponent(videoUrl)}`;
+                    const freshResponse = await fetch(freshApiUrl);
+                    const freshData = await freshResponse.json();
+
+                    if (!freshData?.status || !freshData?.result) {
+                        return reply("Failed to fetch download links. Please try again later.");
+                    }
+
+                    if (type === "audio") {
+                        await conn.sendMessage(from, {
+                            audio: { url: freshData.result.mp3 },
+                            mimetype: "audio/mpeg",
+                            fileName: `${freshData.result.title}.mp3`
+                        }, { quoted: receivedMsg });
+                    } else {
+                        await conn.sendMessage(from, {
+                            video: { url: freshData.result.mp4 },
+                            caption: `"${freshData.result.title}" Downloaded Successfully ✅`,
+                            fileName: `${freshData.result.title}.mp4`
+                        }, { quoted: receivedMsg });
+                    }
+                } catch (error) {
+                    console.error("YouTube Download Error:", error);
+                    reply(`❌ Error: ${error.message}`);
+                }
+            }
+        };
+
+        // Add the listener
+        conn.ev.on("messages.upsert", buttonHandler);
+
+        // Remove listener after 2 minutes if no response
+        setTimeout(() => {
+            conn.ev.off("messages.upsert", buttonHandler);
+        }, 120000);
+
+    } catch (error) {
+        console.error(error);
+        reply("An error occurred. Please try again.");
+    }
+});
+
+cmd({ 
     pattern: "play4", 
     alias: ["yta4"], 
     react: "☘️", 
@@ -49,41 +181,6 @@ cmd({
             audio: convertedAudio,
             mimetype: "audio/mpeg",
             fileName: `${data.metadata?.title || 'song'}.mp3`
-        }, { quoted: mek });
-
-    } catch (error) {
-        console.error(error);
-        reply("An error occurred. Please try again.");
-    }
-});
-
-cmd({ 
-    pattern: "yta", 
-    alias: ["play", "audio"], 
-    react: "🎧", 
-    desc: "Download YouTube song", 
-    category: "main", 
-    use: '.song <query>', 
-    filename: __filename 
-}, async (conn, mek, m, { from, sender, reply, q }) => { 
-    try {
-        if (!q) return reply("*Please provide a song name..*");
-
-        const yt = await ytsearch(q);
-        if (!yt.results.length) return reply("No results found!");
-
-        const song = yt.results[0];
-        const apiUrl = `https://apis.davidcyriltech.my.id/youtube/mp3?url=${encodeURIComponent(song.url)}`;
-        
-        const res = await fetch(apiUrl);
-        const data = await res.json();
-
-        if (!data?.result?.downloadUrl) return reply("Download failed. Try again later.");
-
-        await conn.sendMessage(from, {
-            audio: { url: data.result.downloadUrl },
-            mimetype: "audio/mpeg",
-            fileName: `${song.title}.mp3`
         }, { quoted: mek });
 
     } catch (error) {
@@ -266,6 +363,7 @@ cmd({
                                         sampleRate: 22050, // Lower sample rate
                                         channels: 1 // Mono instead of stereo
                                     });
+                        
                                     await conn.sendMessage(from, { 
                                         audio: convertedAudio,
                                         mimetype: "audio/mpeg",
