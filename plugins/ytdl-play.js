@@ -42,12 +42,12 @@ cmd({
             footer: config.DESCRIPTION || "YouTube Downloader",
             buttons: [
                 {
-                    buttonId: `yt-audio-${video.url}-${from}`,
+                    buttonId: `yt-audio-${video.url}-${Date.now()}`,
                     buttonText: { displayText: "🎵 Download Audio" },
                     type: 1
                 },
                 {
-                    buttonId: `yt-video-${video.url}-${from}`,
+                    buttonId: `yt-video-${video.url}-${Date.now()}`,
                     buttonText: { displayText: "🎬 Download Video" },
                     type: 1
                 }
@@ -56,99 +56,87 @@ cmd({
         };
 
         // Send message with buttons and thumbnail
-        await conn.sendMessage(from, buttonsMessage, { quoted: mek });
+        const sentMsg = await conn.sendMessage(from, buttonsMessage, { quoted: mek });
+        const messageId = sentMsg.key.id;
+
+        // Create a listener for button responses
+        const buttonHandler = async (msgData) => {
+            try {
+                const receivedMsg = msgData.messages[0];
+                if (!receivedMsg.message?.buttonsResponseMessage) return;
+
+                const buttonId = receivedMsg.message.buttonsResponseMessage.selectedButtonId;
+                const senderId = receivedMsg.key.remoteJid;
+                const isReplyToBot = receivedMsg.message.buttonsResponseMessage.contextInfo?.stanzaId === messageId;
+
+                if (isReplyToBot && senderId === from) {
+                    // Remove listener to prevent multiple triggers
+                    conn.ev.off("messages.upsert", buttonHandler);
+
+                    // Show processing reaction
+                    await conn.sendMessage(from, { react: { text: '⏳', key: receivedMsg.key } });
+
+                    try {
+                        const type = buttonId.startsWith('yt-audio-') ? 'audio' : 'video';
+                        const videoUrl = buttonId.split('-').slice(2, -1).join('-');
+
+                        // Make fresh API request
+                        const freshApiUrl = `https://api.hanggts.xyz/download/ytdl?url=${encodeURIComponent(videoUrl)}`;
+                        const freshResponse = await fetch(freshApiUrl);
+                        const freshData = await freshResponse.json();
+
+                        if (!freshData?.status || !freshData?.result) {
+                            return conn.sendMessage(from, { text: "Failed to fetch download links. Please try again later." }, { quoted: receivedMsg });
+                        }
+
+                        if (type === "audio") {
+                            // Download audio and convert to MP3
+                            const audioRes = await fetch(freshData.result.mp3);
+                            const audioBuffer = await audioRes.buffer();
+
+                            let convertedAudio;
+                            try {
+                                convertedAudio = await converter.toAudio(audioBuffer, 'mp4');
+                            } catch (err) {
+                                console.error('Audio conversion failed:', err);
+                                // Fallback to original audio if conversion fails
+                                convertedAudio = audioBuffer;
+                            }
+
+                            await conn.sendMessage(from, {
+                                audio: convertedAudio,
+                                mimetype: "audio/mpeg",
+                                fileName: `${freshData.result.title}.mp3`
+                            }, { quoted: receivedMsg });
+                        } else {
+                            // For video, send directly without conversion
+                            await conn.sendMessage(from, {
+                                video: { url: freshData.result.mp4 },
+                                caption: `"${freshData.result.title}" Downloaded Successfully ✅`,
+                                fileName: `${freshData.result.title}.mp4`
+                            }, { quoted: receivedMsg });
+                        }
+                    } catch (error) {
+                        console.error("YouTube Download Error:", error);
+                        conn.sendMessage(from, { text: `❌ Error: ${error.message}` }, { quoted: receivedMsg });
+                    }
+                }
+            } catch (error) {
+                console.error("Button handler error:", error);
+            }
+        };
+
+        // Add the listener
+        conn.ev.on("messages.upsert", buttonHandler);
+
+        // Remove listener after 2 minutes if no response
+        setTimeout(() => {
+            conn.ev.off("messages.upsert", buttonHandler);
+        }, 120000);
 
     } catch (error) {
         console.error(error);
         reply("An error occurred. Please try again.");
-    }
-});
-
-// Global button handler
-const handleYouTubeButton = async (conn, receivedMsg) => {
-    try {
-        if (!receivedMsg.message?.buttonsResponseMessage) return;
-
-        const buttonId = receivedMsg.message.buttonsResponseMessage.selectedButtonId;
-        const from = receivedMsg.key.remoteJid;
-        const sender = receivedMsg.key.participant || receivedMsg.key.remoteJid;
-        
-        // Check if it's a YouTube download button
-        if (buttonId && (buttonId.includes('yt-audio-') || buttonId.includes('yt-video-'))) {
-            const type = buttonId.includes('yt-audio-') ? 'audio' : 'video';
-            
-            // Extract URL from button ID (format: yt-audio-URL-fromJid)
-            const parts = buttonId.split('-');
-            const urlPart = parts.slice(2, -1).join('-');
-            const originalFrom = parts[parts.length - 1];
-            
-            // Verify the button was meant for this chat
-            if (originalFrom !== from) return;
-            
-            const videoUrl = decodeURIComponent(urlPart);
-
-            // Show processing reaction
-            await conn.sendMessage(from, { react: { text: '⏳', key: receivedMsg.key } });
-
-            try {
-                // Make API request
-                const apiUrl = `https://api.hanggts.xyz/download/ytdl?url=${encodeURIComponent(videoUrl)}`;
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-
-                if (!data?.status || !data?.result) {
-                    return conn.sendMessage(from, { text: "❌ Failed to fetch download links. Please try again later." }, { quoted: receivedMsg });
-                }
-
-                if (type === "audio") {
-                    // Download audio and convert to MP3
-                    const audioRes = await fetch(data.result.mp3);
-                    if (!audioRes.ok) throw new Error('Failed to download audio');
-                    
-                    const audioBuffer = await audioRes.arrayBuffer();
-                    const buffer = Buffer.from(audioBuffer);
-
-                    let convertedAudio;
-                    try {
-                        convertedAudio = await converter.toAudio(buffer, 'mp4');
-                    } catch (err) {
-                        console.error('Audio conversion failed:', err);
-                        // Fallback to original audio if conversion fails
-                        convertedAudio = buffer;
-                    }
-
-                    await conn.sendMessage(from, {
-                        audio: convertedAudio,
-                        mimetype: "audio/mpeg",
-                        fileName: `${data.result.title}.mp3`
-                    }, { quoted: receivedMsg });
-                } else {
-                    // For video, send directly without conversion
-                    await conn.sendMessage(from, {
-                        video: { url: data.result.mp4 },
-                        caption: `"${data.result.title}" Downloaded Successfully ✅`,
-                        fileName: `${data.result.title}.mp4`
-                    }, { quoted: receivedMsg });
-                }
-            } catch (error) {
-                console.error("YouTube Download Error:", error);
-                conn.sendMessage(from, { text: `❌ Error: ${error.message}` }, { quoted: receivedMsg });
-            }
-        }
-    } catch (error) {
-        console.error("Button handler error:", error);
-    }
-};
-
-// Listen for button responses
-conn.ev.on('messages.upsert', async (m) => {
-    try {
-        const msg = m.messages[0];
-        if (msg) {
-            await handleYouTubeButton(conn, msg);
-        }
-    } catch (error) {
-        console.error('Error in message upsert:', error);
     }
 });
 
