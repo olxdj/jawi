@@ -3,10 +3,9 @@ const { cmd } = require('../command');
 const { ytsearch, ytmp3, ytmp4 } = require('@dark-yasiya/yt-dl.js'); 
 const converter = require('../data/play-converter');
 const fetch = require('node-fetch');
-
 cmd({ 
     pattern: "play", 
-    alias: ["yta", "ytv"], 
+    alias: ["yta", "ytv", "song", "video"], 
     react: "🎧", 
     desc: "Download YouTube audio or video", 
     category: "main", 
@@ -30,28 +29,16 @@ cmd({
 
         if (!data?.status || !data?.result) return reply("Failed to fetch video data. Try again later.");
 
-        // Create buttons message with thumbnail
-        const buttonsMessage = {
-            text: `*🎵 YouTube Downloader*\n\n` +
-                  `*🔹 Title:* ${data.result.title}\n` +
-                  `*🔸 Duration:* ${video.duration || 'N/A'}\n` +
-                  `*🔹 Views:* ${video.views || 'N/A'}\n` +
-                  `*🔸 Uploaded:* ${video.uploaded || 'N/A'}\n\n` +
-                  `_Select download option below_`,
+        // First send the thumbnail image separately
+        await conn.sendMessage(from, {
+            image: { url: video.thumbnail },
+            caption: `*🎵 YouTube Downloader*\n\n` +
+                     `*🔹 Title:* ${data.result.title}\n` +
+                     `*🔸 Duration:* ${video.duration || 'N/A'}\n` +
+                     `*🔹 Views:* ${video.views || 'N/A'}\n` +
+                     `*🔸 Uploaded:* ${video.uploaded || 'N/A'}\n\n` +
+                     `_Select download option below_`,
             footer: config.DESCRIPTION || "YouTube Downloader",
-            buttons: [
-                {
-                    buttonId: `yt-audio-${video.url}`,
-                    buttonText: { displayText: "🎵 Download Audio" },
-                    type: 1
-                },
-                {
-                    buttonId: `yt-video-${video.url}`,
-                    buttonText: { displayText: "🎬 Download Video" },
-                    type: 1
-                }
-            ],
-            headerType: 1, // Changed to 1 for image header
             contextInfo: {
                 mentionedJid: [sender],
                 forwardingScore: 999,
@@ -61,15 +48,33 @@ cmd({
                     newsletterName: 'YouTube Downloader',
                     serverMessageId: 143
                 }
-            },
-            image: { url: video.thumbnail } // Added thumbnail here
+            }
+        }, { quoted: mek });
+
+        // Then send buttons separately
+        const buttonsMessage = {
+            text: `Choose download option:`,
+            footer: config.DESCRIPTION || "YouTube Downloader",
+            buttons: [
+                {
+                    buttonId: `yt-audio-${video.url}-${Date.now()}`,
+                    buttonText: { displayText: "🎵 Download Audio" },
+                    type: 1
+                },
+                {
+                    buttonId: `yt-video-${video.url}-${Date.now()}`,
+                    buttonText: { displayText: "🎬 Download Video" },
+                    type: 1
+                }
+            ],
+            headerType: 1
         };
 
-        // Send message with buttons and thumbnail
+        // Send message with buttons
         const sentMsg = await conn.sendMessage(from, buttonsMessage, { quoted: mek });
         const messageId = sentMsg.key.id;
 
-        // Create a listener for button responses
+        // Create a one-time listener for button responses
         const buttonHandler = async (msgData) => {
             const receivedMsg = msgData.messages[0];
             if (!receivedMsg.message?.buttonsResponseMessage) return;
@@ -79,7 +84,7 @@ cmd({
             const isReplyToBot = receivedMsg.message.buttonsResponseMessage.contextInfo?.stanzaId === messageId;
 
             if (isReplyToBot && senderId === from) {
-                // Remove listener to prevent multiple triggers
+                // Remove listener immediately after first response
                 conn.ev.off("messages.upsert", buttonHandler);
 
                 // Show processing reaction
@@ -87,7 +92,9 @@ cmd({
 
                 try {
                     const type = buttonId.startsWith('yt-audio-') ? 'audio' : 'video';
-                    const videoUrl = buttonId.split('-').slice(2).join('-');
+                    // Extract URL from button ID (remove timestamp at the end)
+                    const buttonParts = buttonId.split('-');
+                    const videoUrl = buttonParts.slice(2, -1).join('-');
 
                     // Make fresh API request
                     const freshApiUrl = `https://api.hanggts.xyz/download/ytdl?url=${encodeURIComponent(videoUrl)}`;
@@ -132,13 +139,8 @@ cmd({
             }
         };
 
-        // Add the listener
+        // Add the listener (one-time only)
         conn.ev.on("messages.upsert", buttonHandler);
-
-        // Remove listener after 2 minutes if no response
-        setTimeout(() => {
-            conn.ev.off("messages.upsert", buttonHandler);
-        }, 120000);
 
     } catch (error) {
         console.error(error);
