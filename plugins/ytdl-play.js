@@ -3,6 +3,7 @@ const { cmd } = require('../command');
 const { ytsearch, ytmp3, ytmp4 } = require('@dark-yasiya/yt-dl.js'); 
 const converter = require('../data/play-converter');
 const fetch = require('node-fetch');
+
 cmd({ 
     pattern: "play", 
     alias: ["yta", "ytv", "song", "video"], 
@@ -29,8 +30,8 @@ cmd({
 
         if (!data?.status || !data?.result) return reply("Failed to fetch video data. Try again later.");
 
-        // First send the thumbnail image separately
-        await conn.sendMessage(from, {
+        // Create buttons message with thumbnail
+        const buttonsMessage = {
             image: { url: video.thumbnail },
             caption: `*🎵 YouTube Downloader*\n\n` +
                      `*🔹 Title:* ${data.result.title}\n` +
@@ -39,112 +40,91 @@ cmd({
                      `*🔸 Uploaded:* ${video.uploaded || 'N/A'}\n\n` +
                      `_Select download option below_`,
             footer: config.DESCRIPTION || "YouTube Downloader",
-            contextInfo: {
-                mentionedJid: [sender],
-                forwardingScore: 999,
-                isForwarded: true,
-                forwardedNewsletterMessageInfo: {
-                    newsletterJid: '120363354023106228@newsletter',
-                    newsletterName: 'YouTube Downloader',
-                    serverMessageId: 143
-                }
-            }
-        }, { quoted: mek });
-
-        // Then send buttons separately
-        const buttonsMessage = {
-            text: `Choose download option:`,
-            footer: config.DESCRIPTION || "YouTube Downloader",
             buttons: [
                 {
-                    buttonId: `yt-audio-${video.url}-${Date.now()}`,
+                    buttonId: `yt-audio-${video.url}`,
                     buttonText: { displayText: "🎵 Download Audio" },
                     type: 1
                 },
                 {
-                    buttonId: `yt-video-${video.url}-${Date.now()}`,
+                    buttonId: `yt-video-${video.url}`,
                     buttonText: { displayText: "🎬 Download Video" },
                     type: 1
                 }
             ],
-            headerType: 1
+            headerType: 4
         };
 
-        // Send message with buttons
-        const sentMsg = await conn.sendMessage(from, buttonsMessage, { quoted: mek });
-        const messageId = sentMsg.key.id;
-
-        // Create a one-time listener for button responses
-        const buttonHandler = async (msgData) => {
-            const receivedMsg = msgData.messages[0];
-            if (!receivedMsg.message?.buttonsResponseMessage) return;
-
-            const buttonId = receivedMsg.message.buttonsResponseMessage.selectedButtonId;
-            const senderId = receivedMsg.key.remoteJid;
-            const isReplyToBot = receivedMsg.message.buttonsResponseMessage.contextInfo?.stanzaId === messageId;
-
-            if (isReplyToBot && senderId === from) {
-                // Remove listener immediately after first response
-                conn.ev.off("messages.upsert", buttonHandler);
-
-                // Show processing reaction
-                await conn.sendMessage(from, { react: { text: '⏳', key: receivedMsg.key } });
-
-                try {
-                    const type = buttonId.startsWith('yt-audio-') ? 'audio' : 'video';
-                    // Extract URL from button ID (remove timestamp at the end)
-                    const buttonParts = buttonId.split('-');
-                    const videoUrl = buttonParts.slice(2, -1).join('-');
-
-                    // Make fresh API request
-                    const freshApiUrl = `https://api.hanggts.xyz/download/ytdl?url=${encodeURIComponent(videoUrl)}`;
-                    const freshResponse = await fetch(freshApiUrl);
-                    const freshData = await freshResponse.json();
-
-                    if (!freshData?.status || !freshData?.result) {
-                        return reply("Failed to fetch download links. Please try again later.");
-                    }
-
-                    if (type === "audio") {
-                        // Download audio and convert to MP3
-                        const audioRes = await fetch(freshData.result.mp3);
-                        const audioBuffer = await audioRes.buffer();
-
-                        let convertedAudio;
-                        try {
-                            convertedAudio = await converter.toAudio(audioBuffer, 'mp4');
-                        } catch (err) {
-                            console.error('Audio conversion failed:', err);
-                            // Fallback to original audio if conversion fails
-                            convertedAudio = audioBuffer;
-                        }
-
-                        await conn.sendMessage(from, {
-                            audio: convertedAudio,
-                            mimetype: "audio/mpeg",
-                            fileName: `${freshData.result.title}.mp3`
-                        }, { quoted: receivedMsg });
-                    } else {
-                        // For video, send directly without conversion
-                        await conn.sendMessage(from, {
-                            video: { url: freshData.result.mp4 },
-                            caption: `"${freshData.result.title}" Downloaded Successfully ✅`,
-                            fileName: `${freshData.result.title}.mp4`
-                        }, { quoted: receivedMsg });
-                    }
-                } catch (error) {
-                    console.error("YouTube Download Error:", error);
-                    reply(`❌ Error: ${error.message}`);
-                }
-            }
-        };
-
-        // Add the listener (one-time only)
-        conn.ev.on("messages.upsert", buttonHandler);
+        // Send message with buttons and thumbnail
+        await conn.sendMessage(from, buttonsMessage, { quoted: mek });
 
     } catch (error) {
         console.error(error);
         reply("An error occurred. Please try again.");
+    }
+});
+
+// Separate handler for button responses
+conn.ev.on("messages.upsert", async (msgData) => {
+    try {
+        const receivedMsg = msgData.messages[0];
+        if (!receivedMsg.message?.buttonsResponseMessage) return;
+
+        const buttonId = receivedMsg.message.buttonsResponseMessage.selectedButtonId;
+        const from = receivedMsg.key.remoteJid;
+        
+        // Check if it's a YouTube download button
+        if (buttonId.startsWith('yt-audio-') || buttonId.startsWith('yt-video-')) {
+            const type = buttonId.startsWith('yt-audio-') ? 'audio' : 'video';
+            const videoUrl = buttonId.split('-').slice(2).join('-');
+
+            // Show processing reaction
+            await conn.sendMessage(from, { react: { text: '⏳', key: receivedMsg.key } });
+
+            try {
+                // Make API request
+                const apiUrl = `https://api.hanggts.xyz/download/ytdl?url=${encodeURIComponent(videoUrl)}`;
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+
+                if (!data?.status || !data?.result) {
+                    return conn.sendMessage(from, { text: "Failed to fetch download links. Please try again later." }, { quoted: receivedMsg });
+                }
+
+                if (type === "audio") {
+                    // Download audio and convert to MP3
+                    const audioRes = await fetch(data.result.mp3);
+                    const audioBuffer = await audioRes.buffer();
+
+                    let convertedAudio;
+                    try {
+                        convertedAudio = await converter.toAudio(audioBuffer, 'mp4');
+                    } catch (err) {
+                        console.error('Audio conversion failed:', err);
+                        // Fallback to original audio if conversion fails
+                        convertedAudio = audioBuffer;
+                    }
+
+                    await conn.sendMessage(from, {
+                        audio: convertedAudio,
+                        mimetype: "audio/mpeg",
+                        fileName: `${data.result.title}.mp3`
+                    }, { quoted: receivedMsg });
+                } else {
+                    // For video, send directly without conversion
+                    await conn.sendMessage(from, {
+                        video: { url: data.result.mp4 },
+                        caption: `"${data.result.title}" Downloaded Successfully ✅`,
+                        fileName: `${data.result.title}.mp4`
+                    }, { quoted: receivedMsg });
+                }
+            } catch (error) {
+                console.error("YouTube Download Error:", error);
+                conn.sendMessage(from, { text: `❌ Error: ${error.message}` }, { quoted: receivedMsg });
+            }
+        }
+    } catch (error) {
+        console.error("Button handler error:", error);
     }
 });
 
