@@ -1,6 +1,25 @@
 const { cmd } = require('../command');
 const axios = require('axios');
 
+const getBuffer = async (url, options) => {
+    try {
+        options ? options : {};
+        const res = await axios({
+            method: 'get',
+            url,
+            headers: {
+                'DNT': 1,
+                'Upgrade-Insecure-Request': 1
+            },
+            ...options,
+            responseType: 'arraybuffer'
+        });
+        return res.data;
+    } catch (e) {
+        console.log(e);
+    }
+};
+
 cmd({
     pattern: "apk",
     alias: ["app"],
@@ -27,21 +46,16 @@ async (conn, mek, m, { from, q, reply }) => {
 
         const app = data.result;
 
-        // Send APK with thumbnail
+        // Get app icon buffer for thumbnail
+        const thumb = await getBuffer(app.appicon);
+
+        // Send APK with real thumbnail
         await conn.sendMessage(from, {
             document: { url: app.download_url },
             mimetype: app.mimetype || "application/vnd.android.package-archive",
             fileName: `${app.appname}.apk`,
             caption: `✅ *APK successfully downloaded*\n\n📱 *App:* ${app.appname}\n👨‍💻 *Developer:* ${app.developer}\n\nPowered By KHAN-MD 💚`,
-            contextInfo: {
-                externalAdReply: {
-                    title: app.appname,
-                    body: `Developer: ${app.developer}`,
-                    thumbnailUrl: app.appicon,
-                    mediaType: 1,
-                    renderLargerThumbnail: true
-                }
-            }
+            jpegThumbnail: thumb
         }, { quoted: mek });
 
         // ✅ React - success
