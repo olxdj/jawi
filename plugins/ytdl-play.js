@@ -30,7 +30,7 @@ cmd({
 
         if (!data?.status || !data?.result) return reply("Failed to fetch video data. Try again later.");
 
-        // Create buttons message
+        // Create buttons message with thumbnail
         const buttonsMessage = {
             text: `*🎵 YouTube Downloader*\n\n` +
                   `*🔹 Title:* ${data.result.title}\n` +
@@ -51,7 +51,7 @@ cmd({
                     type: 1
                 }
             ],
-            headerType: 4,
+            headerType: 1, // Changed to 1 for image header
             contextInfo: {
                 mentionedJid: [sender],
                 forwardingScore: 999,
@@ -61,15 +61,11 @@ cmd({
                     newsletterName: 'YouTube Downloader',
                     serverMessageId: 143
                 }
-            }
+            },
+            image: { url: video.thumbnail } // Added thumbnail here
         };
 
-        // Add thumbnail if available
-        if (video.thumbnail) {
-            buttonsMessage.image = { url: video.thumbnail };
-        }
-
-        // Send message with buttons
+        // Send message with buttons and thumbnail
         const sentMsg = await conn.sendMessage(from, buttonsMessage, { quoted: mek });
         const messageId = sentMsg.key.id;
 
@@ -103,12 +99,26 @@ cmd({
                     }
 
                     if (type === "audio") {
+                        // Download audio and convert to MP3
+                        const audioRes = await fetch(freshData.result.mp3);
+                        const audioBuffer = await audioRes.buffer();
+
+                        let convertedAudio;
+                        try {
+                            convertedAudio = await converter.toAudio(audioBuffer, 'mp4');
+                        } catch (err) {
+                            console.error('Audio conversion failed:', err);
+                            // Fallback to original audio if conversion fails
+                            convertedAudio = audioBuffer;
+                        }
+
                         await conn.sendMessage(from, {
-                            audio: { url: freshData.result.mp3 },
+                            audio: convertedAudio,
                             mimetype: "audio/mpeg",
                             fileName: `${freshData.result.title}.mp3`
                         }, { quoted: receivedMsg });
                     } else {
+                        // For video, send directly without conversion
                         await conn.sendMessage(from, {
                             video: { url: freshData.result.mp4 },
                             caption: `"${freshData.result.title}" Downloaded Successfully ✅`,
