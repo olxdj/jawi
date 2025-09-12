@@ -17,7 +17,7 @@ cmd({
     let ytUrl = '';
     let title = '';
 
-    // If input is a YouTube URL
+    // If it's a YouTube link
     if (/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//i.test(q)) {
       ytUrl = q.trim();
       title = "Your Song";
@@ -37,15 +37,16 @@ cmd({
       return reply("⚠️ Download failed. Try again later.");
     }
 
-    // Download audio file as buffer
+    // Download as buffer
     const audioRes = await axios.get(data.result.data.downloadURL, { responseType: "arraybuffer" });
-    const audioBuffer = Buffer.from(audioRes.data, "binary");
+    const audioBuffer = Buffer.from(audioRes.data);
 
-    // Send audio properly
+    // Some APIs return m4a (AAC), not mp3 → fix by using audio/mp4
     await conn.sendMessage(from, {
       audio: audioBuffer,
-      mimetype: "audio/mpeg", // force WhatsApp to treat it as MP3
-      fileName: `${title}.mp3`
+      mimetype: "audio/mp4",   // ✅ makes WhatsApp accept/play
+      fileName: `${title}.m4a`,
+      ptt: false
     }, { quoted: mek });
 
     // Success reply
