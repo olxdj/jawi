@@ -1,8 +1,6 @@
 const config = require('../config');
 const { cmd } = require('../command');
 const { ytsearch, ytmp3, ytmp4 } = require('@dark-yasiya/yt-dl.js'); 
-const yts = require('yt-search');
-const axios = require('axios');
 const converter = require('../data/play-converter');
 const fetch = require('node-fetch');
 
@@ -144,7 +142,7 @@ cmd({
 
 cmd({
     pattern: "play2",
-    alias: ["song2", "yta2"],
+    alias: ["yta2", "song2"],
     react: "🎧",
     desc: "Download YouTube songs using Prince API",
     category: "main",
@@ -152,42 +150,34 @@ cmd({
     filename: __filename
 }, async (conn, mek, m, { from, reply, q }) => {
     try {
-        if (!q) return reply("❌ Please provide a song name or YouTube link.");
+        if (!q) return reply("❌ Please provide a song name.");
 
-        let videoUrl = q;
-        let title = "YouTube Song";
-        let thumbnail = "";
+        // 🔎 Search song using ytsearch
+        const yt = await ytsearch(q);
+        if (!yt.results.length) return reply("No results found!");
 
-        // 🔎 Search YouTube if not a link
-        if (!q.startsWith("http")) {
-            const search = await yts(q);
-            if (!search.videos.length) return reply("No results found!");
+        const song = yt.results[0];
+        const videoUrl = song.url;
 
-            const song = search.videos[0];
-            videoUrl = song.url;
-            title = song.title;
-            thumbnail = song.thumbnail;
-        }
-
-        // ⚡ Prince API for MP3
+        // ⚡ Prince API call
         const apiUrl = `https://princeapi.zone.id/api/download/yta?apikey=prince&url=${encodeURIComponent(videoUrl)}`;
-        const response = await axios.get(apiUrl);
-        const data = response.data;
+        const res = await fetch(apiUrl);
+        const data = await res.json();
 
         if (!data.success || !data.result?.download_url) {
-            return reply("❌ Download failed. Try again later.");
+            return reply("❌ Failed to fetch download link.");
         }
 
-        // 🎶 Send audio first
+        // 🎶 Send audio file
         await conn.sendMessage(from, {
             audio: { url: data.result.download_url },
             mimetype: "audio/mpeg",
-            fileName: `${title}.mp3`
+            fileName: `${data.result.title}.mp3`
         }, { quoted: mek });
 
-        // ✅ Send success message quoted to audio
+        // ✅ Success reply
         await conn.sendMessage(from, {
-            text: `*${title} Downloaded Successfully ✅*`
+            text: `*${data.result.title} Downloaded Successfully ✅*`
         }, { quoted: mek });
 
     } catch (err) {
