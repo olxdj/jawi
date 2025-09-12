@@ -1,6 +1,7 @@
 const config = require('../config');
 const { cmd } = require('../command');
 const { ytsearch, ytmp3, ytmp4 } = require('@dark-yasiya/yt-dl.js'); 
+const axios = require('axios');
 const converter = require('../data/play-converter');
 const fetch = require('node-fetch');
 
@@ -155,43 +156,41 @@ cmd({
     let ytUrl = '';
     let title = '';
 
-    // Check if input is a YouTube URL
+    // Check if it's a YouTube URL
     if (/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//i.test(q)) {
       ytUrl = q.trim();
       title = "Your Song";
     } else {
-      // Otherwise, search YouTube
+      // Search YouTube
       const yt = await ytsearch(q);
       if (!yt.results.length) return reply("⚠️ No results found.");
       ytUrl = yt.results[0].url;
       title = yt.results[0].title;
     }
 
-    // Call API
+    // Call API with axios
     const apiUrl = `https://www.apis-anomaki.zone.id/downloader/yta?url=${encodeURIComponent(ytUrl)}`;
-    const res = await fetch(apiUrl);
-    const data = await res.json();
+    const { data } = await axios.get(apiUrl);
 
     if (!data?.result?.data?.downloadURL) {
       return reply("⚠️ Download failed. Try again later.");
     }
 
-    // Send audio file
+    // Send audio
     await conn.sendMessage(from, {
       audio: { url: data.result.data.downloadURL },
       mimetype: "audio/mpeg",
       fileName: `${title}.mp3`
     }, { quoted: mek });
 
-    // Success reply
+    // Success message
     await reply(`${title} Downloaded Successfully ✅`);
 
   } catch (err) {
-    console.error(err);
+    console.error("Play2 Error:", err);
     reply("⚠️ Error occurred. Try again.");
   }
 });
-
 
 cmd({ 
     pattern: "play4", 
