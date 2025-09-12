@@ -1,7 +1,6 @@
 const config = require('../config');
 const { cmd } = require('../command');
 const { ytsearch, ytmp3, ytmp4 } = require('@dark-yasiya/yt-dl.js'); 
-const axios = require('axios');
 const converter = require('../data/play-converter');
 const fetch = require('node-fetch');
 
@@ -141,56 +140,6 @@ cmd({
     }
 });
 
-cmd({
-  pattern: "play2",
-  alias: ["yta2", "song2"],
-  react: "🎶",
-  desc: "Download YouTube song using Anomaki API",
-  category: "main",
-  use: '.play2 <query or youtube url>',
-  filename: __filename
-}, async (conn, mek, m, { from, reply, q }) => {
-  try {
-    if (!q) return reply("❗ Please provide a song name or YouTube link.");
-
-    let ytUrl = '';
-    let title = '';
-
-    // Check if it's a YouTube URL
-    if (/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//i.test(q)) {
-      ytUrl = q.trim();
-      title = "Your Song";
-    } else {
-      // Search YouTube
-      const yt = await ytsearch(q);
-      if (!yt.results.length) return reply("⚠️ No results found.");
-      ytUrl = yt.results[0].url;
-      title = yt.results[0].title;
-    }
-
-    // Call API with axios
-    const apiUrl = `https://www.apis-anomaki.zone.id/downloader/yta?url=${encodeURIComponent(ytUrl)}`;
-    const { data } = await axios.get(apiUrl);
-
-    if (!data?.result?.data?.downloadURL) {
-      return reply("⚠️ Download failed. Try again later.");
-    }
-
-    // Send audio
-    await conn.sendMessage(from, {
-      audio: { url: data.result.data.downloadURL },
-      mimetype: "audio/mpeg",
-      fileName: `${title}.mp3`
-    }, { quoted: mek });
-
-    // Success message
-    await reply(`${title} Downloaded Successfully ✅`);
-
-  } catch (err) {
-    console.error("Play2 Error:", err);
-    reply("⚠️ Error occurred. Try again.");
-  }
-});
 
 cmd({ 
     pattern: "play4", 
