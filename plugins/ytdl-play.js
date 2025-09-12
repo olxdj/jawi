@@ -2,6 +2,7 @@ const config = require('../config');
 const { cmd } = require('../command');
 const { ytsearch, ytmp3, ytmp4 } = require('@dark-yasiya/yt-dl.js'); 
 const yts = require('yt-search');
+const axios = require('axios');
 const converter = require('../data/play-converter');
 const fetch = require('node-fetch');
 
@@ -144,57 +145,53 @@ cmd({
 cmd({
     pattern: "play2",
     alias: ["song2", "yta2"],
-    react: "🎶",
+    react: "🎧",
     desc: "Download YouTube songs using Prince API",
-    category: "downloader",
-    use: '.play2 <query|url>',
+    category: "main",
+    use: '.play2 <query>',
     filename: __filename
-}, async (conn, mek, m, { from, q, reply }) => {
+}, async (conn, mek, m, { from, reply, q }) => {
     try {
-        if (!q) {
-            return reply(`Please enter a search query or YouTube link. Usage example:
-*.play2 Spectre*
-*.play2 https://youtube.com*`);
-        }
+        if (!q) return reply("❌ Please provide a song name or YouTube link.");
 
-        let videoUrl;
-        let title;
+        let videoUrl = q;
+        let title = "YouTube Song";
+        let thumbnail = "";
 
-        // If direct YouTube link
-        if (q.startsWith("https://youtu")) {
-            videoUrl = q;
-        } else {
-            // Search video
+        // 🔎 Search YouTube if not a link
+        if (!q.startsWith("http")) {
             const search = await yts(q);
-            if (!search.videos.length) return reply("❌ No results found.");
-            videoUrl = search.videos[0].url;
+            if (!search.videos.length) return reply("No results found!");
+
+            const song = search.videos[0];
+            videoUrl = song.url;
+            title = song.title;
+            thumbnail = song.thumbnail;
         }
 
-        // Call Prince API
+        // ⚡ Prince API for MP3
         const apiUrl = `https://princeapi.zone.id/api/download/yta?apikey=prince&url=${encodeURIComponent(videoUrl)}`;
-        const res = await fetch(apiUrl);
-        const data = await res.json();
+        const response = await axios.get(apiUrl);
+        const data = response.data;
 
-        if (!data?.result?.download_url) {
-            return reply("❌ Failed to fetch download link. Try again later.");
+        if (!data.success || !data.result?.download_url) {
+            return reply("❌ Download failed. Try again later.");
         }
 
-        title = data.result.title;
-
-        // Send audio
-        const audioMsg = await conn.sendMessage(from, {
+        // 🎶 Send audio first
+        await conn.sendMessage(from, {
             audio: { url: data.result.download_url },
             mimetype: "audio/mpeg",
             fileName: `${title}.mp3`
         }, { quoted: mek });
 
-        // Reply after audio
+        // ✅ Send success message quoted to audio
         await conn.sendMessage(from, {
             text: `*${title} Downloaded Successfully ✅*`
-        }, { quoted: audioMsg });
+        }, { quoted: mek });
 
     } catch (err) {
-        console.error("play2 error:", err);
+        console.error("Error in play2:", err);
         reply("❌ An error occurred while downloading the song.");
     }
 });
