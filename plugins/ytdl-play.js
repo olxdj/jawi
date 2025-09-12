@@ -1,6 +1,7 @@
 const config = require('../config');
 const { cmd } = require('../command');
 const { ytsearch, ytmp3, ytmp4 } = require('@dark-yasiya/yt-dl.js'); 
+const yts = require('yt-search');
 const converter = require('../data/play-converter');
 const fetch = require('node-fetch');
 
@@ -140,6 +141,64 @@ cmd({
     }
 });
 
+cmd({
+    pattern: "play2",
+    alias: ["song2", "yta2"],
+    react: "🎶",
+    desc: "Download YouTube songs using Prince API",
+    category: "downloader",
+    use: '.play2 <query|url>',
+    filename: __filename
+}, async (conn, mek, m, { from, q, reply }) => {
+    try {
+        if (!q) {
+            return reply(`Please enter a search query or YouTube link. Usage example:
+*.play2 Spectre*
+*.play2 https://youtube.com*`);
+        }
+
+        let videoUrl;
+        let title;
+
+        // If direct YouTube link
+        if (q.startsWith("https://youtu")) {
+            videoUrl = q;
+        } else {
+            // Search video
+            const search = await yts(q);
+            if (!search.videos.length) return reply("❌ No results found.");
+            videoUrl = search.videos[0].url;
+        }
+
+        // Call Prince API
+        const apiUrl = `https://princeapi.zone.id/api/download/yta?apikey=prince&url=${encodeURIComponent(videoUrl)}`;
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+
+        if (!data?.result?.download_url) {
+            return reply("❌ Failed to fetch download link. Try again later.");
+        }
+
+        title = data.result.title;
+
+        // Send audio
+        const audioMsg = await conn.sendMessage(from, {
+            audio: { url: data.result.download_url },
+            mimetype: "audio/mpeg",
+            fileName: `${title}.mp3`
+        }, { quoted: mek });
+
+        // Reply after audio
+        await conn.sendMessage(from, {
+            text: `*${title} Downloaded Successfully ✅*`
+        }, { quoted: audioMsg });
+
+    } catch (err) {
+        console.error("play2 error:", err);
+        reply("❌ An error occurred while downloading the song.");
+    }
+});
+
 cmd({ 
     pattern: "play4", 
     alias: ["yta4"], 
@@ -193,48 +252,6 @@ cmd({
     }
 });
 
-cmd({
-    pattern: "play2",
-    alias: ["yta2", "song2"],
-    react: "🎶",
-    desc: "Download YouTube song using Prince API",
-    category: "main",
-    use: '.play2 <query>',
-    filename: __filename
-}, async (conn, mek, m, { from, reply, q }) => {
-    try {
-        if (!q) return reply("*Please provide a song name..*");
-
-        // 🔎 Search YouTube
-        const yt = await ytsearch(q);
-        if (!yt.results.length) return reply("No results found!");
-
-        const song = yt.results[0];
-
-        // 🎧 Prince API
-        const apiUrl = `https://princeapi.zone.id/api/download/yta?apikey=prince&url=${encodeURIComponent(song.url)}`;
-        const res = await fetch(apiUrl);
-        const data = await res.json();
-
-        if (!data?.result?.download_url) return reply("Download failed. Try again later.");
-
-        // 📤 Send audio
-        await conn.sendMessage(from, {
-            audio: { url: data.result.download_url },
-            mimetype: "audio/mpeg",
-            fileName: `${song.title}.mp3`
-        }, { quoted: mek });
-
-        // ✅ Send confirmation
-        await conn.sendMessage(from, {
-            text: `*${song.title} Downloaded Successfully ✅*`
-        }, { quoted: mek });
-
-    } catch (error) {
-        console.error(error);
-        reply("An error occurred. Please try again.");
-    }
-}); 
 
 cmd({ 
     pattern: "play3", 
