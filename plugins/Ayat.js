@@ -1,59 +1,54 @@
 const { cmd } = require('../command');
-const { ytsearch } = require('@dark-yasiya/yt-dl.js');
-const axios = require('axios');
+const yts = require('yt-search');
+const fetch = require('node-fetch');
 
 cmd({
-  pattern: "play2",
-  alias: ["yta2", "song2"],
-  react: "🎶",
-  desc: "Download YouTube song using Anomaki API",
-  category: "main",
-  use: '.play2 <query or youtube url>',
-  filename: __filename
-}, async (conn, mek, m, { from, reply, q }) => {
-  try {
-    if (!q) return reply("❗ Please provide a song name or YouTube link.");
+    pattern: "yt2",
+    alias: ["play2", "music"],
+    react: "🎵",
+    desc: "Download audio from YouTube",
+    category: "download",
+    use: ".yt2 <query or url>",
+    filename: __filename
+}, async (conn, m, mek, { from, q, reply }) => {
+    try {
+        if (!q) return await reply("❌ Please provide a song name or YouTube URL!");
 
-    let ytUrl = '';
-    let title = '';
+        let videoUrl, title;
 
-    // If it's a YouTube link
-    if (/^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//i.test(q)) {
-      ytUrl = q.trim();
-      title = "Your Song";
-    } else {
-      // Otherwise, search YouTube
-      const yt = await ytsearch(q);
-      if (!yt.results.length) return reply("⚠️ No results found.");
-      ytUrl = yt.results[0].url;
-      title = yt.results[0].title;
+        // Check if input is URL
+        if (q.match(/(youtube\.com|youtu\.be)/)) {
+            videoUrl = q;
+        } else {
+            // Search YouTube
+            const search = await yts(q);
+            if (!search.videos.length) return await reply("❌ No results found!");
+            videoUrl = search.videos[0].url;
+        }
+
+        await reply("⏳ Downloading audio... Please wait.");
+
+        // Fetch from your new API
+        const apiUrl = `https://jawad-tech.vercel.app/download/yta?url=${encodeURIComponent(videoUrl)}`;
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+
+        if (!data.status || !data.result) {
+            return await reply("❌ Failed to fetch audio. Try again later!");
+        }
+
+        title = data.metadata?.title || "Unknown Title";
+
+        await conn.sendMessage(from, {
+            audio: { url: data.result },
+            mimetype: 'audio/mpeg',
+            ptt: false
+        }, { quoted: mek });
+
+        await reply(`✅ *${title}* downloaded successfully!\n\n🎧 Powered by JawadTechXD`);
+
+    } catch (error) {
+        console.error(error);
+        await reply(`❌ Error: ${error.message}`);
     }
-
-    // Call API
-    const apiUrl = `https://www.apis-anomaki.zone.id/downloader/yta?url=${encodeURIComponent(ytUrl)}`;
-    const { data } = await axios.get(apiUrl);
-
-    if (!data?.result?.data?.downloadURL) {
-      return reply("⚠️ Download failed. Try again later.");
-    }
-
-    // Download as buffer
-    const audioRes = await axios.get(data.result.data.downloadURL, { responseType: "arraybuffer" });
-    const audioBuffer = Buffer.from(audioRes.data);
-
-    // Some APIs return m4a (AAC), not mp3 → fix by using audio/mp4
-    await conn.sendMessage(from, {
-      audio: audioBuffer,
-      mimetype: "audio/mp4",   // ✅ makes WhatsApp accept/play
-      fileName: `${title}.m4a`,
-      ptt: false
-    }, { quoted: mek });
-
-    // Success reply
-    await reply(`${title} Downloaded Successfully ✅`);
-
-  } catch (err) {
-    console.error("Play2 Error:", err);
-    reply("⚠️ Error occurred. Try again.");
-  }
 });
