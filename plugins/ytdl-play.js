@@ -3,146 +3,74 @@ const { cmd } = require('../command');
 const { ytsearch, ytmp3, ytmp4 } = require('@dark-yasiya/yt-dl.js'); 
 const converter = require('../data/play-converter');
 const fetch = require('node-fetch');
+const yts = require('yt-search');
 
-cmd({ 
-    pattern: "play", 
-    alias: ["yta", "ytv", "song", "video"], 
-    react: "🎧", 
-    desc: "Download YouTube audio or video", 
-    category: "main", 
-    use: '.play <query>', 
-    filename: __filename 
-}, async (conn, mek, m, { from, sender, reply, q }) => { 
+cmd({
+    pattern: "play",
+    alias: ["music"],
+    react: "🎵",
+    desc: "Download audio from YouTube (converted)",
+    category: "download",
+    use: ".play <query or url>",
+    filename: __filename
+}, async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return reply("*Please provide a song/video name..*");
+        if (!q) return await reply("❌ Please provide a song name or YouTube URL!");
 
-        // Show searching indicator
-        await conn.sendMessage(from, { react: { text: '🔍', key: m.key } });
-        
-        const yt = await ytsearch(q);
-        if (!yt.results.length) return reply("No results found!");
+        let videoUrl, title;
 
-        const video = yt.results[0];
-        const apiUrl = `https://api.hanggts.xyz/download/ytdl?url=${encodeURIComponent(video.url)}`;
-        
+        // ✅ Check if input is URL or search query
+        if (q.match(/(youtube\.com|youtu\.be)/)) {
+            videoUrl = q;
+        } else {
+            const search = await yts(q);
+            if (!search.videos.length) return await reply("❌ No results found!");
+            videoUrl = search.videos[0].url;
+        }
+
+        await reply("⏳ Downloading & converting audio... Please wait.");
+
+        // ✅ Fetch from your API
+        const apiUrl = `https://jawad-tech.vercel.app/download/yta?url=${encodeURIComponent(videoUrl)}`;
         const res = await fetch(apiUrl);
         const data = await res.json();
 
-        if (!data?.status || !data?.result) return reply("Failed to fetch video data. Try again later.");
+        if (!data.status || !data.result) {
+            return await reply("❌ Failed to fetch audio. Try again later!");
+        }
 
-        // Create buttons message with thumbnail
-        const buttonsMessage = {
-            image: { url: video.thumbnail },
-            caption: `*🎵 YouTube Downloader*\n\n` +
-                     `*🔹 Title:* ${data.result.title}\n` +
-                     `*🔸 Duration:* ${video.duration || 'N/A'}\n` +
-                     `*🔹 Views:* ${video.views || 'N/A'}\n` +
-                     `*🔸 Uploaded:* ${video.uploaded || 'N/A'}\n\n` +
-                     `_Select download option below_`,
-            footer: config.DESCRIPTION || "YouTube Downloader",
-            buttons: [
-                {
-                    buttonId: `yt-audio-${video.url}-${Date.now()}`,
-                    buttonText: { displayText: "🎵 Download Audio" },
-                    type: 1
-                },
-                {
-                    buttonId: `yt-video-${video.url}-${Date.now()}`,
-                    buttonText: { displayText: "🎬 Download Video" },
-                    type: 1
-                }
-            ],
-            headerType: 4
-        };
+        title = data.metadata?.title || "Unknown Title";
 
-        // Send message with buttons and thumbnail
-        const sentMsg = await conn.sendMessage(from, buttonsMessage, { quoted: mek });
-        const messageId = sentMsg.key.id;
+        // ✅ Step 1: Download audio buffer
+        const audioRes = await fetch(data.result);
+        const audioBuffer = await audioRes.buffer();
 
-        // Create a listener for button responses
-        const buttonHandler = async (msgData) => {
-            try {
-                const receivedMsg = msgData.messages[0];
-                if (!receivedMsg.message?.buttonsResponseMessage) return;
+        // ✅ Step 2: Convert to MP3 using play-converter
+        let convertedAudio;
+        try {
+            convertedAudio = await converter.toAudio(audioBuffer, 'mp4');
+        } catch (err) {
+            console.error('Audio conversion failed:', err);
+            return reply("❌ Audio conversion failed. Please try another song.");
+        }
 
-                const buttonId = receivedMsg.message.buttonsResponseMessage.selectedButtonId;
-                const senderId = receivedMsg.key.remoteJid;
-                const isReplyToBot = receivedMsg.message.buttonsResponseMessage.contextInfo?.stanzaId === messageId;
+        // ✅ Step 3: Send converted audio
+        await conn.sendMessage(from, {
+            audio: convertedAudio,
+            mimetype: "audio/mpeg",
+            fileName: `${title}.mp3`
+        }, { quoted: mek });
 
-                if (isReplyToBot && senderId === from) {
-                    // Remove listener to prevent multiple triggers
-                    conn.ev.off("messages.upsert", buttonHandler);
-
-                    // Show processing reaction
-                    await conn.sendMessage(from, { react: { text: '⏳', key: receivedMsg.key } });
-
-                    try {
-                        const type = buttonId.startsWith('yt-audio-') ? 'audio' : 'video';
-                        const videoUrl = buttonId.split('-').slice(2, -1).join('-');
-
-                        // Make fresh API request
-                        const freshApiUrl = `https://api.hanggts.xyz/download/ytdl?url=${encodeURIComponent(videoUrl)}`;
-                        const freshResponse = await fetch(freshApiUrl);
-                        const freshData = await freshResponse.json();
-
-                        if (!freshData?.status || !freshData?.result) {
-                            return conn.sendMessage(from, { text: "Failed to fetch download links. Please try again later." }, { quoted: receivedMsg });
-                        }
-
-                        if (type === "audio") {
-                            // Download audio and convert to MP3
-                            const audioRes = await fetch(freshData.result.mp3);
-                            const audioBuffer = await audioRes.buffer();
-
-                            let convertedAudio;
-                            try {
-                                convertedAudio = await converter.toAudio(audioBuffer, 'mp4');
-                            } catch (err) {
-                                console.error('Audio conversion failed:', err);
-                                // Fallback to original audio if conversion fails
-                                convertedAudio = audioBuffer;
-                            }
-
-                            await conn.sendMessage(from, {
-                                audio: convertedAudio,
-                                mimetype: "audio/mpeg",
-                                fileName: `${freshData.result.title}.mp3`
-                            }, { quoted: receivedMsg });
-                        } else {
-                            // For video, send directly without conversion
-                            await conn.sendMessage(from, {
-                                video: { url: freshData.result.mp4 },
-                                caption: `"${freshData.result.title}" Downloaded Successfully ✅`,
-                                fileName: `${freshData.result.title}.mp4`
-                            }, { quoted: receivedMsg });
-                        }
-                    } catch (error) {
-                        console.error("YouTube Download Error:", error);
-                        conn.sendMessage(from, { text: `❌ Error: ${error.message}` }, { quoted: receivedMsg });
-                    }
-                }
-            } catch (error) {
-                console.error("Button handler error:", error);
-            }
-        };
-
-        // Add the listener
-        conn.ev.on("messages.upsert", buttonHandler);
-
-        // Remove listener after 2 minutes if no response
-        setTimeout(() => {
-            conn.ev.off("messages.upsert", buttonHandler);
-        }, 120000);
+        await reply(`✅ *${title}* downloaded & converted successfully!\n\n🎧 Powered by JawadTechXD`);
 
     } catch (error) {
         console.error(error);
-        reply("An error occurred. Please try again.");
+        await reply(`❌ Error: ${error.message}`);
     }
 });
 
-
 cmd({ 
-    pattern: "play4", 
+    pattern: "play2", 
     alias: ["yta4"], 
     react: "☘️", 
     desc: "Download YouTube song via JawadTech API", 
@@ -193,205 +121,3 @@ cmd({
         reply("An error occurred. Please try again.");
     }
 });
-
-
-cmd({ 
-    pattern: "play3", 
-    alias: ["jadu", "music", "dlyt", "playx"], 
-    react: "❄️", 
-    desc: "Download YouTube content with options",
-    category: "download", 
-    use: '.play2 <Youtube URL or Name>', 
-    filename: __filename }, 
-    async (conn, mek, m, { from, prefix, quoted, q, reply }) => { 
-        try {
-            if (!q) return await reply("Please provide a YouTube URL or video name.");
-
-            const yt = await ytsearch(q);
-            if (yt.results.length < 1) return reply("No results found!");
-            
-            let yts = yt.results[0];  
-            
-            let ytmsg = `*🎬 YOUTUBE DOWNLOADER*
-╭━━❐━⪼
-┇๏ *Title* - ${yts.title}
-┇๏ *Duration* - ${yts.timestamp}
-┇๏ *Views* - ${yts.views}
-┇๏ *Author* - ${yts.author.name}
-╰━━❑━⪼
-📌 *Reply with the number to download*
-1. Video (MP4)
-2. Audio (MP3) 
-3. Voice Note (PTT) 
-4. Document (MP4)
-5. Document (MP3) 
-> *© Powered By KHAN-MD ♡*`;
-
-            // Send video details with thumbnail
-            const sentMsg = await conn.sendMessage(from, { 
-                image: { url: yts.thumbnail }, 
-                caption: ytmsg 
-            }, { quoted: mek });
-
-            const messageID = sentMsg.key.id;
-            let responded = false;
-
-            // Create a listener for the reply
-            const replyHandler = async (msgData) => {
-                const receivedMsg = msgData.messages[0];
-                if (!receivedMsg.message || responded) return;
-
-                const receivedText = receivedMsg.message.conversation || 
-                                    receivedMsg.message.extendedTextMessage?.text;
-                const senderID = receivedMsg.key.remoteJid;
-                const isReplyToBot = receivedMsg.message.extendedTextMessage?.contextInfo?.stanzaId === messageID;
-
-                if (isReplyToBot && senderID === from) {
-                    if (!['1','2','3','4','5'].includes(receivedText)) {
-                        await conn.sendMessage(from, { 
-                            text: "❌ Invalid option! Please reply with 1, 2, 3, 4, or 5." 
-                        }, { quoted: receivedMsg });
-                        return;
-                    }
-
-                    responded = true;
-                    conn.ev.off("messages.upsert", replyHandler);
-
-                    await conn.sendMessage(from, {
-                        react: { text: '⬇️', key: receivedMsg.key }
-                    });
-
-                    try {
-                        // Get fresh download URL for each request
-                        const apiResponse = await fetch(`https://jawad-tech.vercel.app/download/ytmp4?url=${encodeURIComponent(yts.url)}`);
-                        const apiData = await apiResponse.json();
-                        
-                        if (!apiData.status || !apiData.result.download) {
-                            throw new Error("Failed to get download URL");
-                        }
-
-                        const downloadUrl = apiData.result.download;
-                        const sanitizedTitle = yts.title.replace(/[^\w\s]/gi, '').substring(0, 50);
-
-                        // Download the media file first
-                        const mediaRes = await fetch(downloadUrl);
-                        const mediaBuffer = await mediaRes.buffer();
-
-                        switch (receivedText) {
-                            case "1":
-                                // Video download (no conversion needed)
-                                await conn.sendMessage(from, { 
-                                    video: mediaBuffer,
-                                    caption: "> *Powered By JawadTechX 🤍*"
-                                }, { quoted: receivedMsg });
-                                break;
-                                
-                            case "2":
-                                // Audio download (convert to compressed MP3)
-                                try {
-                                    const convertedAudio = await converter.toAudio(mediaBuffer, 'mp4', {
-                                        bitrate: '96k', // Lower bitrate for smaller size
-                                        sampleRate: 22050, // Lower sample rate
-                                        channels: 1 // Mono instead of stereo
-                                    });
-                        
-                                    await conn.sendMessage(from, { 
-                                        audio: convertedAudio,
-                                        mimetype: "audio/mpeg",
-                                        fileName: `${sanitizedTitle}.mp3`
-                                    }, { quoted: receivedMsg });
-                                } catch (convError) {
-                                    console.error('Audio conversion failed:', convError);
-                                    // Fallback to original with lower quality
-                                    const fallbackAudio = await converter.toAudio(mediaBuffer, 'mp4');
-                                    await conn.sendMessage(from, { 
-                                        audio: fallbackAudio,
-                                        mimetype: "audio/mpeg",
-                                        fileName: `${sanitizedTitle}.mp3`
-                                    }, { quoted: receivedMsg });
-                                }
-                                break;
-                                
-                            case "3":
-                                // Voice note (PTT - convert to compressed OPUS)
-                                try {
-                                    const convertedPTT = await converter.toPTT(mediaBuffer, 'mp4', {
-                                        bitrate: '64k', // Very low bitrate for voice
-                                        frameSize: 20, // Smaller frame size
-                                        complexity: 5 // Lower complexity
-                                    });
-                                    await conn.sendMessage(from, { 
-                                        audio: convertedPTT,
-                                        mimetype: "audio/ogg; codecs=opus",
-                                        ptt: true,
-                                        fileName: `${sanitizedTitle}.opus`
-                                    }, { quoted: receivedMsg });
-                                } catch (pttError) {
-                                    console.error('PTT conversion failed:', pttError);
-                                    // Fallback to regular compressed audio
-                                    const fallbackPTT = await converter.toPTT(mediaBuffer, 'mp4');
-                                    await conn.sendMessage(from, { 
-                                        audio: fallbackPTT,
-                                        ptt: true
-                                    }, { quoted: receivedMsg });
-                                }
-                                break;
-                                
-                            case "4":
-                                // Document (Video - no conversion needed)
-                                await conn.sendMessage(from, { 
-                                    document: mediaBuffer,
-                                    mimetype: "video/mp4",
-                                    fileName: `${sanitizedTitle}.mp4`
-                                }, { quoted: receivedMsg });
-                                break;
-                                
-                            case "5":
-                                // Document (Audio - convert to compressed MP3)
-                                try {
-                                    const convertedAudio = await converter.toAudio(mediaBuffer, 'mp4', {
-                                        bitrate: '96k',
-                                        sampleRate: 22050,
-                                        channels: 1
-                                    });
-                                    await conn.sendMessage(from, { 
-                                        document: convertedAudio,
-                                        mimetype: "audio/mpeg",
-                                        fileName: `${sanitizedTitle}.mp3`
-                                    }, { quoted: receivedMsg });
-                                } catch (convError) {
-                                    console.error('Audio conversion failed:', convError);
-                                    // Fallback to original with lower quality
-                                    const fallbackAudio = await converter.toAudio(mediaBuffer, 'mp4');
-                                    await conn.sendMessage(from, { 
-                                        document: fallbackAudio,
-                                        mimetype: "audio/mpeg",
-                                        fileName: `${sanitizedTitle}.mp3`
-                                    }, { quoted: receivedMsg });
-                                }
-                                break;
-                        }
-                    } catch (error) {
-                        console.error("Download error:", error);
-                        await conn.sendMessage(from, { 
-                            text: "❌ Failed to download. Please try again later." 
-                        }, { quoted: receivedMsg });
-                    }
-                }
-            };
-
-            conn.ev.on("messages.upsert", replyHandler);
-
-            // Set timeout to remove listener after 1 minute (silently)
-            setTimeout(() => {
-                if (!responded) {
-                    conn.ev.off("messages.upsert", replyHandler);
-                }
-            }, 60000);
-
-        } catch (e) {
-            console.log(e);
-            reply("An error occurred. Please try again later.");
-        }
-    }
-);
