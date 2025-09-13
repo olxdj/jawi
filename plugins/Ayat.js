@@ -2,6 +2,48 @@ const { cmd } = require('../command');
 const yts = require('yt-search');
 const fetch = require('node-fetch');
 const config = require('../config');
+const config = require('../config');
+const ffmpeg = require('child_process').spawn;
+const fs = require('fs');
+const path = require('path');
+const { tmpdir } = require('os');
+
+// Fast converter
+async function toAudio(buffer, ext) {
+    return new Promise((resolve, reject) => {
+        try {
+            const inputPath = path.join(tmpdir(), `input.${ext}`);
+            const outputPath = path.join(tmpdir(), `output.mp3`);
+
+            fs.writeFileSync(inputPath, buffer);
+
+            const args = [
+                '-y',
+                '-i', inputPath,
+                '-vn',
+                '-ac', '2',
+                '-ar', '44100',
+                '-b:a', '192k',
+                '-acodec', 'libmp3lame',
+                '-f', 'mp3',
+                outputPath
+            ];
+
+            const proc = ffmpeg('ffmpeg', args);
+
+            proc.on('close', () => {
+                const converted = fs.readFileSync(outputPath);
+                fs.unlinkSync(inputPath);
+                fs.unlinkSync(outputPath);
+                resolve(converted);
+            });
+
+            proc.on('error', (err) => reject(err));
+        } catch (err) {
+            reject(err);
+        }
+    });
+}
 
 cmd({
     pattern: "yt5",
@@ -11,13 +53,13 @@ cmd({
     category: "download",
     use: ".yt5 <query or url>",
     filename: __filename
-}, async (conn, m, mek, { from, q, reply, toAudio }) => {
+}, async (conn, m, mek, { from, q, reply }) => {
     try {
         if (!q) return await reply("❌ Please provide a song name or YouTube URL!");
 
         let videoUrl, title;
 
-        // If YouTube URL
+        // If YouTube link
         if (q.match(/(youtube\.com|youtu\.be)/)) {
             videoUrl = q;
         } else {
@@ -28,7 +70,7 @@ cmd({
             title = search.videos[0].title;
         }
 
-        await reply("⏳ Fetching high quality audio...");
+        await reply("⏳ Fetching HQ audio...");
 
         // Call your API
         const apiUrl = `https://jawad-tech.vercel.app/download/audio?url=${encodeURIComponent(videoUrl)}`;
@@ -39,12 +81,12 @@ cmd({
 
         const downloadUrl = data.result;
 
-        // Download as buffer
+        // Download file
         const audioRes = await fetch(downloadUrl);
-        const audioBuffer = await audioRes.buffer();
+        const buffer = await audioRes.buffer();
 
-        // Convert to clean mp3 using your toAudio() fast converter
-        const converted = await toAudio(audioBuffer, 'mp3');
+        // Convert with ffmpeg
+        const converted = await toAudio(buffer, 'mp3');
 
         // Send audio
         await conn.sendMessage(from, {
