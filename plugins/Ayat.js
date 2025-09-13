@@ -18,7 +18,7 @@ cmd({
 
         let videoUrl, title;
 
-        // If it's a direct YouTube link
+        // Direct YouTube link
         if (q.match(/(youtube\.com|youtu\.be)/)) {
             videoUrl = q;
         } else {
@@ -31,17 +31,18 @@ cmd({
 
         await reply("⏳ Fetching MP3, please wait...");
 
-        // Call API
+        // API call
         const apiUrl = `https://jawad-tech.vercel.app/download/audio?url=${encodeURIComponent(videoUrl)}`;
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+        const { data } = await axios.get(apiUrl);
 
-        if (!data.status || !data.result) return await reply("❌ Failed to download audio!");
+        if (!data.status || !data.result) {
+            return await reply("❌ Failed to download audio from API!");
+        }
 
         const downloadUrl = data.result;
-        title = title || "YouTube Audio";
+        if (!title) title = data.metadata?.title || "YouTube Audio";
 
-        // Send as audio file
+        // Send audio file
         await conn.sendMessage(from, {
             audio: { url: downloadUrl },
             mimetype: 'audio/mpeg',
@@ -52,10 +53,11 @@ cmd({
         await reply(`✅ *${title}* downloaded successfully!\n🎧 Powered By JawadTechX`);
 
     } catch (error) {
-        console.error(error);
+        console.error("YT5 ERROR:", error?.response?.data || error.message);
         await reply(`❌ Error: ${error.message}`);
     }
 });
+
 
 cmd({
     pattern: "yt2",
