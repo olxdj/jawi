@@ -28,7 +28,7 @@ cmd({
             videoUrl = search.videos[0].url;
         }
 
-        await reply("⏳ Downloading & converting audio... Please wait.");
+        await reply("⏳ Downloading Please wait...");
 
         // ✅ Fetch from your API
         const apiUrl = `https://jawad-tech.vercel.app/download/yta?url=${encodeURIComponent(videoUrl)}`;
