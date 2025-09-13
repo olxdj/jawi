@@ -2,7 +2,6 @@ const { cmd } = require('../command');
 const yts = require('yt-search');
 const fetch = require('node-fetch');
 const config = require('../config');
-const config = require('../config');
 const ffmpeg = require('child_process').spawn;
 const fs = require('fs');
 const path = require('path');
