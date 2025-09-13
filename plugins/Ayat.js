@@ -2,105 +2,40 @@ const { cmd } = require('../command');
 const yts = require('yt-search');
 const fetch = require('node-fetch');
 const config = require('../config');
-const ffmpeg = require('child_process').spawn;
-const fs = require('fs');
-const path = require('path');
-const { tmpdir } = require('os');
-
-// Fast converter
-async function toAudio(buffer, ext) {
-    return new Promise((resolve, reject) => {
-        try {
-            const inputPath = path.join(tmpdir(), `input.${ext}`);
-            const outputPath = path.join(tmpdir(), `output.mp3`);
-
-            fs.writeFileSync(inputPath, buffer);
-
-            const args = [
-                '-y',
-                '-i', inputPath,
-                '-vn',
-                '-ac', '2',
-                '-ar', '44100',
-                '-b:a', '192k',
-                '-acodec', 'libmp3lame',
-                '-f', 'mp3',
-                outputPath
-            ];
-
-            const proc = ffmpeg('ffmpeg', args);
-
-            proc.on('close', () => {
-                const converted = fs.readFileSync(outputPath);
-                fs.unlinkSync(inputPath);
-                fs.unlinkSync(outputPath);
-                resolve(converted);
-            });
-
-            proc.on('error', (err) => reject(err));
-        } catch (err) {
-            reject(err);
-        }
-    });
-}
+const axios = require('axios');
 
 cmd({
-    pattern: "yt5",
-    alias: ["play5", "music5"],
-    react: "🎶",
-    desc: "Download HQ audio from YouTube",
-    category: "download",
-    use: ".yt5 <query or url>",
-    filename: __filename
-}, async (conn, m, mek, { from, q, reply }) => {
-    try {
-        if (!q) return await reply("❌ Please provide a song name or YouTube URL!");
+  pattern: "play5",
+  alias: ["song5"],
+  react: "🎶",
+  desc: "Fast YouTube MP3 downloader",
+  category: "music",
+  filename: __filename
+}, async (conn, mek, m, { from, q, reply }) => {
+  try {
+    if (!q) return reply("❌ Please give me a YouTube URL or search query");
 
-        let videoUrl, title;
+    // Hit your API
+    const api = `https://jawad-tech.vercel.app/download/audio?url=${encodeURIComponent(q)}`;
+    const res = await axios.get(api);
+    if (!res.data?.status || !res.data.result) return reply("❌ Failed to fetch audio");
 
-        // If YouTube link
-        if (q.match(/(youtube\.com|youtu\.be)/)) {
-            videoUrl = q;
-        } else {
-            // Search YouTube
-            const search = await yts(q);
-            if (!search.videos.length) return await reply("❌ No results found!");
-            videoUrl = search.videos[0].url;
-            title = search.videos[0].title;
-        }
+    // Download MP3 buffer
+    const audioRes = await axios.get(res.data.result, { responseType: "arraybuffer" });
+    const buffer = Buffer.from(audioRes.data);
 
-        await reply("⏳ Fetching HQ audio...");
+    await conn.sendMessage(from, {
+      audio: buffer,
+      mimetype: "audio/mpeg",
+      ptt: false,
+      fileName: "song.mp3"
+    }, { quoted: mek });
 
-        // Call your API
-        const apiUrl = `https://jawad-tech.vercel.app/download/audio?url=${encodeURIComponent(videoUrl)}`;
-        const response = await fetch(apiUrl);
-        const data = await response.json();
-
-        if (!data.status || !data.result) return await reply("❌ Failed to fetch audio link!");
-
-        const downloadUrl = data.result;
-
-        // Download file
-        const audioRes = await fetch(downloadUrl);
-        const buffer = await audioRes.buffer();
-
-        // Convert with ffmpeg
-        const converted = await toAudio(buffer, 'mp3');
-
-        // Send audio
-        await conn.sendMessage(from, {
-            audio: converted,
-            mimetype: 'audio/mpeg',
-            fileName: `${title || "yt-audio"}.mp3`,
-            ptt: false
-        }, { quoted: mek });
-
-        await reply(`✅ ${title || "Audio"} downloaded in HQ!\n🎧 Powered By JawadTechX`);
-
-    } catch (error) {
-        console.error(error);
-        await reply(`❌ Error: ${error.message}`);
-    }
+    reply("✅ Audio sent — Powered By JawadTechX");
+  } catch (e) {
+    console.error(e);
+    reply("❌ Error: " + e.message);
+  }
 });
 
 cmd({
