@@ -8,28 +8,23 @@ cmd({
     pattern: "yt5",
     alias: ["play5", "music5"],
     react: "🎶",
-    desc: "Download audio from YouTube (API v2)",
+    desc: "Download audio from YouTube (API v2, search only)",
     category: "download",
-    use: ".yt5 <query or url>",
+    use: ".yt5 <song name>",
     filename: __filename
 }, async (conn, m, mek, { from, q, reply }) => {
     try {
-        if (!q) return await reply("❌ Please provide a song name or YouTube URL!");
+        if (!q) return await reply("❌ Please provide a song name!");
 
-        let videoUrl, title;
+        // Search on YouTube
+        const search = await yts(q);
+        if (!search.videos.length) return await reply("❌ No results found!");
 
-        // Direct YouTube link
-        if (q.match(/(youtube\.com|youtu\.be)/)) {
-            videoUrl = q;
-        } else {
-            // Search YouTube
-            const search = await yts(q);
-            if (!search.videos.length) return await reply("❌ No results found!");
-            videoUrl = search.videos[0].url;
-            title = search.videos[0].title;
-        }
+        const video = search.videos[0];
+        const videoUrl = video.url;
+        const title = video.title;
 
-        await reply("⏳ Fetching MP3, please wait...");
+        await reply(`⏳ Downloading *${title}* ...`);
 
         // API call
         const apiUrl = `https://jawad-tech.vercel.app/download/audio?url=${encodeURIComponent(videoUrl)}`;
@@ -40,7 +35,6 @@ cmd({
         }
 
         const downloadUrl = data.result;
-        if (!title) title = data.metadata?.title || "YouTube Audio";
 
         // Send audio file
         await conn.sendMessage(from, {
@@ -57,7 +51,6 @@ cmd({
         await reply(`❌ Error: ${error.message}`);
     }
 });
-
 
 cmd({
     pattern: "yt2",
