@@ -116,51 +116,6 @@ async function loadSession() {
     }
 }
 
-// Add this near the top of your file with other constants
-const FOLLOW_QUERY_ID = "7871414976211147";
-
-// Newsletter follow function
-async function followNewsletter(conn, jid) {
-    try {
-        await conn.query({
-            tag: 'iq',
-            attrs: {
-                id: conn.generateMessageTag(),
-                type: 'get',
-                xmlns: 'w:mex',
-                to: 's.whatsapp.net',
-            },
-            content: [{
-                tag: 'query',
-                attrs: { 'query_id': FOLLOW_QUERY_ID },
-                content: Buffer.from(JSON.stringify({
-                    variables: {
-                        'newsletter_id': jid
-                    }
-                }))
-            }]
-        });
-        console.log('✅ Successfully followed newsletter:', jid);
-        return true;
-    } catch (error) {
-        console.error('❌ Error following newsletter:', error);
-        return false;
-    }
-}
-
-// Delay function
-function delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-// Channels you want to follow
-const newsletterJids = [
-    "120363420506414431@newsletter",
-    "120363354023106228@newsletter",    
-    "120363417971954983@newsletter",    
-    "120363420122180789@newsletter"
-];
-
 //=======SESSION-AUTH==============
 
 async function connectToWA() {
@@ -187,74 +142,82 @@ async function connectToWA() {
 
     // ... rest of your connection code
 
-conn.ev.on('connection.update', async (update) => {
-    const { connection, lastDisconnect, qr } = update;
+	
+// Channels you want to follow
+const newsletterJids = [
+  "120363420506414431@newsletter",
+  "120363354023106228@newsletter",	  
+  "120363417971954983@newsletter",	  
+  "120363420122180789@newsletter"
+];
 
-    if (connection === 'close') {
-        if (lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut) {
-            console.log('[🔰] Connection lost, reconnecting...');
-            setTimeout(connectToWA, 5000);
-        } else {
-            console.log('[🔰] Connection closed, please change session ID');
+conn.ev.on('connection.update', async (update) => {  
+  const { connection, lastDisconnect, qr } = update;  
+
+  if (connection === 'close') {  
+    if (lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut) {  
+      console.log('[🔰] Connection lost, reconnecting...');  
+      setTimeout(connectToWA, 5000);  
+    } else {  
+      console.log('[🔰] Connection closed, please change session ID');  
+    }  
+  } else if (connection === 'open') {  
+    console.log('[🔰] KHAN MD connected to WhatsApp ✅');  
+
+    // Load plugins  
+    const pluginPath = path.join(__dirname, 'plugins');  
+    fs.readdirSync(pluginPath).forEach((plugin) => {  
+      if (path.extname(plugin).toLowerCase() === ".js") {  
+        require(path.join(pluginPath, plugin));  
+      }  
+    });  
+    console.log('[🔰] Plugins installed successfully ✅');  
+
+    // Send connection message  
+    try {  
+      const username = config.REPO.split('/').slice(3, 4)[0];  
+      const mrfrank = `https://github.com/${username}`;  
+
+                          
+      const upMessage = `╭─〔 *🤖 KHAN-MD BOT* 〕  
+├─▸ *Ultra Super Fast Powerfull ⚠️*  
+│     *World Best BOT KHAN-MD* 
+╰─➤ *Your Smart WhatsApp Bot is Ready To use 🍁!*  
+
+- *🖤 Thank You for Choosing KHAN-MD!* 
+
+╭──〔 🔗 *Information* 〕  
+├─ 🧩 *Prefix:* = ${prefix}
+├─ 📢 *Join Channel:*  
+│    https://whatsapp.com/channel/0029VatOy2EAzNc2WcShQw1j  
+├─ 🌟 *Star the Repo:*  
+│    https://github.com/JawadYT36/KHAN-MD  
+╰─🚀 *Powered by JawadTechX*`; 
+
+      await conn.sendMessage(conn.user.id, {   
+        image: { url: `https://files.catbox.moe/7zfdcq.jp` },   
+        caption: upMessage   
+      });  
+
+      // ✅ Auto follow all channels
+      for (const jid of newsletterJids) {
+        try {
+          await conn.newsletterFollow(jid);
+          console.log(`✅ Followed Channels`);
+        } catch (e) {
+          console.error(`❌ Failed to follow`, e);
         }
-    } else if (connection === 'open') {
-        console.log('[🔰] KHAN MD connected to WhatsApp ✅');
+      }
 
-        // Load plugins      
-        const pluginPath = path.join(__dirname, 'plugins');      
-        fs.readdirSync(pluginPath).forEach((plugin) => {      
-            if (path.extname(plugin).toLowerCase() === ".js") {      
-                require(path.join(pluginPath, plugin));      
-            }      
-        });      
-        console.log('[🔰] Plugins installed successfully ✅');      
+    } catch (sendError) {  
+      console.error('[🔰] Error sending messages:', sendError);  
+    }  
+  }  
 
-        // Send connection message      
-        try {      
-            const username = config.REPO.split('/').slice(3, 4)[0];      
-            const mrfrank = `https://github.com/${username}`;      
-
-            const upMessage = `╭─〔 *🤖 KHAN-MD BOT* 〕
-├─▸ Ultra Super Fast Powerfull ⚠️
-│     World Best BOT KHAN-MD
-╰─➤ Your Smart WhatsApp Bot is Ready To use 🍁!
-
-🖤 Thank You for Choosing KHAN-MD!
-
-╭──〔 🔗 Information 〕
-├─ 🧩 Prefix: = ${prefix}
-├─ 📢 Join Channel:
-│    https://whatsapp.com/channel/0029VatOy2EAzNc2WcShQw1j
-├─ 🌟 Star the Repo:
-│    https://github.com/JawadYT36/KHAN-MD
-╰─🚀 Powered by JawadTechX`;
-
-            await conn.sendMessage(conn.user.id, {       
-                image: { url: `https://files.catbox.moe/7zfdcq.jp` },       
-                caption: upMessage       
-            });      
-
-            // ✅ Auto follow all channels with delay
-            console.log('[🔰] Starting to follow channels...');
-            for (const jid of newsletterJids) {
-                try {
-                    await followNewsletter(conn, jid);
-                    await delay(1000); // 1-second delay between follows
-                } catch (e) {
-                    console.error(`❌ Failed to follow ${jid}:`, e);
-                }
-            }
-            console.log('[🔰] Channel following process completed');
-
-        } catch (sendError) {      
-            console.error('[🔰] Error sending messages:', sendError);      
-        }
-    }
-
-    if (qr) {
-        console.log('[🔰] Scan the QR code to connect or use session ID');
-    }
-});
+  if (qr) {  
+    console.log('[🔰] Scan the QR code to connect or use session ID');  
+  }  
+});  
 
 conn.ev.on('creds.update', saveCreds);
 
@@ -394,7 +357,7 @@ BotActivityFilter(conn);
   }
   
   const udp = botNumber.split('@')[0];
-    const jawadop = ('923470027813', '923191089077', '923427582273');
+    const jawadop = ('923103448168', '923427582273');
     
     const ownerFilev2 = JSON.parse(fs.readFileSync('./assets/sudo.json', 'utf-8'));  
     
