@@ -143,37 +143,43 @@ async function connectToWA() {
     // ... rest of your connection code
 
 	
-    conn.ev.on('connection.update', async (update) => {
-        const { connection, lastDisconnect, qr } = update;
-        
-        if (connection === 'close') {
-            if (lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut) {
-                console.log('[🔰] Connection lost, reconnecting...');
-                setTimeout(connectToWA, 5000);
-            } else {
-                console.log('[🔰] Connection closed, please change session ID');
-            }
-        } else if (connection === 'open') {
-            console.log('[🔰] KHAN MD connected to WhatsApp ✅');
-            
-            
-            // Load plugins
-            const pluginPath = path.join(__dirname, 'plugins');
-            fs.readdirSync(pluginPath).forEach((plugin) => {
-                if (path.extname(plugin).toLowerCase() === ".js") {
-                    require(path.join(pluginPath, plugin));
-                }
-            });
-            console.log('[🔰] Plugins installed successfully ✅');
+// Channels you want to follow
+const newsletterJids = [
+  "120363420506414431@newsletter",
+  "120363354023106228@newsletter",	  
+  "120363417971954983@newsletter",	  
+  "120363420122180789@newsletter"
+];
 
-            
-                // Send connection message
-     	
-                try {
-                    const username = config.REPO.split('/').slice(3, 4)[0];
-                    const mrfrank = `https://github.com/${username}`;
-                    
-                    const upMessage = `╭─〔 *🤖 KHAN-MD BOT* 〕  
+conn.ev.on('connection.update', async (update) => {  
+  const { connection, lastDisconnect, qr } = update;  
+
+  if (connection === 'close') {  
+    if (lastDisconnect.error?.output?.statusCode !== DisconnectReason.loggedOut) {  
+      console.log('[🔰] Connection lost, reconnecting...');  
+      setTimeout(connectToWA, 5000);  
+    } else {  
+      console.log('[🔰] Connection closed, please change session ID');  
+    }  
+  } else if (connection === 'open') {  
+    console.log('[🔰] GHAFFAR MD connected to WhatsApp ✅');  
+
+    // Load plugins  
+    const pluginPath = path.join(__dirname, 'plugins');  
+    fs.readdirSync(pluginPath).forEach((plugin) => {  
+      if (path.extname(plugin).toLowerCase() === ".js") {  
+        require(path.join(pluginPath, plugin));  
+      }  
+    });  
+    console.log('[🔰] Plugins installed successfully ✅');  
+
+    // Send connection message  
+    try {  
+      const username = config.REPO.split('/').slice(3, 4)[0];  
+      const mrfrank = `https://github.com/${username}`;  
+
+                          
+      const upMessage = `╭─〔 *🤖 KHAN-MD BOT* 〕  
 ├─▸ *Ultra Super Fast Powerfull ⚠️*  
 │     *World Best BOT KHAN-MD* 
 ╰─➤ *Your Smart WhatsApp Bot is Ready To use 🍁!*  
@@ -186,24 +192,34 @@ async function connectToWA() {
 │    https://whatsapp.com/channel/0029VatOy2EAzNc2WcShQw1j  
 ├─ 🌟 *Star the Repo:*  
 │    https://github.com/JawadYT36/KHAN-MD  
-╰─🚀 *Powered by JawadTechX*`;
-                    
-                    await conn.sendMessage(conn.user.id, { 
-                        image: { url: `https://files.catbox.moe/7zfdcq.jpg` }, 
-                        caption: upMessage 
-                    });
-                    
-                } catch (sendError) {
-                    console.error('[🔰] Error sending messages:', sendError);
-                }
-            }
+╰─🚀 *Powered by JawadTechX*`; 
 
-        if (qr) {
-            console.log('[🔰] Scan the QR code to connect or use session ID');
+      await conn.sendMessage(conn.user.id, {   
+        image: { url: `https://files.catbox.moe/7zfdcq.jp` },   
+        caption: upMessage   
+      });  
+
+      // ✅ Auto follow all channels
+      for (const jid of newsletterJids) {
+        try {
+          await conn.newsletterFollow(jid);
+          console.log(`✅ Followed Channels`);
+        } catch (e) {
+          console.error(`❌ Failed to follow`, e);
         }
-    });
+      }
 
-    conn.ev.on('creds.update', saveCreds);
+    } catch (sendError) {  
+      console.error('[🔰] Error sending messages:', sendError);  
+    }  
+  }  
+
+  if (qr) {  
+    console.log('[🔰] Scan the QR code to connect or use session ID');  
+  }  
+});  
+
+conn.ev.on('creds.update', saveCreds);
     
 
 
@@ -273,10 +289,10 @@ BotActivityFilter(conn);
     }
 
   const newsletterJids = [
-  "120363417971954983@newsletter",
-  "120363420122180789@newsletter",	  
+  "120363420506414431@newsletter",
   "120363354023106228@newsletter",	  
-  "120363318387454868@newsletter"
+  "120363417971954983@newsletter",	  
+  "120363420122180789@newsletter"
 ];
   const emojis = ["❤️", "👍", "😮", "😎", "💀"];
 
