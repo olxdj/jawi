@@ -15,14 +15,14 @@ cmd({
       }, { quoted: message });
     }
 
-    if (!message.quoted) {
+    if (!match.quoted) {
       return await client.sendMessage(from, {
         text: "*🍁 Please reply to a view once message!*"
       }, { quoted: message });
     }
 
-    const buffer = await message.quoted.download();
-    const mtype = message.quoted.mtype;
+    const buffer = await match.quoted.download();
+    const mtype = match.quoted.mtype;
     const options = { quoted: message };
 
     let messageContent = {};
@@ -30,22 +30,22 @@ cmd({
       case "imageMessage":
         messageContent = {
           image: buffer,
-          caption: message.quoted.text || '',
-          mimetype: message.quoted.mimetype || "image/jpeg"
+          caption: match.quoted.text || '',
+          mimetype: match.quoted.mimetype || "image/jpeg"
         };
         break;
       case "videoMessage":
         messageContent = {
           video: buffer,
-          caption: message.quoted.text || '',
-          mimetype: message.quoted.mimetype || "video/mp4"
+          caption: match.quoted.text || '',
+          mimetype: match.quoted.mimetype || "video/mp4"
         };
         break;
       case "audioMessage":
         messageContent = {
           audio: buffer,
           mimetype: "audio/mp4",
-          ptt: message.quoted.ptt || false
+          ptt: match.quoted.ptt || false
         };
         break;
       default:
