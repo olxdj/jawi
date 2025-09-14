@@ -3,6 +3,52 @@ const { cmd } = require('../command');
 const { ytsearch, ytmp3, ytmp4 } = require('@dark-yasiya/yt-dl.js'); 
 const converter = require('../data/play-converter');
 const fetch = require('node-fetch');
+const yts = require('yt-search');
+const axios = require('axios');
+
+cmd({
+  pattern: "play2",
+  desc: "Download YouTube song",
+  category: "download",
+  react: "🎶",
+  filename: __filename
+}, async (conn, mek, m, { from, reply }) => {
+  try {
+    const text = m.body.split(" ").slice(1).join(" ");
+    if (!text) return reply("❌ Please provide a song name!\n\nExample: .play Moye Moye");
+
+    reply("⏳ Please wait downloading ...");
+
+    // Search YouTube
+    const { videos } = await yts(text);
+    if (!videos || videos.length === 0) return reply("⚠️ No results found!");
+
+    const video = videos[0];
+    const urlYt = video.url;
+
+    // API Call for MP3
+    const response = await axios.get(`https://apis-keith.vercel.app/download/dlmp3?url=${urlYt}`);
+    const data = response.data;
+
+    if (!data || !data.status || !data.result || !data.result.downloadUrl) {
+      return reply("❌ Failed to fetch audio. Try again later.");
+    }
+
+    const audioUrl = data.result.downloadUrl;
+    const title = data.result.title || "audio";
+
+    // Send Audio
+    await conn.sendMessage(from, {
+      audio: { url: audioUrl },
+      mimetype: "audio/mpeg",
+      fileName: `${title}.mp3`
+    }, { quoted: mek });
+
+  } catch (e) {
+    console.error("Error in .play command:", e);
+    reply("❌ Download failed. Please try again later.");
+  }
+});
 
 cmd({ 
     pattern: "play", 
