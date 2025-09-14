@@ -6,14 +6,14 @@ cmd({
     pattern: "play",
     desc: "Download YouTube song",
     category: "downloader",
-    react: "🎶",
+    react: "🎵",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
     try {
         if (!q) return await reply("🎶 Please provide song name!\n\nExample: .play Moye Moye");
 
         // 1. Notify downloading
-        await reply("⏳ Downloading Please Wait...");
+        // await reply("⏳ Downloading Please Wait...");
 
         // 2. Search on YouTube
         const { videos } = await yts(q);
