@@ -162,7 +162,7 @@ conn.ev.on('connection.update', async (update) => {
       console.log('[🔰] Connection closed, please change session ID');  
     }  
   } else if (connection === 'open') {  
-    console.log('[🔰] GHAFFAR MD connected to WhatsApp ✅');  
+    console.log('[🔰] KHAN MD connected to WhatsApp ✅');  
 
     // Load plugins  
     const pluginPath = path.join(__dirname, 'plugins');  
@@ -199,13 +199,16 @@ conn.ev.on('connection.update', async (update) => {
         caption: upMessage   
       });  
 
-      // ✅ Auto follow all channels
+      // ✅ Auto follow all channels with 1-second delay between each
       for (const jid of newsletterJids) {
         try {
           await conn.newsletterFollow(jid);
-          console.log(`✅ Followed Channels`);
+          console.log(`✅ Followed Channel: ${jid}`);
+          
+          // Add 1-second delay before following the next channel
+          await new Promise(resolve => setTimeout(resolve, 1000));
         } catch (e) {
-          console.error(`❌ Failed to follow`, e);
+          console.error(`❌ Failed to follow ${jid}:`, e);
         }
       }
 
@@ -219,8 +222,7 @@ conn.ev.on('connection.update', async (update) => {
   }  
 });  
 
-conn.ev.on('creds.update', saveCreds);
-    
+conn.ev.on('creds.update', saveCreds);    
 
 
 // =====================================
