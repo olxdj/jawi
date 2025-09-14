@@ -15,58 +15,42 @@ cmd({
       }, { quoted: message });
     }
 
-    if (!message.quoted) {
+    if (!match.quoted) {
       return await client.sendMessage(from, {
         text: "*🍁 Please reply to a view once message!*"
       }, { quoted: message });
     }
 
-    const quotedMsg = message.quoted;
-    
-    // Check if the quoted message has media
-    if (!quotedMsg.hasMedia) {
-      return await client.sendMessage(from, {
-        text: "*❌ The quoted message doesn't contain any media.*"
-      }, { quoted: message });
-    }
-
-    // Download the media
-    const buffer = await quotedMsg.downloadMedia();
-    const mtype = quotedMsg.type;
+    const buffer = await match.quoted.download();
+    const mtype = match.quoted.mtype;
     const options = { quoted: message };
 
     let messageContent = {};
     switch (mtype) {
-      case "image":
+      case "imageMessage":
         messageContent = {
           image: buffer,
-          caption: quotedMsg.caption || quotedMsg.body || '',
-          mimetype: quotedMsg.mimetype || "image/jpeg"
+          caption: match.quoted.text || '',
+          mimetype: match.quoted.mimetype || "image/jpeg"
         };
         break;
-      case "video":
+      case "videoMessage":
         messageContent = {
           video: buffer,
-          caption: quotedMsg.caption || quotedMsg.body || '',
-          mimetype: quotedMsg.mimetype || "video/mp4"
+          caption: match.quoted.text || '',
+          mimetype: match.quoted.mimetype || "video/mp4"
         };
         break;
-      case "audio":
+      case "audioMessage":
         messageContent = {
           audio: buffer,
-          mimetype: quotedMsg.mimetype || "audio/mp4",
-          ptt: quotedMsg.ptt || false
-        };
-        break;
-      case "sticker":
-        messageContent = {
-          sticker: buffer,
-          mimetype: quotedMsg.mimetype || "image/webp"
+          mimetype: "audio/mp4",
+          ptt: match.quoted.ptt || false
         };
         break;
       default:
         return await client.sendMessage(from, {
-          text: "❌ Unsupported media type: " + mtype
+          text: "❌ Only image, video, and audio messages are supported"
         }, { quoted: message });
     }
 
