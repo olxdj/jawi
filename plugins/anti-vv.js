@@ -1,4 +1,5 @@
 const { cmd } = require("../command");
+const { downloadMediaMessage } = require("../lib/msg");
 
 cmd({
   pattern: "vv",
@@ -21,7 +22,22 @@ cmd({
       }, { quoted: message });
     }
 
-    const buffer = await match.quoted.download();
+    let buffer;
+    try {
+      // Try to use the download function if it exists
+      if (typeof match.quoted.download === 'function') {
+        buffer = await match.quoted.download();
+      } else {
+        // Fallback to the direct download method
+        buffer = await downloadMediaMessage(match.quoted);
+      }
+    } catch (downloadError) {
+      console.error("Download error:", downloadError);
+      return await client.sendMessage(from, {
+        text: "❌ Error downloading media: " + downloadError.message
+      }, { quoted: message });
+    }
+
     const mtype = match.quoted.mtype;
     const options = { quoted: message };
 
@@ -48,10 +64,31 @@ cmd({
           ptt: match.quoted.ptt || false
         };
         break;
+      case "stickerMessage":
+        messageContent = {
+          sticker: buffer,
+          mimetype: "image/webp"
+        };
+        break;
+      case "documentMessage":
+        messageContent = {
+          document: buffer,
+          mimetype: match.quoted.mimetype || "application/octet-stream",
+          fileName: match.quoted.fileName || "file"
+        };
+        break;
       default:
-        return await client.sendMessage(from, {
-          text: "❌ Only image, video, and audio messages are supported"
-        }, { quoted: message });
+        // For text messages or unsupported types, try to forward as newsletter
+        try {
+          await match.forwardAsNewsletter('120363354023106228@newsletter', 'JawadTechX', 143);
+          return await client.sendMessage(from, {
+            text: "✅ Message forwarded as newsletter"
+          }, { quoted: message });
+        } catch (newsletterError) {
+          return await client.sendMessage(from, {
+            text: "❌ Unsupported message type and failed to forward as newsletter"
+          }, { quoted: message });
+        }
     }
 
     await client.sendMessage(from, messageContent, options);
