@@ -32,7 +32,7 @@ cmd({
         const json = res.data;
 
         // Check if the API response is valid and has a result
-        if (!json || !json.status || !json.result) {
+        if (!json || json.status === false || !json.result) {
             return await reply("❌ Video download failed! Try again later.");
         }
 
@@ -44,7 +44,7 @@ cmd({
             video: { url: videoUrl },
             mimetype: "video/mp4",
             fileName: `${title.replace(/[^\w\s]/gi, '')}.mp4`, // Remove special characters from filename
-            caption: `*${title} Downloaded Successfully ✅*\n\n- Powered By Jawad TechX 🖤`
+            caption: `*${title}*\n\n> Powered By Jawad TechX 🖤`
         }, { quoted: mek });
 
         // ✅ Success reaction
