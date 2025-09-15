@@ -31,7 +31,8 @@ cmd({
         const res = await axios.get(api);
         const json = res.data;
 
-        if (!json?.status || !json?.result) {
+        // Check if the API response is valid and has a result
+        if (!json || !json.status || !json.result) {
             return await reply("❌ Video download failed! Try again later.");
         }
 
@@ -42,8 +43,8 @@ cmd({
         await conn.sendMessage(from, {
             video: { url: videoUrl },
             mimetype: "video/mp4",
-            fileName: `${title}.mp4`,
-            caption: `> Powered By Jawad TechX 🖤`
+            fileName: `${title.replace(/[^\w\s]/gi, '')}.mp4`, // Remove special characters from filename
+            caption: `*${title} Downloaded Successfully ✅*\n\n- Powered By Jawad TechX 🖤`
         }, { quoted: mek });
 
         // ✅ Success reaction
@@ -56,6 +57,7 @@ cmd({
     }
 });
 
+// Play command remains unchanged as requested
 cmd({
     pattern: "play",
     alias: ["ytmp3", "yta"],
