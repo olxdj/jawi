@@ -27,7 +27,8 @@ cmd({
             vid = videos[0];
         }
 
-        const api = `https://apis-keith.vercel.app/download/video?url=${encodeURIComponent(vid.url)}`;
+        // Use the new API endpoint
+        const api = `https://romek-xd-api.vercel.app/download/ytmp4?url=${encodeURIComponent(vid.url)}`;
         const res = await axios.get(api);
         const json = res.data;
 
