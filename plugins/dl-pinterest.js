@@ -3,7 +3,7 @@ const axios = require('axios');
 
 cmd({
     pattern: "pins",
-    alias: ["pinterestdl", "pinterest", "pint", "pindl"],
+    alias: ["pinterestdl", "pinterest", "pint", "pindl"],   
     react: "📌",
     desc: "Download Pinterest videos",
     category: "downloader",
@@ -17,19 +17,19 @@ async (conn, mek, m, { from, q, reply }) => {
         const apiUrl = `https://delirius-apiofc.vercel.app/download/pinterestdl?url=${encodeURIComponent(q)}`;
         const { data } = await axios.get(apiUrl);
 
-        if (!data.status || !data.data?.download?.url) {
-            return reply("❌ Failed to fetch Pinterest video.");
+        if (!data.status || !data.data || !data.data.download?.url) {
+            return reply("❌ Couldn't fetch any video from Pinterest.");
         }
 
-        let videoUrl = data.data.download.url;
+        const videoUrl = data.data.download.url;
 
         await conn.sendMessage(from, {
             video: { url: videoUrl },
-            caption: `Powered by Jawad Tech X`
+            caption: "Powered by Jawad Tech X"
         }, { quoted: mek });
 
-    } catch (e) {
-        console.error(e);
-        reply("❌ Error while downloading Pinterest video.");
+    } catch (err) {
+        console.error("Pinterest Downloader Error:", err);
+        reply("⚠️ Error while downloading Pinterest video.");
     }
 });
