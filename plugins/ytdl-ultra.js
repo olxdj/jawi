@@ -41,7 +41,7 @@ cmd({
         // Send video
         await conn.sendMessage(from, {
             video: { url: videoUrl },
-            caption: `*${media.title}*\n\nDownloaded Successfully ✅`
+            caption: `> *${media.title} Downloaded Successfully ✅*`
         }, { quoted: mek });
 
         // Success reaction
