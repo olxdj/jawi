@@ -5,60 +5,55 @@ const axios = require('axios');
 cmd({
     pattern: "ytmp4",
     alias: ["video", "song", "ytv"],
-    desc: "Download YouTube videos in MP4",
+    desc: "Download YouTube videos",
     category: "downloader",
-    react: "🎬",
+    react: "📹",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return await reply("🎬 Please provide video name or link!\n\nExample: .ytmp4 Moye Moye");
+        if (!q) return await reply("📺 Please provide video name or URL!\n\nExample: .video funny cat");
 
-        // ⏳ Processing reaction
-        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
-
-        let vid;
-        if (q.includes("youtube.com") || q.includes("youtu.be")) {
-            // If direct link is given
-            vid = { url: q, title: "YouTube Video" };
-        } else {
-            // Search YouTube
+        // Search on YouTube if query is not a link
+        let url = q;
+        if (!q.includes("youtube.com") && !q.includes("youtu.be")) {
             const { videos } = await yts(q);
             if (!videos || videos.length === 0) return await reply("❌ No results found!");
-            vid = videos[0];
+            url = videos[0].url;
         }
 
-        // Use the new API endpoint
-        const api = `https://romek-xd-api.vercel.app/download/ytmp4?url=${encodeURIComponent(vid.url)}`;
+        const api = `https://gtech-api-xtp1.onrender.com/api/video/yt?apikey=APIKEY&url=${encodeURIComponent(url)}`;
         const res = await axios.get(api);
         const json = res.data;
 
-        // Check if the API response is valid and has a result
-        if (!json || json.status === false || !json.result) {
-            return await reply("❌ Video download failed! Try again later.");
+        if (!json?.status || !json?.result?.media) {
+            return await reply("❌ Download failed! Try again later.");
         }
 
-        const videoUrl = json.result;
-        const title = vid.title || "video";
+        const media = json.result.media;
+        const videoUrl = media.video_url_hd !== "No HD video URL available"
+            ? media.video_url_hd
+            : media.video_url_sd !== "No SD video URL available"
+                ? media.video_url_sd
+                : null;
 
-        // 🎬 Send video
+        if (!videoUrl) return await reply("❌ No downloadable video found!");
+
+        // Send video
         await conn.sendMessage(from, {
             video: { url: videoUrl },
-            mimetype: "video/mp4",
-            fileName: `${title.replace(/[^\w\s]/gi, '')}.mp4`, // Remove special characters from filename
-            caption: `*${title}*\n\n> Powered By Jawad TechX 🖤`
+            caption: `*${media.title}*\n\nDownloaded Successfully ✅`
         }, { quoted: mek });
 
-        // ✅ Success reaction
+        // Success reaction
         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
 
     } catch (e) {
-        console.error("Error in .ytmp4:", e);
+        console.error("Error in .video:", e);
         await reply("❌ Error occurred, try again later!");
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
     }
 });
 
-// Play command remains unchanged as requested
 cmd({
     pattern: "play",
     alias: ["ytmp3", "yta"],
