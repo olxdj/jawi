@@ -67,12 +67,13 @@ cmd({
         }
 
         // Send processing message
-        await reply(`⬇️ Downloading: ${title}\n⚡ Quality: ${quality || 'Unknown'}`);
+        await reply(`*⬇️ Downloading: ${title}*`);
 
         // Send the audio file
         await conn.sendMessage(from, {
             audio: { url: audioUrl },
             mimetype: 'audio/mpeg',
+            ptt: 'true',
             fileName: `${title}.mp3`
         }, { quoted: mek });
 
