@@ -65,9 +65,9 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 
         // Send local audio from assets/menu.m4a
         await conn.sendMessage(from, {
-            audio: fs.readFileSync('./assets/menu.m4a'),
+            audio: fs.readFileSync('./assets/menux.m4a'),
             mimetype: 'audio/mp4',
-            ptt: true,
+            ptt: false,
             contextInfo: {
                 mentionedJid: [m.sender],
                 forwardingScore: 999,
