@@ -73,8 +73,8 @@ cmd({
         await conn.sendMessage(from, {
             audio: { url: audioUrl },
             mimetype: 'audio/mpeg',
-            ptt: 'true',
             fileName: `${title}.mp3`
+            ptt: true
         }, { quoted: mek });
 
     } catch (error) {
