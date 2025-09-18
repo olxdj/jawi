@@ -60,17 +60,17 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
             contextInfo: commonContextInfo(sender)
         }, { quoted: mek });
 
-        // Send audio voice message
-        const audioPath = path.join(__dirname, '../assets/menux.m4a');
-        if (fs.existsSync(audioPath)) {
-            await conn.sendMessage(from, {
-                audio: { url: audioPath },
-                mimetype: 'audio/mp4',
-                ptt: true
-            }, { quoted: mek });
-        } else {
-            console.log("Menu audio file not found");
-        }
+       // Send audio voice message
+       const audioPath = path.join(__dirname, '../assets/menux.opus');
+if (fs.existsSync(audioPath)) {
+    await conn.sendMessage(from, {
+        audio: { url: audioPath },
+        mimetype: 'audio/ogg; codecs=opus',
+        ptt: true
+    }, { quoted: mek });
+} else {
+    console.log("Menu audio file not found");
+}
 
         const messageID = sentMsg.key.id;
 
