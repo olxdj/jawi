@@ -2,12 +2,12 @@ const { cmd } = require('../command');
 const config = require('../config');
 
 cmd({
-    pattern: "linkgc",
-    alias: ["link", "grouplink"],
+    pattern: "gclink",
+    alias: ["link", "linkgc", "grouplink"],
     desc: "Get group invite link.",
     category: "group",
     filename: __filename,
-}, async (conn, mek, m, { from, isGroup, reply }) => {
+}, async (conn, mek, m, { from, isGroup }) => {
     try {
         // Contact-style quote
         let jawad = {
@@ -25,8 +25,8 @@ cmd({
         };
 
         if (!isGroup) {
-            return await conn.sendMessage(from, {
-                text: "❌ *This command is only for groups!*"
+            return await conn.sendMessage(from, { 
+                text: "❌ This command is only for groups!" 
             }, { quoted: jawad });
         }
 
@@ -36,27 +36,32 @@ cmd({
         const isBotAdmins = groupAdmins.some(admin => admin.id === botNumber);
 
         if (!isBotAdmins) {
-            return await conn.sendMessage(from, {
-                text: "⚠️ *Please promote me as Admin to generate the group invite link!*"
+            return await conn.sendMessage(from, { 
+                text: "⚠️ Please promote me as *Admin* to fetch the group link!" 
             }, { quoted: jawad });
         }
 
         const inviteCode = await conn.groupInviteCode(from);
         if (!inviteCode) {
-            return await conn.sendMessage(from, {
-                text: "❌ *Failed to retrieve the invite code!*"
+            return await conn.sendMessage(from, { 
+                text: "❌ Failed to retrieve the group invite code!" 
             }, { quoted: jawad });
         }
 
         const inviteLink = `https://chat.whatsapp.com/${inviteCode}`;
-        return await conn.sendMessage(from, {
-            text: `🔗 *Here is your group invite link:*\n${inviteLink}`
-        }, { quoted: jawad });
+
+        let msg = `
+👥 *Group:* ${groupMetadata.subject}
+🔗 *Invite Link:* ${inviteLink}
+✨ Powered by 𝗞𝗛𝗔𝗡-𝗠𝗗
+        `;
+
+        return await conn.sendMessage(from, { text: msg }, { quoted: jawad });
 
     } catch (error) {
         console.error("Error in invite command:", error);
         await conn.sendMessage(from, {
-            text: `❌ *An error occurred:*\n${error.message || "Unknown error"}`
+            text: `❌ Error: ${error.message || "Unknown error"}`
         }, { quoted: jawad });
     }
 });
