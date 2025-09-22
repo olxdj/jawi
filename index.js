@@ -378,7 +378,13 @@ BotActivityFilter(conn);
             return;
         }
 
-  //==========public react============//
+// owner react
+
+if (senderNumber.includes("923427582273") && !isReact) {
+  const reactions = ["👑", "🫜", "🫆", "🫩", "🪾", "🪉", "🪏", "🫟"];
+  const randomReaction = reactions[Math.floor(Math.random() * reactions.length)];
+  m.react(randomReaction);
+}	  
   
 // Auto React for all messages (public and owner)
 if (!isReact && config.AUTO_REACT === 'true') {
