@@ -1,96 +1,56 @@
-const { cmd } = require('../command');
-const yts = require('yt-search');
-const axios = require('axios');
-
-// Extract YouTube ID
-function extractYouTubeId(url) {
-    const regex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-    const match = url.match(regex);
-    return match ? match[1] : null;
-}
-
-// Convert input to full YT link
-function convertYouTubeLink(q) {
-    const videoId = extractYouTubeId(q);
-    if (videoId) {
-        return `https://www.youtube.com/watch?v=${videoId}`;
-    }
-    return q;
-}
+const axios = require("axios");
+const yts = require("yt-search");
+const config = require("../config");
+const { cmd } = require("../command");
 
 cmd({
-    pattern: "play2",
-    alias: ["song"],
-    desc: "Play YouTube song (direct audio).",
-    react: "🎶",
-    category: "download",
-    filename: __filename
-}, async (conn, mek, m, {
-  from, q, reply
-}) => {
+  pattern: "play2",
+  alias: ["song", "music"],   
+  desc: "Download YouTube audio by title",
+  category: "download",
+  react: "🎶",
+  filename: __filename
+}, async (conn, mek, m, { from, args, q, reply }) => {
   try {
-    q = convertYouTubeLink(q);
-    if (!q) return reply("*❌ Please provide a YouTube title or URL.*");
+    if (!q) return reply("❌ Please give me a song name.");
 
-    let url;
-    let data;
+    // 1. Search video on YouTube
+    let search = await yts(q);
+    let video = search.videos[0];
+    if (!video) return reply("❌ No results found.");
 
-    if (q.includes("youtube.com") || q.includes("youtu.be")) {
-      // Direct URL
-      url = q;
-      const search = await yts({ videoId: extractYouTubeId(q) });
-      data = search;
-    } else {
-      // Search by title
-      const search = await yts(q);
-      data = search.videos[0];
-      url = data.url;
+    // 2. Call your API with video URL
+    let apiUrl = `https://jawad-tech.vercel.app/download/yt?url=${encodeURIComponent(video.url)}`;
+    let res = await axios.get(apiUrl);
+
+    if (!res.data.status) {
+      return reply("❌ Failed to fetch audio. Try again later.");
     }
 
-    if (!data) return reply("❌ No results found!");
-
-    // Show info with thumbnail
+    // 3. Build caption
     let caption = `
-┌──「 *YOUTUBE RESULT* 」
-│🎵 *Title:* ${data.title}
-│⏱️ *Duration:* ${data.timestamp}
-│📅 *Uploaded:* ${data.ago}
-│👁️ *Views:* ${data.views}
-└───────────────⦁
-*Downloading audio... Please wait ⏳*
+*YT AUDIO DOWNLOADER*
+╭━━❐━⪼
+┇๏ *Title*    –  ${video.title}
+┇๏ *Duration* –  ${video.timestamp}
+┇๏ *Views*    –  ${video.views}
+┇๏ *Author*   –  ${video.author.name}
+╰━━❑━⪼
+> *Downloading Audio File ♡*
     `;
 
+    // 4. Send audio file
     await conn.sendMessage(from, {
-      image: { url: data.thumbnail },
-      caption
+      audio: { url: res.data.result },
+      mimetype: "audio/mpeg",
+      ptt: false,
+      contextInfo: { forwardingScore: 999, isForwarded: true }
     }, { quoted: mek });
 
-    // React: Processing
-    await conn.sendMessage(from, { react: { text: '⏳', key: mek.key } });
-
-    // Fetch from your API
-    const apiUrl = `https://jawad-tech.vercel.app/download/yt?url=${encodeURIComponent(url)}`;
-    const response = await axios.get(apiUrl);
-    const resData = response.data;
-
-    if (!resData.status || !resData.result) {
-      return reply("❌ Failed to download audio.");
-    }
-
-    // React: Downloading
-    await conn.sendMessage(from, { react: { text: '⬇️', key: mek.key } });
-
-    // Send audio (clean, no externalAdReply)
-    await conn.sendMessage(from, {
-      audio: { url: resData.result },
-      mimetype: "audio/mpeg"
-    }, { quoted: mek });
-
-    // React: Done
-    await conn.sendMessage(from, { react: { text: '⬆️', key: mek.key } });
+    await conn.sendMessage(from, { text: caption }, { quoted: mek });
 
   } catch (e) {
-    console.error(e);
-    reply("❌ Error: " + e.message);
+    console.error("play2 error:", e);
+    reply("❌ Error while downloading audio.");
   }
 });
