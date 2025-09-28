@@ -27,19 +27,7 @@ cmd({
       return reply("❌ Failed to fetch audio. Try again later.");
     }
 
-    // 3. Build caption
-    let caption = `
-*YT AUDIO DOWNLOADER*
-╭━━❐━⪼
-┇๏ *Title*    –  ${video.title}
-┇๏ *Duration* –  ${video.timestamp}
-┇๏ *Views*    –  ${video.views}
-┇๏ *Author*   –  ${video.author.name}
-╰━━❑━⪼
-> *Downloading Audio File ♡*
-    `;
-
-    // 4. Send audio file
+    // 3. Send audio file first
     await conn.sendMessage(from, {
       audio: { url: res.data.result },
       mimetype: "audio/mpeg",
@@ -47,7 +35,8 @@ cmd({
       contextInfo: { forwardingScore: 999, isForwarded: true }
     }, { quoted: mek });
 
-    await conn.sendMessage(from, { text: caption }, { quoted: mek });
+    // 4. Then reply with success message
+    await reply(`✅ *${video.title}* Downloaded Successfully!`);
 
   } catch (e) {
     console.error("play2 error:", e);
