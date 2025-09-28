@@ -4,7 +4,7 @@ const config = require("../config");
 
 cmd({
     pattern: "report",
-    alias: ["ask", "request"],
+    alias: ["ask", "bug", "request"],
     desc: "Report a bug or request a feature",
     category: "utility",
     filename: __filename
