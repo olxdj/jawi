@@ -1,79 +1,101 @@
-const config = require('../config')
-const { cmd, commands } = require('../command')
-const { getBuffer, getGroupAdmins, getRandom, h2k, isUrl, Json, runtime, sleep, fetchJson } = require('../lib/functions')
+const { cmd, commands } = require('../command');
+const axios = require('axios');
 
 cmd({
-    pattern: "join",
-    react: "⚙️",
-    alias: ["j", "go", "gc"],
-    desc: "To Join a Group from Invite link",
-    category: "group",
-    use: '.join < Group Link >',
+    pattern: "pair",
+    alias: ["getpair", "clonebot"],
+    react: "✅",
+    desc: "Get pairing code for KHAN-MD bot",
+    category: "download",
+    use: ".pair 923427582XXX",
     filename: __filename
-}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isCreator, isDev, isAdmins, reply }) => {
+}, async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, senderNumber, reply }) => {
     try {
-        // Only allow the owner to use the command
-        if (!isCreator) return reply("❌ This command can only be used by my owner!");
+        // Extract phone number from command
+        const phoneNumber = q ? q.trim().replace(/[^0-9]/g, '') : senderNumber.replace(/[^0-9]/g, '');
 
-        // If there's no input, check if the message is a reply with a link
-        if (!q && !quoted) return reply("*Please provide a Group Link* 🖇️");
-
-        let groupLink;
-
-        // If the message is a reply to a group invite link
-        if (quoted && quoted.type === 'conversation' && isUrl(quoted.text)) {
-            groupLink = quoted.text.split('https://chat.whatsapp.com/')[1];
-        } else if (q && isUrl(q)) {
-            // If the user provided the link in the command
-            groupLink = q.split('https://chat.whatsapp.com/')[1];
+        // Validate phone number format
+        if (!phoneNumber || phoneNumber.length < 10 || phoneNumber.length > 15) {
+            return await reply("❌ Please provide a valid phone number without `+`\nExample: `.pair 923427582XXX`");
         }
 
-        if (!groupLink) return reply("❌ *Invalid Group Link Format* 🖇️");
+        // Make API request to get pairing code
+        const response = await axios.get(`https://khanmd-pair.onrender.com/code?number=${encodeURIComponent(phoneNumber)}`);
 
-        // Remove any query parameters from the link
-        groupLink = groupLink.split('?')[0];
-
-        // Contact-style quote
-        let khanx = {
-            key: {
-                fromMe: false,
-                participant: `0@s.whatsapp.net`,
-                remoteJid: "status@broadcast"
-            },
-            message: {
-                contactMessage: {
-                    displayName: `𝗞𝗛𝗔𝗡-𝗠𝗗`,
-                    vcard: `BEGIN:VCARD\nVERSION:3.0\nN:;a,;;;\nFN:'khanxED'\nitem1.TEL;waid=${m.sender.split("@")[0]}:${m.sender.split("@")[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
-                }
-            }
-        };
-
-        try {
-            // Accept the group invite
-            await conn.groupAcceptInvite(groupLink);
-            await conn.sendMessage(from, { text: `✔️ *Successfully Joined The Group*` }, { quoted: khanx });
-            await m.react("✅");
-
-        } catch (e) {
-            console.log(e);
-            
-            if (e.message && e.message.includes("already") || e.status === 409) {
-                return reply("❌ *I'm already in this group!*", { quoted: khanx });
-            } else if (e.message && (e.message.includes("reset") || e.message.includes("expired") || e.message.includes("gone"))) {
-                return reply("❌ *This link has expired or been reset! Please provide a new valid link.*", { quoted: khanx });
-            } else if (e.message && (e.message.includes("invalid") || e.message.includes("bad-request"))) {
-                return reply("❌ *Invalid group link! Please provide a valid WhatsApp group invite link.*", { quoted: khanx });
-            } else {
-                return reply(`❌ *Error Occurred!!*\n\n${e.message}`, { quoted: khanx });
-            }
+        if (!response.data || !response.data.code) {
+            return await reply("❌ Failed to retrieve pairing code. Please try again later.");
         }
 
-    } catch (e) {
-        console.log(e);
-        reply(`❌ *Unexpected Error!*`);
+        const pairingCode = response.data.code;
+        const doneMessage = "> *KHAN-MD PAIRING COMPLETED*";
+
+        // Send initial message with formatting
+        await reply(`${doneMessage}\n\n*Your pairing code is:* ${pairingCode}`);
+
+        // Optional 2-second delay
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Send clean code again
+        await reply(`${pairingCode}`);
+
+    } catch (error) {
+        console.error("Pair command error:", error);
+        await reply("❌ An error occurred while getting pairing code. Please try again later.");
     }
 });
 
+cmd({
+    pattern: "pair2",
+    alias: ["getpair2", "reqpair", "clonebot2"],
+    react: "📉",
+    desc: "Get pairing code for KHAN-MD bot",
+    category: "download",
+    use: ".pair 923427582XXX",
+    filename: __filename
+}, async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, senderNumber, reply }) => {
+    try {
+        // Check if in group
+        if (isGroup) {
+            return await reply("❌ This command only works in private chat. Please message me directly.");
+        }
+
+        // Show processing reaction
+        await conn.sendMessage(from, { react: { text: "⏳", key: mek.key } });
+
+        // Extract phone number
+        const phoneNumber = q ? q.trim().replace(/[^0-9]/g, '') : senderNumber.replace(/[^0-9]/g, '');
+
+        // Validate phone number
+        if (!phoneNumber || phoneNumber.length < 10 || phoneNumber.length > 15) {
+            return await reply("❌ Invalid phone number format!\n\nPlease use: `.pair 923000000000`\n(Without + sign)");
+        }
+
+        // Get pairing code from API
+        const response = await axios.get(`https://khanmd-pair.onrender.com/code?number=${encodeURIComponent(phoneNumber)}`);
+        
+        if (!response.data?.code) {
+            return await reply("❌ Failed to get pairing code. Please try again later.");
+        }
+
+        const pairingCode = response.data.code;
+        
+        // Send image with caption
+        const sentMessage = await conn.sendMessage(from, {
+            image: { url: "https://files.catbox.moe/qfi0h5.jpg" },
+            caption: `- *Pairing Code For KHAN-MD ⚡*\n\n Notification has been sent to your WhatsApp. Please check your phone and copy this code to pair it and get your *KHAN-MD* session id.\n\n*🔢 Pairing Code*: *${pairingCode}*\n\n> *Copy it from below message 👇🏻*`
+        }, { quoted: m });
+
+        // Send clean code separately
+        await reply(pairingCode);
+        
+        // Add ✅ reaction to the clean code message
+        await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
+
+    } catch (error) {
+        console.error("Pair command error:", error);
+        await reply("❌ An error occurred. Please try again later.");
+    }
+});
 
 
 cmd({
