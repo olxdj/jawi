@@ -9,7 +9,7 @@ const yts = require('yt-search');
 
 cmd({
   pattern: "song",
-  alias: ['play', "mp3"],
+  alias: ['play3', "music"],
   react: '🎶',
   desc: "Download YouTube song",
   category: "media",
@@ -80,7 +80,7 @@ cmd({
             mediaType: 1,
             thumbnailUrl: song.thumbnail.replace('default.jpg', 'hqdefault.jpg'),
             showAdAttribution: true,
-            renderLargerThumbnail: false
+            renderLargerThumbnail: true
           }
         }
       }, { quoted: mek });
