@@ -8,95 +8,91 @@ const pipeline = promisify(stream.pipeline);
 const yts = require('yt-search');
 
 cmd({
-  pattern: "play3",
-  alias: ['song', "music"],
+  pattern: "song",
+  alias: ['play', "mp3"],
   react: '🎶',
-  desc: "Download YouTube song using Izumi API",
-  category: "main",
-  use: ".play <song name or YouTube link>",
+  desc: "Download YouTube song",
+  category: "media",
+  use: ".song <song name or YouTube link>",
   filename: __filename
-}, async (conn, mek, m, { from, sender, reply, q }) => {
+}, async (message, match, mek, { from, sender, reply, q }) => {
   try {
-    if (!q) {
-      return reply("Please provide a song name or YouTube link.");
-    }
+    if (!q) return reply("Please provide a song name or YouTube link.");
 
-    let video;
-    let title = "YouTube Song";
-    let thumbnail = '';
-
+    let song;
     if (q.includes("youtube.com") || q.includes('youtu.be')) {
-      video = { url: q, title: "YouTube Song" };
+      song = {
+        url: q,
+        title: "YouTube Song",
+        thumbnail: ''
+      };
     } else {
       const search = await yts(q);
-      if (!search || !search.videos.length) {
-        return reply("No results found.");
+      if (!search || !search.videos.length) return reply("No results found.");
+      song = search.videos[0];
+    }
+
+    const apiUrl = "https://izumiiiiiiii.dpdns.org/downloader/youtube?url=" + 
+                   encodeURIComponent(song.url) + "&format=mp3";
+    
+    const apiResponse = await axios.get(apiUrl, {
+      timeout: 30000,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
       }
-      video = search.videos[0];
-      title = video.title;
-      thumbnail = video.thumbnail;
+    });
+
+    if (!apiResponse.data?.result?.download) {
+      throw new Error("API failed to return valid download link.");
     }
 
-    const apiUrl = "https://izumiiiiiiii.dpdns.org/downloader/youtube?url=" 
-      + encodeURIComponent(video.url) + "&format=mp3";
-
-    const headers = {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    };
-
-    const res = await axios.get(apiUrl, { timeout: 30000, headers });
-    if (!res.data || !res.data.result || !res.data.result.download) {
-      throw new Error("Izumi API failed to return a valid link.");
-    }
-
-    const result = res.data.result;
+    const downloadUrl = apiResponse.data.result.download;
     const tempDir = path.join(__dirname, "temp");
-    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
+    
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
 
     const filePath = path.join(tempDir, "song_" + Date.now() + ".mp3");
 
     try {
-      const dlStream = await axios({
+      const audioResponse = await axios({
         method: "GET",
-        url: result.download,
+        url: downloadUrl,
         responseType: "stream",
         timeout: 120000,
-        headers
+        headers: {
+          'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
       });
 
-      await pipeline(dlStream.data, fs.createWriteStream(filePath));
+      await pipeline(audioResponse.data, fs.createWriteStream(filePath));
+      const audioBuffer = fs.readFileSync(filePath);
 
-      const buffer = fs.readFileSync(filePath);
-
-      await conn.sendMessage(from, {
-        audio: buffer,
+      await message.sendMessage(from, {
+        audio: audioBuffer,
         mimetype: "audio/mpeg",
-        fileName: title.replace(/[^\w\s]/gi, '') + ".mp3",
+        fileName: song.title.replace(/[^\w\s]/gi, '') + ".mp3",
         contextInfo: {
           externalAdReply: {
-            title: title.length > 25 ? title.substring(0, 22) + "..." : title,
-            body: "THIS IS DARKZONE-MD BOT BABY",
+            title: song.title.length > 25 ? `${song.title.substring(0, 22)}...` : song.title,
+            body: "⇆  ||◁◁ㅤ ❚❚ ㅤ▷▷||ㅤ ⇆",
             mediaType: 1,
-            thumbnailUrl: thumbnail,
-            sourceUrl: video.url,
-            showAdAttribution: false,
+            thumbnailUrl: song.thumbnail.replace('default.jpg', 'hqdefault.jpg'),
+            showAdAttribution: true,
             renderLargerThumbnail: false
           }
         }
       }, { quoted: mek });
 
-    } catch (err) {
-      console.error("Download error:", err);
-      return reply("❌ Failed to download audio. Please try another song.");
     } finally {
-      try {
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-      } catch (cleanupErr) {
-        console.error("Cleanup error:", cleanupErr);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
       }
     }
-  } catch (err) {
-    console.error("Main error:", err);
-    reply("❌ An error occurred. Please try again with a different song.");
+
+  } catch (error) {
+    console.error("Error:", error);
+    reply("❌ Download failed. Please try another song.");
   }
 });
