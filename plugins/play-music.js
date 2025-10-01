@@ -9,7 +9,7 @@ const yts = require('yt-search');
 
 cmd({
   pattern: "song",
-  alias: ["play3", "music"],   
+  alias: ['play3', "music"],
   react: '🎶',
   desc: "Download YouTube song",
   category: "media",
@@ -17,7 +17,7 @@ cmd({
   filename: __filename
 }, async (message, match, mek, { from, sender, reply, q }) => {
   try {
-    if (!q) return reply("Please provide a song name or YouTube link.");
+    if (!q) return await reply("Please provide a song name or YouTube link.");
 
     let song;
     if (q.includes("youtube.com") || q.includes('youtu.be')) {
@@ -28,7 +28,7 @@ cmd({
       };
     } else {
       const search = await yts(q);
-      if (!search || !search.videos.length) return reply("No results found.");
+      if (!search || !search.videos.length) return await reply("No results found.");
       song = search.videos[0];
     }
 
@@ -78,7 +78,7 @@ cmd({
             title: song.title.length > 25 ? `${song.title.substring(0, 22)}...` : song.title,
             body: "⇆  ||◁◁ㅤ ❚❚ ㅤ▷▷||ㅤ ⇆",
             mediaType: 1,
-            thumbnailUrl: song.thumbnail.replace('default.jpg', 'hqdefault.jpg'),
+            thumbnailUrl: song.thumbnail ? song.thumbnail.replace('default.jpg', 'hqdefault.jpg') : '',
             showAdAttribution: true,
             renderLargerThumbnail: false
           }
@@ -93,6 +93,73 @@ cmd({
 
   } catch (error) {
     console.error("Error:", error);
-    reply("❌ Download failed. Please try another song.");
+    await reply("❌ Download failed. Please try another song.");
+  }
+});      } else if (urlMatch) {
+        downloadUrl = urlMatch[1];
+      } else {
+        throw new Error("No download URL found in API response");
+      }
+    }
+
+    console.log("Download URL:", downloadUrl);
+
+    const tempDir = path.join(__dirname, "temp");
+    
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    const filePath = path.join(tempDir, "song_" + Date.now() + ".mp3");
+
+    try {
+      const audioResponse = await axios({
+        method: "GET",
+        url: downloadUrl,
+        responseType: "stream",
+        timeout: 120000,
+        headers: {
+          'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+        }
+      });
+
+      await pipeline(audioResponse.data, fs.createWriteStream(filePath));
+      const audioBuffer = fs.readFileSync(filePath);
+
+      // Update song info with actual data from API if available
+      if (apiResponse.data.result && apiResponse.data.result.title) {
+        song.title = apiResponse.data.result.title;
+      }
+      if (apiResponse.data.result && apiResponse.data.result.thumbnail) {
+        song.thumbnail = apiResponse.data.result.thumbnail;
+      }
+
+      await message.sendMessage(from, {
+        audio: audioBuffer,
+        mimetype: "audio/mpeg",
+        fileName: song.title.replace(/[^\w\s]/gi, '') + ".mp3",
+        contextInfo: {
+          externalAdReply: {
+            title: song.title.length > 25 ? `${song.title.substring(0, 22)}...` : song.title,
+            body: "⇆  ||◁◁ㅤ ❚❚ ㅤ▷▷||ㅤ ⇆",
+            mediaType: 1,
+            thumbnailUrl: song.thumbnail ? song.thumbnail.replace('default.jpg', 'hqdefault.jpg') : '',
+            showAdAttribution: true,
+            renderLargerThumbnail: false
+          }
+        }
+      }, { quoted: mek });
+
+      // reply("✅ Song downloaded successfully!");
+
+    } finally {
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
+    }
+
+  } catch (error) {
+    console.error("Error details:", error);
+    reply("❌ Download failed: " + error.message);
   }
 });
