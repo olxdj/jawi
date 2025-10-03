@@ -3,15 +3,17 @@ const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 const Config = require('../config');
 const fetch = require('node-fetch');
 const Crypto = require("crypto");
-const { videoToWebp } = require('../lib/video-utils');
 const fs = require('fs-extra');
 const path = require('path');
 const { tmpdir } = require("os");
+const { exec } = require('child_process');
+const { promisify } = require('util');
+const execAsync = promisify(exec);
 
 cmd(
     {
         pattern: 'tg',
-        alias: ['tgs', 'tgsticker', 'tgpack'],
+        alias: ['tpack', 'tgsticker', 'tgpack'],
         desc: 'Download Telegram sticker pack',
         category: 'sticker',
         use: '<telegram_sticker_url>',
@@ -52,7 +54,7 @@ cmd(
                 const data = await response.json();
                 
                 if (!data.ok || !data.result) {
-                    return reply(`❌ *Sticker pack not found!*\n📛 *Pack:* ${packName}\n🔍 *Error:* ${data.description || 'Unknown error'}`);
+                    return reply(`❌ *Sticker pack not found!*\n📛 *Pack:* ${packName}`);
                 }
 
                 const stickerSet = data.result;
@@ -63,10 +65,11 @@ cmd(
                 }
 
                 // Count sticker types
-                const animatedCount = stickerSet.stickers.filter(s => s.is_animated || s.is_video).length;
-                const staticCount = totalStickers - animatedCount;
+                const staticStickers = stickerSet.stickers.filter(s => !s.is_animated && !s.is_video);
+                const animatedStickers = stickerSet.stickers.filter(s => s.is_animated);
+                const videoStickers = stickerSet.stickers.filter(s => s.is_video);
 
-                await reply(`📦 *Sticker Pack Found!*\n\n✨ *Title:* ${stickerSet.title}\n📊 *Total:* ${totalStickers}\n🎨 *Static:* ${staticCount}\n🎬 *Animated:* ${animatedCount}\n⏳ *Downloading...*`);
+                await reply(`📦 *Sticker Pack Found!*\n\n✨ *Title:* ${stickerSet.title}\n📊 *Total:* ${totalStickers}\n🎨 *Static:* ${staticStickers.length}\n🌀 *Animated:* ${animatedStickers.length}\n🎬 *Video:* ${videoStickers.length}\n⏳ *Downloading...*`);
 
                 let successCount = 0;
                 let failedStickers = [];
@@ -74,7 +77,8 @@ cmd(
                 for (let i = 0; i < totalStickers; i++) {
                     try {
                         const sticker = stickerSet.stickers[i];
-                        const isAnimated = sticker.is_animated || sticker.is_video;
+                        const isAnimated = sticker.is_animated;
+                        const isVideo = sticker.is_video;
                         
                         // Get file path
                         const fileResponse = await fetch(
@@ -94,6 +98,8 @@ cmd(
                         }
 
                         const filePath = fileData.result.file_path;
+                        const fileExtension = path.extname(filePath).toLowerCase();
+                        
                         const stickerResponse = await fetch(
                             `https://api.telegram.org/file/bot${botToken}/${filePath}`,
                             { timeout: 20000 }
@@ -107,55 +113,38 @@ cmd(
                         const stickerBuffer = await stickerResponse.buffer();
                         let finalBuffer;
 
+                        // Handle different sticker types
                         if (isAnimated) {
-                            // For animated stickers - use direct WebP or convert
-                            try {
-                                // Check if it's already WebP format
-                                if (filePath.endsWith('.webp')) {
-                                    // Use directly if it's WebP
-                                    const waSticker = new Sticker(stickerBuffer, {
-                                        pack: "〆͎𓆪ː͢𝙐𝙍•𝙅𝘼𝙒𝘼𝘿↠ 💀🔥",
-                                        author: "",
-                                        type: StickerTypes.FULL,
-                                        categories: sticker.emoji ? [sticker.emoji] : ["🎬"],
-                                        quality: 50,
-                                        background: 'transparent'
-                                    });
-                                    finalBuffer = await waSticker.toBuffer();
-                                } else {
-                                    // Convert using videoToWebp for other formats
-                                    const webpBuffer = await videoToWebp(stickerBuffer);
-                                    const waSticker = new Sticker(webpBuffer, {
-                                        pack: "〆͎𓆪ː͢𝙐𝙍•𝙅𝘼𝙒𝘼𝘿↠ 💀🔥",
-                                        author: "",
-                                        type: StickerTypes.FULL,
-                                        categories: sticker.emoji ? [sticker.emoji] : ["🎬"],
-                                        quality: 50,
-                                        background: 'transparent'
-                                    });
-                                    finalBuffer = await waSticker.toBuffer();
-                                }
-                            } catch (convertError) {
-                                console.error(`Animated conversion failed for sticker ${i + 1}:`, convertError);
-                                failedStickers.push(i + 1);
-                                continue;
-                            }
+                            // .tgs format (Lottie animations)
+                            finalBuffer = await convertTgsToWebp(stickerBuffer, i);
+                        } else if (isVideo) {
+                            // .webm format (Video stickers)
+                            finalBuffer = await convertWebmToWebp(stickerBuffer, i);
                         } else {
-                            // Static stickers
-                            const waSticker = new Sticker(stickerBuffer, {
-                                pack: "〆͎𓆪ː͢𝙐𝙍•𝙅𝘼𝙒𝘼𝘿↠ 💀🔥",
-                                author: "",
-                                type: StickerTypes.FULL,
-                                categories: sticker.emoji ? [sticker.emoji] : ["❤️"],
-                                quality: 70,
-                                background: 'transparent'
-                            });
-                            finalBuffer = await waSticker.toBuffer();
+                            // .webp format (Static stickers) - use directly
+                            finalBuffer = await convertStaticToWebp(stickerBuffer, i);
                         }
+
+                        if (!finalBuffer) {
+                            failedStickers.push(i + 1);
+                            continue;
+                        }
+
+                        // Create WhatsApp sticker
+                        const waSticker = new Sticker(finalBuffer, {
+                            pack: "〆͎𓆪ː͢𝙐𝙍•𝙅𝘼𝙒𝘼𝘿↠ 💀🔥",
+                            author: "",
+                            type: StickerTypes.FULL,
+                            categories: sticker.emoji ? [sticker.emoji] : ["✨"],
+                            quality: (isAnimated || isVideo) ? 50 : 70,
+                            background: 'transparent'
+                        });
+
+                        const stickerFinalBuffer = await waSticker.toBuffer();
 
                         // Send sticker
                         await conn.sendMessage(mek.chat, { 
-                            sticker: finalBuffer 
+                            sticker: stickerFinalBuffer 
                         }, { quoted: mek });
 
                         successCount++;
@@ -180,12 +169,9 @@ cmd(
                 
                 if (failedStickers.length > 0) {
                     resultMessage += `\n❌ *Failed:* ${failedStickers.length} stickers`;
-                    if (failedStickers.length <= 10) {
-                        resultMessage += `\n📝 Failed numbers: ${failedStickers.join(', ')}`;
-                    }
                 }
                 
-                resultMessage += `\n✨ *Thank you for using!*`;
+                resultMessage += `\n\n🎨 *Static:* ${staticStickers.length} | 🌀 *Animated:* ${animatedStickers.length} | 🎬 *Video:* ${videoStickers.length}\n✨ *Thank you for using!*`;
 
                 await reply(resultMessage);
 
@@ -200,3 +186,136 @@ cmd(
         }
     }
 );
+
+// Conversion functions for different sticker types
+
+/**
+ * Convert static .webp stickers (direct use)
+ */
+async function convertStaticToWebp(stickerBuffer, index) {
+    try {
+        // Static .webp stickers can be used directly
+        return stickerBuffer;
+    } catch (error) {
+        console.error(`Static conversion failed for sticker ${index + 1}:`, error);
+        return null;
+    }
+}
+
+/**
+ * Convert .webm video stickers to .webp
+ */
+async function convertWebmToWebp(webmBuffer, index) {
+    try {
+        const tempInput = path.join(tmpdir(), `webm_${Date.now()}_${index}.webm`);
+        const tempOutput = path.join(tmpdir(), `webp_${Date.now()}_${index}.webp`);
+
+        // Write webm buffer to temp file
+        await fs.writeFile(tempInput, webmBuffer);
+
+        // Convert webm to webp using ffmpeg
+        const ffmpegCommand = `ffmpeg -i "${tempInput}" -vcodec libwebp -fs 1M -vf "scale=512:512:flags=lanczos:force_original_aspect_ratio=decrease:force_divisible_by=2,format=rgba,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000" -loop 0 -preset default -quality 80 -compression_level 6 -qmin 0 -qmax 50 -an -vsync 0 -r 15 "${tempOutput}"`;
+
+        await execAsync(ffmpegCommand, { timeout: 30000 });
+
+        // Read converted webp
+        const webpBuffer = await fs.readFile(tempOutput);
+
+        // Cleanup
+        await fs.unlink(tempInput).catch(() => {});
+        await fs.unlink(tempOutput).catch(() => {});
+
+        return webpBuffer;
+
+    } catch (error) {
+        console.error(`WebM conversion failed for sticker ${index + 1}:`, error);
+        
+        // Fallback: Try simple conversion
+        try {
+            return await simpleWebmToWebp(webmBuffer, index);
+        } catch (fallbackError) {
+            return null;
+        }
+    }
+}
+
+/**
+ * Simple WebM to WebP conversion (fallback)
+ */
+async function simpleWebmToWebp(webmBuffer, index) {
+    const tempInput = path.join(tmpdir(), `simple_webm_${Date.now()}_${index}.webm`);
+    const tempOutput = path.join(tmpdir(), `simple_webp_${Date.now()}_${index}.webp`);
+
+    await fs.writeFile(tempInput, webmBuffer);
+
+    const ffmpegCommand = `ffmpeg -i "${tempInput}" -vcodec libwebp -lossless 0 -compression_level 6 -q:v 70 -loop 0 -preset default -an -vsync 0 -r 10 "${tempOutput}"`;
+
+    await execAsync(ffmpegCommand, { timeout: 20000 });
+
+    const webpBuffer = await fs.readFile(tempOutput);
+
+    await fs.unlink(tempInput).catch(() => {});
+    await fs.unlink(tempOutput).catch(() => {});
+
+    return webpBuffer;
+}
+
+/**
+ * Convert .tgs animated stickers to .webp
+ */
+async function convertTgsToWebp(tgsBuffer, index) {
+    try {
+        const tempInput = path.join(tmpdir(), `tgs_${Date.now()}_${index}.tgs`);
+        const tempOutput = path.join(tmpdir(), `tgs_webp_${Date.now()}_${index}.webp`);
+
+        // Write tgs buffer to temp file
+        await fs.writeFile(tempInput, tgsBuffer);
+
+        // Method 1: Try using lottie-converter if available
+        try {
+            // Convert tgs to webp using lottie
+            const lottieCommand = `ffmpeg -i "${tempInput}" -vcodec libwebp -vf "scale=512:512:flags=lanczos:force_original_aspect_ratio=decrease,format=rgba,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000" -loop 0 -preset default -quality 70 -compression_level 6 -an -vsync 0 -r 12 "${tempOutput}"`;
+            
+            await execAsync(lottieCommand, { timeout: 30000 });
+
+            const webpBuffer = await fs.readFile(tempOutput);
+
+            await fs.unlink(tempInput).catch(() => {});
+            await fs.unlink(tempOutput).catch(() => {});
+
+            return webpBuffer;
+
+        } catch (lottieError) {
+            console.log(`Lottie conversion failed, trying alternative for sticker ${index + 1}`);
+            
+            // Method 2: Alternative conversion
+            return await alternativeTgsConversion(tgsBuffer, index);
+        }
+
+    } catch (error) {
+        console.error(`TGS conversion failed for sticker ${index + 1}:`, error);
+        return null;
+    }
+}
+
+/**
+ * Alternative TGS conversion method
+ */
+async function alternativeTgsConversion(tgsBuffer, index) {
+    const tempInput = path.join(tmpdir(), `alt_tgs_${Date.now()}_${index}.tgs`);
+    const tempOutput = path.join(tmpdir(), `alt_webp_${Date.now()}_${index}.webp`);
+
+    await fs.writeFile(tempInput, tgsBuffer);
+
+    // Simple conversion command
+    const ffmpegCommand = `ffmpeg -i "${tempInput}" -vcodec libwebp -lossless 0 -compression_level 4 -q:v 60 -loop 0 -preset default -an -vsync 0 -r 8 "${tempOutput}"`;
+
+    await execAsync(ffmpegCommand, { timeout: 25000 });
+
+    const webpBuffer = await fs.readFile(tempOutput);
+
+    await fs.unlink(tempInput).catch(() => {});
+    await fs.unlink(tempOutput).catch(() => {});
+
+    return webpBuffer;
+}
