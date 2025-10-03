@@ -7,7 +7,7 @@ const Crypto = require("crypto");
 cmd(
     {
         pattern: 'tg',
-        alias: ['tpack', 'tgs' 'tgsticker', 'tgpack'],
+        alias: ['tpack', 'tgs', 'tgsticker', 'tgpack'],
         desc: 'Download Telegram sticker pack',
         category: 'sticker',
         use: '<telegram_sticker_url>',
