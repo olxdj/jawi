@@ -3,11 +3,15 @@ const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 const Config = require('../config');
 const fetch = require('node-fetch');
 const Crypto = require("crypto");
+const { videoToWebp } = require('../lib/video-utils');
+const fs = require('fs-extra');
+const path = require('path');
+const { tmpdir } = require("os");
 
 cmd(
     {
         pattern: 'tg',
-        alias: ['tpack', 'tgs', 'tgsticker', 'tgpack'],
+        alias: ['tgs', 'tgsticker', 'tgpack'],
         desc: 'Download Telegram sticker pack',
         category: 'sticker',
         use: '<telegram_sticker_url>',
@@ -30,34 +34,25 @@ cmd(
                 return reply('❌ *Invalid pack name!* Please check the URL.');
             }
 
-            // Remove any extra parameters
             packName = packName.split('?')[0];
-
             await reply(`🔍 *Searching for:* ${packName}\n⏳ *Please wait...*`);
 
-            // Use your bot token
             const botToken = '7801479976:AAGuPL0a7kXXBYz6XUSR_ll2SR5V_W6oHl4';
 
             try {
                 const response = await fetch(
                     `https://api.telegram.org/bot${botToken}/getStickerSet?name=${encodeURIComponent(packName)}`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-                        },
-                        timeout: 30000
-                    }
+                    { timeout: 30000 }
                 );
 
                 if (!response.ok) {
-                    return reply(`❌ *API Error!* HTTP ${response.status}\n\n💡 Check if:\n• Bot token is valid\n• Sticker pack exists\n• Pack is public`);
+                    return reply(`❌ *API Error!* HTTP ${response.status}`);
                 }
 
                 const data = await response.json();
                 
                 if (!data.ok || !data.result) {
-                    return reply(`❌ *Sticker pack not found!*\n\n📛 *Pack:* ${packName}\n🔍 *Error:* ${data.description || 'Unknown error'}\n\n💡 Make sure the sticker pack exists and is public.`);
+                    return reply(`❌ *Sticker pack not found!*\n📛 *Pack:* ${packName}\n🔍 *Error:* ${data.description || 'Unknown error'}`);
                 }
 
                 const stickerSet = data.result;
@@ -67,15 +62,19 @@ cmd(
                     return reply('❌ *Empty sticker pack!* No stickers found.');
                 }
 
-                // Send pack info
-                await reply(`📦 *Sticker Pack Found!*\n\n✨ *Title:* ${stickerSet.title}\n📊 *Stickers:* ${totalStickers}\n🎨 *Type:* ${stickerSet.is_animated ? 'Animated' : 'Static'}\n⏳ *Downloading...* Please wait!`);
+                // Count sticker types
+                const animatedCount = stickerSet.stickers.filter(s => s.is_animated || s.is_video).length;
+                const staticCount = totalStickers - animatedCount;
+
+                await reply(`📦 *Sticker Pack Found!*\n\n✨ *Title:* ${stickerSet.title}\n📊 *Total:* ${totalStickers}\n🎨 *Static:* ${staticCount}\n🎬 *Animated:* ${animatedCount}\n⏳ *Downloading...*`);
 
                 let successCount = 0;
+                let failedStickers = [];
 
-                // Process each sticker
                 for (let i = 0; i < totalStickers; i++) {
                     try {
                         const sticker = stickerSet.stickers[i];
+                        const isAnimated = sticker.is_animated || sticker.is_video;
                         
                         // Get file path
                         const fileResponse = await fetch(
@@ -84,43 +83,75 @@ cmd(
                         );
                         
                         if (!fileResponse.ok) {
-                            console.log(`Failed to get file path for sticker ${i + 1}`);
+                            failedStickers.push(i + 1);
                             continue;
                         }
                         
                         const fileData = await fileResponse.json();
                         if (!fileData.ok || !fileData.result.file_path) {
-                            console.log(`No file path for sticker ${i + 1}`);
+                            failedStickers.push(i + 1);
                             continue;
                         }
 
                         const filePath = fileData.result.file_path;
-
-                        // Download sticker
                         const stickerResponse = await fetch(
                             `https://api.telegram.org/file/bot${botToken}/${filePath}`,
                             { timeout: 20000 }
                         );
                         
                         if (!stickerResponse.ok) {
-                            console.log(`Failed to download sticker ${i + 1}`);
+                            failedStickers.push(i + 1);
                             continue;
                         }
 
                         const stickerBuffer = await stickerResponse.buffer();
+                        let finalBuffer;
 
-                        // Create WhatsApp sticker with custom pack name and no author
-                        const waSticker = new Sticker(stickerBuffer, {
-                            pack: "〆͎𓆪ː͢𝙐𝙍•𝙅𝘼𝙒𝘼𝘿↠ 💀🔥",
-                            author: "", // Empty author name
-                            type: StickerTypes.FULL,
-                            categories: sticker.emoji ? [sticker.emoji] : ["❤️"],
-                            id: Crypto.randomBytes(4).toString('hex'),
-                            quality: stickerSet.is_animated ? 50 : 70,
-                            background: 'transparent'
-                        });
-
-                        const finalBuffer = await waSticker.toBuffer();
+                        if (isAnimated) {
+                            // For animated stickers - use direct WebP or convert
+                            try {
+                                // Check if it's already WebP format
+                                if (filePath.endsWith('.webp')) {
+                                    // Use directly if it's WebP
+                                    const waSticker = new Sticker(stickerBuffer, {
+                                        pack: "〆͎𓆪ː͢𝙐𝙍•𝙅𝘼𝙒𝘼𝘿↠ 💀🔥",
+                                        author: "",
+                                        type: StickerTypes.FULL,
+                                        categories: sticker.emoji ? [sticker.emoji] : ["🎬"],
+                                        quality: 50,
+                                        background: 'transparent'
+                                    });
+                                    finalBuffer = await waSticker.toBuffer();
+                                } else {
+                                    // Convert using videoToWebp for other formats
+                                    const webpBuffer = await videoToWebp(stickerBuffer);
+                                    const waSticker = new Sticker(webpBuffer, {
+                                        pack: "〆͎𓆪ː͢𝙐𝙍•𝙅𝘼𝙒𝘼𝘿↠ 💀🔥",
+                                        author: "",
+                                        type: StickerTypes.FULL,
+                                        categories: sticker.emoji ? [sticker.emoji] : ["🎬"],
+                                        quality: 50,
+                                        background: 'transparent'
+                                    });
+                                    finalBuffer = await waSticker.toBuffer();
+                                }
+                            } catch (convertError) {
+                                console.error(`Animated conversion failed for sticker ${i + 1}:`, convertError);
+                                failedStickers.push(i + 1);
+                                continue;
+                            }
+                        } else {
+                            // Static stickers
+                            const waSticker = new Sticker(stickerBuffer, {
+                                pack: "〆͎𓆪ː͢𝙐𝙍•𝙅𝘼𝙒𝘼𝘿↠ 💀🔥",
+                                author: "",
+                                type: StickerTypes.FULL,
+                                categories: sticker.emoji ? [sticker.emoji] : ["❤️"],
+                                quality: 70,
+                                background: 'transparent'
+                            });
+                            finalBuffer = await waSticker.toBuffer();
+                        }
 
                         // Send sticker
                         await conn.sendMessage(mek.chat, { 
@@ -129,38 +160,43 @@ cmd(
 
                         successCount++;
 
-                        // Add delay after every 10 stickers (removed progress message)
-                        if ((i + 1) % 10 === 0) {
-                            await new Promise(resolve => setTimeout(resolve, 3000));
-                        } else {
-                            // Regular delay between stickers
-                            await new Promise(resolve => setTimeout(resolve, 1500));
+                        // Progress update
+                        if ((i + 1) % 5 === 0) {
+                            await reply(`📥 *Progress:* ${i + 1}/${totalStickers}\n✅ *Success:* ${successCount}`);
                         }
 
+                        // Delay
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+
                     } catch (error) {
-                        console.error(`Error processing sticker ${i + 1}:`, error);
+                        console.error(`Sticker ${i + 1} error:`, error);
+                        failedStickers.push(i + 1);
                         continue;
                     }
                 }
 
                 // Final result
-                const resultMessage = `✅ *Download Complete!*\n\n📦 *Pack:* ${stickerSet.title}\n✅ *Success:* ${successCount}/${totalStickers} stickers\n✨ *Thank you for using!*`;
+                let resultMessage = `✅ *Download Complete!*\n\n📦 *Pack:* ${stickerSet.title}\n✅ *Success:* ${successCount}/${totalStickers}`;
+                
+                if (failedStickers.length > 0) {
+                    resultMessage += `\n❌ *Failed:* ${failedStickers.length} stickers`;
+                    if (failedStickers.length <= 10) {
+                        resultMessage += `\n📝 Failed numbers: ${failedStickers.join(', ')}`;
+                    }
+                }
+                
+                resultMessage += `\n✨ *Thank you for using!*`;
 
                 await reply(resultMessage);
 
             } catch (error) {
                 console.error('Telegram API error:', error);
-                
-                if (error.name === 'TimeoutError') {
-                    return reply('❌ *Request timeout!* Telegram API is slow. Try again later.');
-                }
-                
-                return reply(`❌ *API Connection Failed!*\n\nError: ${error.message}\n\n💡 Check your internet connection and try again.`);
+                await reply(`❌ *API Error!* ${error.message}`);
             }
 
         } catch (error) {
             console.error('Telegram command error:', error);
-            await reply('❌ *Unexpected error!* Please try again with a different sticker pack.');
+            await reply('❌ *Unexpected error!* Please try again.');
         }
     }
 );
