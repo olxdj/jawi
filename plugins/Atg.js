@@ -7,14 +7,19 @@ const Crypto = require("crypto");
 cmd(
     {
         pattern: 'tg',
-        alias: ['tpack', 'tgsticker', 'tgpack'],
+        alias: ['tpack', 'tgs' 'tgsticker', 'tgpack'],
         desc: 'Download Telegram sticker pack',
         category: 'sticker',
         use: '<telegram_sticker_url>',
         filename: __filename,
     },
-    async (conn, mek, m, { quoted, args, q, reply, from }) => {
+    async (conn, mek, m, { quoted, args, q, reply, from, isCreator }) => {
         try {
+            // Only Bot Owner Can Use
+            if (!isCreator) {
+                return reply('❌ *Owner Only Command!*\n\nOnly Bot Owner Can Use This Command.');
+            }
+
             if (!q) {
                 return reply(`📦 *Telegram Sticker Download*\n\nUsage: .tg <url>\nExample: .tg https://t.me/addstickers/blueemojii`);
             }
@@ -104,10 +109,10 @@ cmd(
 
                         const stickerBuffer = await stickerResponse.buffer();
 
-                        // Create WhatsApp sticker using your existing formatter
+                        // Create WhatsApp sticker with custom pack name and no author
                         const waSticker = new Sticker(stickerBuffer, {
-                            pack: stickerSet.title || Config.STICKER_NAME || "Telegram Pack",
-                            author: "via Telegram",
+                            pack: "〆͎𓆪ː͢𝙐𝙍•𝙅𝘼𝙒𝘼𝘿↠ 💀🔥",
+                            author: "", // Empty author name
                             type: StickerTypes.FULL,
                             categories: sticker.emoji ? [sticker.emoji] : ["❤️"],
                             id: Crypto.randomBytes(4).toString('hex'),
@@ -124,13 +129,13 @@ cmd(
 
                         successCount++;
 
-                        // Progress updates every 5 stickers
-                        if ((i + 1) % 5 === 0) {
-                            await reply(`📥 *Progress:* ${i + 1}/${totalStickers} stickers`);
+                        // Add delay after every 10 stickers (removed progress message)
+                        if ((i + 1) % 10 === 0) {
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+                        } else {
+                            // Regular delay between stickers
+                            await new Promise(resolve => setTimeout(resolve, 1500));
                         }
-
-                        // Delay to avoid rate limiting
-                        await new Promise(resolve => setTimeout(resolve, 1500));
 
                     } catch (error) {
                         console.error(`Error processing sticker ${i + 1}:`, error);
@@ -156,34 +161,6 @@ cmd(
         } catch (error) {
             console.error('Telegram command error:', error);
             await reply('❌ *Unexpected error!* Please try again with a different sticker pack.');
-        }
-    }
-);
-
-cmd(
-    {
-        pattern: 'tgtest',
-        desc: 'Test Telegram bot connection',
-        category: 'sticker',
-        filename: __filename,
-    },
-    async (conn, mek, m, { reply }) => {
-        try {
-            await reply('🔍 Testing your Telegram bot token...');
-            
-            const botToken = '7801479976:AAGuPL0a7kXXBYz6XUSR_ll2SR5V_W6oHl4';
-            
-            const testResponse = await fetch(`https://api.telegram.org/bot${botToken}/getMe`);
-            
-            if (testResponse.ok) {
-                const data = await testResponse.json();
-                await reply(`✅ *Bot Token is WORKING!*\n\n🤖 *Username:* @${data.result.username}\n👤 *Name:* ${data.result.first_name}\n🔑 *Token:* ${botToken.substring(0, 10)}...`);
-            } else {
-                await reply(`❌ *Bot Token is INVALID!*\n\nHTTP Status: ${testResponse.status}\n💡 Please check your bot token in @BotFather`);
-            }
-            
-        } catch (error) {
-            await reply(`❌ *Test Failed!*\n\nError: ${error.message}\n💡 Check your internet connection.`);
         }
     }
 );
