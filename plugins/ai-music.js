@@ -2,17 +2,18 @@
  * Khan MD Plugin
  * AI Music Generator 🎶
  * By: JawadTechX
+ * Channel: https://whatsapp.com/channel/0029Vb68QKB9xVJjlEm6Un1X
  */
 
 const axios = require('axios');
-const { cmd } = require('../command'); // Khan MD command structure
+const { cmd } = require('../command'); 
 const delay = (ms) => new Promise(res => setTimeout(res, ms));
 
 async function aimusic(prompt, { tags = 'pop, romantic' } = {}) {
     try {
         if (!prompt) throw new Error('Prompt is required');
 
-        // 🔸 Generate Lyrics from LLM API
+        // 🔸 Generate Lyrics using AI
         const { data: lyricApiRes } = await axios.get(
             'https://8pe3nv3qha.execute-api.us-east-1.amazonaws.com/default/llm_chat',
             {
@@ -21,7 +22,7 @@ async function aimusic(prompt, { tags = 'pop, romantic' } = {}) {
                         {
                             role: 'system',
                             content:
-                                'You are a professional lyricist AI trained to write poetic and rhythmic song lyrics. Respond with lyrics only, using [verse], [chorus], [bridge], and [instrumental] or [inst] tags to structure the song. Use only the tag (e.g., [verse]) without any numbering or extra text (e.g., do not write [verse 1], [chorus x2], etc). Do not add explanations, titles, or any other text outside of the lyrics. Focus on vivid imagery, emotional flow, and strong lyrical rhythm. Refrain from labeling genre or giving commentary. Respond in clean plain text, exactly as if it were a song lyric sheet.'
+                                'You are a professional lyricist AI trained to write poetic and rhythmic song lyrics. Respond with lyrics only, using [verse], [chorus], [bridge], and [instrumental] or [inst] tags to structure the song. Use only the tag (e.g., [verse]) without any numbering or extra text.'
                         },
                         {
                             role: 'user',
@@ -41,11 +42,11 @@ async function aimusic(prompt, { tags = 'pop, romantic' } = {}) {
         const generatedLyrics = lyricApiRes.response_content;
         if (!generatedLyrics) throw new Error('Failed to get lyrics from AI.');
 
-        // 🔸 Send to HuggingFace Space for Music Generation
+        // 🔸 Send to HuggingFace Music Generator
         const session_hash = Math.random().toString(36).substring(2);
         await axios.post(`https://ace-step-ace-step.hf.space/gradio_api/queue/join?`, {
             data: [
-                240, // Duration (seconds)
+                240,
                 tags,
                 generatedLyrics,
                 60,
@@ -103,18 +104,14 @@ async function aimusic(prompt, { tags = 'pop, romantic' } = {}) {
         }
 
         if (!resultMusicUrl) throw new Error('Timeout: Failed to generate AI music URL.');
-
         return resultMusicUrl;
+
     } catch (error) {
         console.error('Error in aimusic generator:', error.message);
-        if (error.response && error.response.data) {
-            console.error('API Response Error:', error.response.data.toString());
-        }
-        throw new Error(`Gagal membuat musik AI: ${error.message}`);
+        throw new Error(`❌ AI Music Error: ${error.message}`);
     }
 }
 
-// 📌 Command Definition
 cmd({
     pattern: 'aimusic',
     alias: ['generatemusic', 'tomusic'],
@@ -122,13 +119,14 @@ cmd({
     category: 'ai',
     react: '🎶',
     filename: __filename,
-    premium: true,
-    limit: true
+    // ✅ Limit & Premium Removed
+    limit: false,
+    premium: false
 }, async (conn, m, text, { prefix, command }) => {
 
     if (!text) {
         return await conn.sendMessage(m.chat, {
-            text: `🎧 *AI Music Generator*\n\nKya banwana chahte ho?\n\n*Usage:* ${prefix + command} <prompt>|[tags]\n*Tags (optional):* Pop, Romantic, Rock\n_Default: pop, romantic_`
+            text: `🎧 *AI Music Generator*\n\nUsage:\n${prefix + command} <prompt>|[tags]\n\nExample:\n${prefix + command} A romantic song about stars and love | pop`
         }, { quoted: m });
     }
 
@@ -137,21 +135,22 @@ cmd({
     const tags = args[1] || 'pop, romantic';
 
     if (!prompt) {
-        return await conn.sendMessage(m.chat, {
-            text: '⚠️ Prompt nahi diya gaya!'
-        }, { quoted: m });
+        return await conn.sendMessage(m.chat, { text: '⚠️ Prompt nahi diya gaya!' }, { quoted: m });
     }
 
-    await conn.sendMessage(m.chat, { react: { text: '⏳', key: m.key } });
+    // 🌀 Reactions for process
+    await conn.sendMessage(m.chat, { react: { text: '⏳', key: m.key } }); // Start
 
     try {
         const musicUrl = await aimusic(prompt, { tags });
-        if (!musicUrl) throw new Error('No music URL returned');
+
+        // 🛠 Processing done
+        await conn.sendMessage(m.chat, { react: { text: '🛠️', key: m.key } });
 
         await conn.sendMessage(m.chat, {
             audio: { url: musicUrl },
             mimetype: 'audio/mpeg',
-            fileName: `aimusic_${Date.now()}.mp3`,
+            fileName: `aimusic_${Date.now()}.mp3`
         }, { quoted: m });
 
         await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
@@ -159,8 +158,6 @@ cmd({
     } catch (e) {
         console.error('AI Music Command Error:', e);
         await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
-        await conn.sendMessage(m.chat, {
-            text: `❌ Error: ${e.message}\nTry again later.`
-        }, { quoted: m });
+        await conn.sendMessage(m.chat, { text: e.message }, { quoted: m });
     }
 });
