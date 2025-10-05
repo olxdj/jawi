@@ -10,7 +10,7 @@ const izumi = {
 
 cmd({
     pattern: "video",
-    alias: ["ytmp4", "ep", "episode", "drama", "ytv"],
+    alias: ["ytmp4", "drama", "ytv"],
     react: "🎥",
     desc: "Download video from YouTube",
     category: "download",
