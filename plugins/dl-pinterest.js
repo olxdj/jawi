@@ -63,14 +63,14 @@ cmd({
                 video: { url: videoMedia.url },
                 mimetype: 'video/mp4',
                 fileName: `pinterest_video_${Date.now()}.mp4`,
-                caption: `*Pinterest Video*\n\n> *${config.DESCRIPTION}*`
+                caption: `*Pinterest Video Download*\n\n> ${config.DESCRIPTION}`
             }, { quoted: mek });
             
         } else if (imageMedia) {
             // Send image
             await conn.sendMessage(from, {
                 image: { url: imageMedia.url },
-                caption: `*Pinterest Image*\n\n> *${config.DESCRIPTION}*`
+                caption: `*Pinterest Image*\n\n> ${config.DESCRIPTION}`
             }, { quoted: mek });
             
         } else {
