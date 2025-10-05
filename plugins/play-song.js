@@ -7,7 +7,7 @@ cmd({
   pattern: "play2",
   desc: "Download YouTube audio by title",
   category: "download",
-  react: "💀",
+  react: "🎵",
   filename: __filename
 }, async (conn, mek, m, { from, args, q, reply }) => {
   try {
