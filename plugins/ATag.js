@@ -4,6 +4,8 @@ const config = require('../config');
 const { cmd } = require('../command');
 const axios = require('axios');
 const { getBuffer } = require("../lib/functions");
+const { videoToWebp } = require('../lib/video-utils');
+const { Sticker, createSticker, StickerTypes } = require("wa-sticker-formatter");
 
 // Telegram Sticker API configuration
 const stickerAPI = {
@@ -12,7 +14,7 @@ const stickerAPI = {
 
 cmd({
     pattern: "tstick",
-    alias: ["telestick", "tsticker", "tg"],
+    alias: ["telestick", "tsticker", "telegramsticker"],
     react: "🛡️",
     desc: "Download Telegram sticker pack",
     category: "download",
@@ -60,7 +62,7 @@ cmd({
                    `*Title:* ${stickerData.title || 'N/A'}\n` +
                    `*Type:* ${stickerData.sticker_type || 'regular'}\n` +
                    `*Stickers:* ${stickers.length}\n\n` +
-                   `⏳ Sending stickers...`);
+                   `⏳ Processing stickers...`);
 
         let sentCount = 0;
         let failedCount = 0;
@@ -74,28 +76,52 @@ cmd({
                 
                 // Detect sticker type from file extension
                 if (fileExtension === 'webp') {
-                    // Static sticker - send as sticker
+                    // Static WebP sticker - send directly
                     await conn.sendMessage(from, {
                         sticker: { url: stickerUrl }
                     }, { quoted: mek });
                     
                 } else if (fileExtension === 'tgs' || fileExtension === 'webm') {
                     // Animated sticker - TGS or WEBM
-                    // Download and send as animated sticker
-                    const stickerBuffer = await getBuffer(stickerUrl);
-                    await conn.sendMessage(from, {
-                        sticker: stickerBuffer,
-                        mimetype: 'video/webm'
-                    }, { quoted: mek });
+                    // Download, convert to WebP and send as animated sticker
+                    try {
+                        const videoBuffer = await getBuffer(stickerUrl);
+                        
+                        // Convert video to WebP sticker
+                        const webpBuffer = await videoToWebp(videoBuffer);
+                        
+                        // Create sticker with proper metadata
+                        const stickerObj = new Sticker(webpBuffer, {
+                            pack: stickerData.name || 'Telegram Pack',
+                            author: stickerData.title || '',
+                            type: StickerTypes.FULL,
+                            categories: ['🎭', '✨'],
+                            quality: 50, // Lower quality for faster sending
+                            background: 'transparent'
+                        });
+                        
+                        const stickerBuffer = await stickerObj.toBuffer();
+                        await conn.sendMessage(from, { 
+                            sticker: stickerBuffer 
+                        }, { quoted: mek });
+                        
+                    } catch (convertError) {
+                        console.error(`[TSTICK] Conversion failed for sticker ${index + 1}:`, convertError.message);
+                        // Fallback: send as document
+                        await conn.sendMessage(from, {
+                            document: { url: stickerUrl },
+                            fileName: `sticker_${index + 1}.${fileExtension}`,
+                            mimetype: 'application/octet-stream'
+                        }, { quoted: mek });
+                    }
                     
                 } else {
-                    // Unknown format - try to send as image
+                    // Unknown format - try as image first, then document
                     try {
                         await conn.sendMessage(from, {
                             image: { url: stickerUrl }
                         }, { quoted: mek });
                     } catch (imageError) {
-                        // If image fails, try as document
                         await conn.sendMessage(from, {
                             document: { url: stickerUrl },
                             fileName: `sticker_${index + 1}.${fileExtension}`,
@@ -112,7 +138,7 @@ cmd({
                 }
                 
                 // Small delay to avoid rate limiting
-                await new Promise(resolve => setTimeout(resolve, 800));
+                await new Promise(resolve => setTimeout(resolve, 1000));
                 
             } catch (stickerError) {
                 console.error(`[TSTICK] Error sending sticker ${index + 1}:`, stickerError.message);
@@ -128,7 +154,7 @@ cmd({
                              `*Pack:* ${stickerData.name || 'Unknown'}\n` +
                              `*Success:* ${sentCount}/${totalStickers}\n` +
                              `*Failed:* ${failedCount}\n` +
-                             (failedCount > 0 ? `\nNote: Some stickers may not be supported by WhatsApp.` : '');
+                             (failedCount > 0 ? `\nNote: Some animated stickers may have failed to convert.` : '');
         
         await reply(resultMessage);
 
