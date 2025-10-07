@@ -82,43 +82,17 @@ cmd({
   react: "✅",
   filename: __filename
 }, async (conn, mek, m, { args, isCreator, reply }) => {
-  try {
-    if (!isCreator) return reply("❗ Only the bot owner can use this command.");
-    
-    const newPrefix = args[0]?.trim();
-    if (!newPrefix || newPrefix.length !== 1) return reply("❌ Provide a valid prefix (only 1 character allowed).");
+  if (!isCreator) return reply("❗ Only the bot owner can use this command.");
+  const newPrefix = args[0]?.trim();
+  if (!newPrefix || newPrefix.length > 2) return reply("❌ Provide a valid prefix (1–2 characters).");
 
-    // Send processing react immediately
-    await conn.sendMessage(m.from, { react: { text: '⏳', key: m.key } });
-    
-    // Wait 800ms
-    await sleep(800);
+  await setConfig("PREFIX", newPrefix);
 
-    await setConfig("PREFIX", newPrefix);
-
-    // Send success message
-    const messageSent = await reply(`✅ Prefix updated to: *${newPrefix}*\n\n♻️ Restarting...`);
-    
-    // Wait for message to be delivered
-    await sleep(800);
-    
-    // Send ✅ react after message
-    await conn.sendMessage(m.from, { react: { text: '✅', key: m.key } });
-    
-    // Wait 2000ms to ensure everything is sent
-    await sleep(2000);
-
-    // Execute restart
-    const { exec } = require("child_process");
-    exec("pm2 restart all");
-
-  } catch (e) {
-    console.log(e);
-    // Send ❌ react for error
-    await conn.sendMessage(m.from, { react: { text: '❌', key: m.key } });
-    reply(`Error: ${e}`);
-  }
+  await reply(`✅ Prefix updated to: *${newPrefix}*\n\n♻️ Restarting...`);
+  setTimeout(() => exec("pm2 restart all"), 2000);
 });
+
+
 
 // SET BOT NAME
 cmd({
@@ -129,42 +103,14 @@ cmd({
   react: "✅",
   filename: __filename
 }, async (conn, mek, m, { args, isCreator, reply }) => {
-  try {
-    if (!isCreator) return reply("❗ Only the bot owner can use this command.");
-    
-    const newName = args.join(" ").trim();
-    if (!newName) return reply("❌ Provide a bot name.");
+  if (!isCreator) return reply("❗ Only the bot owner can use this command.");
+  const newName = args.join(" ").trim();
+  if (!newName) return reply("❌ Provide a bot name.");
 
-    // Send processing react immediately
-    await conn.sendMessage(m.from, { react: { text: '⏳', key: m.key } });
-    
-    // Wait 800ms
-    await sleep(800);
+  await setConfig("BOT_NAME", newName);
 
-    await setConfig("BOT_NAME", newName);
-
-    // Send success message
-    const messageSent = await reply(`✅ Bot name updated to: *${newName}*\n\n♻️ Restarting...`);
-    
-    // Wait for message to be delivered
-    await sleep(800);
-    
-    // Send ✅ react after message
-    await conn.sendMessage(m.from, { react: { text: '✅', key: m.key } });
-    
-    // Wait 2000ms to ensure everything is sent
-    await sleep(2000);
-
-    // Execute restart
-    const { exec } = require("child_process");
-    exec("pm2 restart all");
-
-  } catch (e) {
-    console.log(e);
-    // Send ❌ react for error
-    await conn.sendMessage(m.from, { react: { text: '❌', key: m.key } });
-    reply(`Error: ${e}`);
-  }
+  await reply(`✅ Bot name updated to: *${newName}*\n\n♻️ Restarting...`);
+  setTimeout(() => exec("pm2 restart all"), 2000);
 });
 
 // SET OWNER NAME
@@ -176,43 +122,16 @@ cmd({
   react: "✅",
   filename: __filename
 }, async (conn, mek, m, { args, isCreator, reply }) => {
-  try {
-    if (!isCreator) return reply("❗ Only the bot owner can use this command.");
-    
-    const name = args.join(" ").trim();
-    if (!name) return reply("❌ Provide an owner name.");
+  if (!isCreator) return reply("❗ Only the bot owner can use this command.");
+  const name = args.join(" ").trim();
+  if (!name) return reply("❌ Provide an owner name.");
 
-    // Send processing react immediately
-    await conn.sendMessage(m.from, { react: { text: '⏳', key: m.key } });
-    
-    // Wait 800ms
-    await sleep(800);
+  await setConfig("OWNER_NAME", name);
 
-    await setConfig("OWNER_NAME", name);
-
-    // Send success message
-    const messageSent = await reply(`✅ Owner name updated to: *${name}*\n\n♻️ Restarting...`);
-    
-    // Wait for message to be delivered
-    await sleep(800);
-    
-    // Send ✅ react after message
-    await conn.sendMessage(m.from, { react: { text: '✅', key: m.key } });
-    
-    // Wait 2000ms to ensure everything is sent
-    await sleep(2000);
-
-    // Execute restart
-    const { exec } = require("child_process");
-    exec("pm2 restart all");
-
-  } catch (e) {
-    console.log(e);
-    // Send ❌ react for error
-    await conn.sendMessage(m.from, { react: { text: '❌', key: m.key } });
-    reply(`Error: ${e}`);
-  }
+  await reply(`✅ Owner name updated to: *${name}*\n\n♻️ Restarting...`);
+  setTimeout(() => exec("pm2 restart all"), 2000);
 });
+
 
 // WELCOME
 cmd({
@@ -234,7 +153,32 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
         config.WELCOME = "false";
         return reply("❌ Welcome messages are now disabled.");
     } else {
-        return reply(`Example: .welcome on/off`);
+        return reply(`Example: .welcome on`);
+    }
+});
+
+
+// WELCOME
+cmd({
+    pattern: "goodbye",
+    alias: ["setgoodbye"],
+    react: "✅",
+    desc: "Enable or disable welcome messages for new members",
+    category: "settings",
+    filename: __filename
+},
+async (conn, mek, m, { from, args, isCreator, reply }) => {
+    if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+
+    const status = args[0]?.toLowerCase();
+    if (status === "on") {
+        config.GOODBYE = "true";
+        return reply("✅ GoodBye messages are now enabled.");
+    } else if (status === "off") {
+        config.GOODBYE = "false";
+        return reply("❌ GoodBye messages are now disabled.");
+    } else {
+        return reply(`Example: .welcome on`);
     }
 });
 
@@ -242,61 +186,33 @@ cmd({
     pattern: "mode",
     alias: ["setmode", "mod"],
     react: "✅",
-    desc: "Set bot mode to private, public or inbox.",
+    desc: "Set bot mode to private or public.",
     category: "settings",
     filename: __filename,
 }, async (conn, mek, m, { args, isCreator, reply }) => {
-    try {
-        if (!isCreator) return reply("*📛 Only the owner can use this command!*");
+    if (!isCreator) return reply("*📛 Only the owner can use this command!*");
 
-        const currentMode = getConfig("MODE") || "public";
+    const currentMode = getConfig("MODE") || "public";
 
-        if (!args[0]) {
-            return reply(`📌 Current mode: *${currentMode}*\n\nUsage: .mode private OR .mode public OR .mode inbox`);
-        }
+    if (!args[0]) {
+        return reply(`📌 Current mode: *${currentMode}*\n\nUsage: .mode private OR .mode public`);
+    }
 
-        const modeArg = args[0].toLowerCase();
+    const modeArg = args[0].toLowerCase();
 
-        // Send processing react immediately
-        await conn.sendMessage(m.from, { react: { text: '⏳', key: m.key } });
-        
-        // Wait 800ms
-        await sleep(800);
+    if (["private", "public"].includes(modeArg)) {
+        setConfig("MODE", modeArg);
+        await reply(`✅ Bot mode is now set to *${modeArg.toUpperCase()}*.\n\n♻ Restarting bot to apply changes...`);
 
-        if (["private", "public", "inbox"].includes(modeArg)) {
-            setConfig("MODE", modeArg);
-            
-            // Send success message
-            const messageSent = await reply(`✅ Bot mode is now set to *${modeArg.toUpperCase()}*.\n\n♻ Restarting bot to apply changes...`);
-            
-            // Wait for message to be delivered
-            await sleep(800);
-            
-            // Send ✅ react after message
-            await conn.sendMessage(m.from, { react: { text: '✅', key: m.key } });
-            
-            // Wait 2000ms to ensure everything is sent
-            await sleep(2000);
-
-            // Execute restart
-            const { exec } = require("child_process");
-            exec("pm2 restart all", (error, stdout, stderr) => {
-                if (error) {
-                    console.error("Restart error:", error);
-                    return;
-                }
-                console.log("PM2 Restart:", stdout || stderr);
-            });
-        } else {
-            // Send ❌ react for invalid mode
-            await conn.sendMessage(m.from, { react: { text: '❌', key: m.key } });
-            return reply("❌ Invalid mode. Please use `.mode private`, `.mode public` or `.mode inbox`.");
-        }
-    } catch (e) {
-        console.log(e);
-        // Send ❌ react for error
-        await conn.sendMessage(m.from, { react: { text: '❌', key: m.key } });
-        reply(`Error: ${e}`);
+        exec("pm2 restart all", (error, stdout, stderr) => {
+            if (error) {
+                console.error("Restart error:", error);
+                return;
+            }
+            console.log("PM2 Restart:", stdout || stderr);
+        });
+    } else {
+        return reply("❌ Invalid mode. Please use `.mode private` or `.mode public`.");
     }
 });
 
