@@ -2,6 +2,7 @@ const { cmd } = require('../command');
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 const Config = require('../config');
 const StickerMaker = require('../data/sticker-maker');
+const crypto = require('crypto'); // Added missing import
 
 // Mega Unified Sticker Command
 cmd(
@@ -22,7 +23,7 @@ cmd(
         let pack = q ? q : (Config.STICKER_NAME || "Jawad TechX");
         
         try {
-            let media, webpBuffer;
+            let media, stickerBuffer;
             
             // Handle different media types
             if (mime === "imageMessage" || mime === "stickerMessage") {
@@ -33,35 +34,37 @@ cmd(
                     pack: pack, 
                     type: StickerTypes.FULL,
                     categories: ["🤩", "🎉"],
-                    id: Crypto.randomBytes(4).toString('hex'),
+                    id: crypto.randomBytes(4).toString('hex'),
                     quality: 75,
                     background: 'transparent',
                 });
-                const buffer = await sticker.toBuffer();
-                return conn.sendMessage(mek.chat, { sticker: buffer }, { quoted: mek });
+                stickerBuffer = await sticker.toBuffer();
                 
             } else if (mime === "videoMessage") {
                 // For videos - convert to WebP first
                 media = await mek.quoted.download();
-                webpBuffer = await StickerMaker.videoToWebp(media);
+                const webpBuffer = await StickerMaker.videoToWebp(media);
                 
                 let sticker = new Sticker(webpBuffer, {
                     pack: pack,
                     type: StickerTypes.FULL,
                     categories: ["🤩", "🎉"],
-                    id: Crypto.randomBytes(4).toString('hex'),
+                    id: crypto.randomBytes(4).toString('hex'),
                     quality: 75,
                     background: 'transparent',
                 });
-                const buffer = await sticker.toBuffer();
-                return conn.sendMessage(mek.chat, { sticker: buffer }, { quoted: mek });
+                stickerBuffer = await sticker.toBuffer();
                 
             } else {
                 return reply("*Please reply to an image, video, GIF, or sticker*");
             }
+            
+            // Send the sticker
+            return conn.sendMessage(mek.chat, { sticker: stickerBuffer }, { quoted: mek });
+            
         } catch (error) {
-            console.error(error);
-            return reply("*Error creating sticker. Please try again.*");
+            console.error("Sticker creation error:", error);
+            return reply(`*Error creating sticker: ${error.message}*`);
         }
     }
 );
@@ -71,7 +74,7 @@ cmd({
     pattern: "attp",
     desc: "Convert text to a GIF sticker.",
     react: "✨",
-    category: "convert",
+    category: "convert", 
     use: ".attp HI",
     filename: __filename,
 }, async (conn, mek, m, { args, reply }) => {
@@ -83,6 +86,7 @@ cmd({
 
         await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: mek });
     } catch (error) {
+        console.error("ATTP error:", error);
         reply(`❌ ${error.message}`);
     }
 });
