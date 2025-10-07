@@ -13,15 +13,20 @@ const stickerAPI = {
 };
 
 cmd({
-    pattern: "tg",
-    alias: ["tgs", "tsticker", "telegramsticker"],
+    pattern: "tstick",
+    alias: ["tg", "tgs", "tsticker", "telegramsticker"],
     react: "🛡️",
     desc: "Download Telegram sticker pack",
     category: "download",
     use: ".tstick <telegram_sticker_url>",
     filename: __filename
-}, async (conn, mek, m, { from, q, reply, quoted }) => {
+}, async (conn, mek, m, { from, q, reply, quoted, isCreator }) => {
     try {
+        // Owner restriction
+        if (!isCreator) {
+            return await reply("*📛 This is an owner command.*");
+        }
+
         if (!q) return await reply("❌ Please provide a Telegram sticker pack URL!\nExample: .tstick https://t.me/addstickers/Decembershot5_by_fStikBot");
 
         // Validate Telegram sticker URL
@@ -67,6 +72,7 @@ cmd({
         let sentCount = 0;
         let failedCount = 0;
         const totalStickers = stickers.length;
+        let lastProgressTime = Date.now();
 
         // Send each sticker
         for (const [index, sticker] of stickers.entries()) {
@@ -92,11 +98,11 @@ cmd({
                         
                         // Create sticker with proper metadata
                         const stickerObj = new Sticker(webpBuffer, {
-                            pack: stickerData.name || 'Telegram Pack',
-                            author: stickerData.title || '',
+                            pack: "〆͎𓆪ː͢𝙐𝙍•𝙅𝘼𝙒𝘼𝘿↠💀🔥",
+                            author: "",
                             type: StickerTypes.FULL,
                             categories: ['🎭', '✨'],
-                            quality: 50, // Lower quality for faster sending
+                            quality: 50,
                             background: 'transparent'
                         });
                         
@@ -131,10 +137,12 @@ cmd({
                 }
                 
                 sentCount++;
-                
-                // Update progress every 5 stickers
-                if (sentCount % 5 === 0) {
+
+                // Progress update every 2000ms instead of every 5 stickers
+                const currentTime = Date.now();
+                if (currentTime - lastProgressTime >= 2000) {
                     await reply(`📦 Progress: ${sentCount}/${totalStickers} stickers sent...`);
+                    lastProgressTime = currentTime;
                 }
                 
                 // Small delay to avoid rate limiting
