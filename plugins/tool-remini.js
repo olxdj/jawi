@@ -54,27 +54,36 @@ cmd({
       throw "Failed to upload image to Catbox";
     }
 
-    // Enhance image using new API
-    const apiUrl = `https://api.kimkiro.my.id/tool/upscale?url=${encodeURIComponent(imageUrl)}`;
+    // Enhance image using Remini API
+    const apiUrl = `https://api.hanggts.xyz/imagecreator/remini?url=${encodeURIComponent(imageUrl)}`;
     const response = await axios.get(apiUrl, { 
-      responseType: 'arraybuffer',
       timeout: 60000 // 1 minute timeout
     });
 
+    if (!response.data.status || !response.data.result) {
+      throw "Failed to enhance image";
+    }
+
+    // Download the enhanced image
+    const resultResponse = await axios.get(response.data.result, { 
+      responseType: 'arraybuffer',
+      timeout: 60000
+    });
+
     // Check if response is valid image
-    if (!response.data || response.data.length < 100) {
+    if (!resultResponse.data || resultResponse.data.length < 100) {
       throw "API returned invalid image data";
     }
 
     // Save enhanced image
-    const outputPath = path.join(os.tmpdir(), `remini_output_${Date.now()}.jpg`);
-    fs.writeFileSync(outputPath, response.data);
+    const outputPath = path.join(os.tmpdir(), `remini_output_${Date.now()}.png`);
+    fs.writeFileSync(outputPath, resultResponse.data);
 
-    // Send the enhanced image with loading message
+    // Send the enhanced image
     await reply("🔄 Enhancing image quality...");
     await client.sendMessage(message.chat, {
       image: fs.readFileSync(outputPath),
-      caption: "- *✅ Image enhanced successfully!*",
+      caption: "- *✅ Image enhanced successfully*",
     }, { quoted: message });
 
     // Clean up
