@@ -12,7 +12,7 @@ cmd({
     filename: __filename
 }, async (conn, mek, m, { from, reply, text }) => {
     try {
-        if (!text) return reply('❌ Please provide a URL\n\n*Example:* .saveweb https://jawad-tech.vercel.app');
+        if (!text) return reply('❌ Please provide a URL\n\n*Example:* .saveweb https://google.com');
 
         const siteUrl = encodeURIComponent(text.trim());
         const api = `https://api.hanggts.xyz/tools/saveweb2zip?url=${siteUrl}`;
@@ -24,7 +24,7 @@ cmd({
         }
 
         const downloadUrl = data.result.downloadUrl;
-        const fileName = `website_${Date.now()}.zip`;
+        const fileName = `JawasTechXD-Plus.zip`;
         const filePath = path.join(__dirname, '..', 'temp', fileName);
 
         // Ensure temp folder exists
@@ -44,7 +44,7 @@ cmd({
             caption: `✅ WEB *Downloaded Successfully*`
         }, { quoted: mek });
 
-        await reply('✅ Website saved & sent as ZIP 📁');
+        // await reply('✅ Website saved & sent as ZIP 📁');
 
         // Cleanup
         fs.unlinkSync(filePath);
