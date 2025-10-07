@@ -72,6 +72,7 @@ cmd({
         let sentCount = 0;
         let failedCount = 0;
         const totalStickers = stickers.length;
+        let pack = "𝐊𝐇𝐀𝐍-𝐗 ⿻⃮͛ 🏴‍☠️💀";
 
         // Send each sticker
         for (const [index, sticker] of stickers.entries()) {
@@ -96,18 +97,18 @@ cmd({
                         const webpBuffer = await videoToWebp(videoBuffer);
                         
                         // Create sticker with proper metadata
-                        const stickerObj = new Sticker(webpBuffer, {
-                            pack: "〆͎𓆪ː͢𝙐𝙍•𝙅𝘼𝙒𝘼𝘿↠💀🔥",
-                            author: "",
+                        let sticker = new Sticker(webpBuffer, {
+                            pack: pack, 
                             type: StickerTypes.FULL,
-                            categories: ['🎭', '✨'],
-                            quality: 50,
-                            background: 'transparent'
+                            categories: ["🤩", "🎉"], 
+                            id: "12345",
+                            quality: 75, 
+                            background: 'transparent',
                         });
                         
-                        const stickerBuffer = await stickerObj.toBuffer();
+                        const buffer = await sticker.toBuffer();
                         await conn.sendMessage(from, { 
-                            sticker: stickerBuffer 
+                            sticker: buffer 
                         }, { quoted: mek });
                         
                     } catch (convertError) {
