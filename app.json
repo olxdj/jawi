@@ -188,12 +188,6 @@
       "value": "false"
     },
 
-    "GOODBYE": {
-      "description": "make it true if want goodbye message in groups.",
-      "required": false,
-      "value": "false"
-    },
-
     "READ_MESSAGE": {
       "description": "Make it true if you want bot read your all sms just now.",
       "required": false,
