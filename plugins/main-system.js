@@ -25,17 +25,20 @@ async (conn, mek, m, {
         // Send react immediately
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
         
-        // Wait 500ms
-        await sleep(500);
+        // Wait 1000ms
+        await sleep(800);
         
-        // Send update message
-        await reply("*♻️ Updating and restarting the bot*...");
+        // Send update message and wait for it to complete
+        const messageSent = await reply("*♻️ Updating and restarting the bot*...");
+        
+        // Wait for message to be delivered
+        await sleep(800);
         
         // Send ✅ react after message
         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
         
-        // Wait 1500ms after sending message and react
-        await sleep(1500);
+        // Wait 3000ms to ensure everything is sent
+        await sleep(2000);
         
         // Execute restart
         const { exec } = require("child_process");
