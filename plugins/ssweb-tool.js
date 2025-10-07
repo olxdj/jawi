@@ -27,7 +27,7 @@ cmd({
     if (data.status && data.result) {
       await conn.sendMessage(from, { 
         image: { url: data.result.iurl },
-        caption: `🖼️ *Website Screenshot*\n\n🌐 *URL:* ${data.result.ourl}\n📅 *Date:* ${data.result.date}\n\n> *© Powered by Jawad TechX*`
+        caption: `🖼️ *Website Screenshot*\n\n🌐 *URL:* ${data.result.ourl}\n\n> *© Powered by Jawad TechX*`
       }, { quoted: m });
 
       // React: Success ✅
