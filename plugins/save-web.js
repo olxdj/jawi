@@ -1,77 +1,56 @@
-const axios = require("axios");
+const { cmd } = require('../command');
+const axios = require('axios');
 const fs = require('fs');
-const os = require('os');
-const path = require("path");
-const { cmd } = require("../command");
+const path = require('path');
 
 cmd({
-  pattern: "saveweb",
-  alias: ["webzip", "websave", "web", "sitezip", "downloadweb"],
-  react: '🌐',
-  desc: "Save website as ZIP file",
-  category: "utility",
-  use: ".saveweb [website_url]",
-  filename: __filename
-}, async (client, message, context) => {
-  try {
-    const { reply, quoted, args } = context;
-    
-    // Get URL from different sources
-    let websiteUrl = '';
-    
-    if (quoted && quoted.text) {
-      websiteUrl = quoted.text.trim();
-    } else if (args && args.trim() !== '') {
-      websiteUrl = args.trim();
-    } else {
-      return reply("❌ Please provide a website URL\n\n*Usage:*\n`.saveweb https://example.com`\nOr reply `.saveweb` to a message containing URL");
+    pattern: "saveweb",
+    alias: ["websave", "web", "sitezip", "savewebzip"],
+    desc: "Save any website as a downloadable ZIP file",
+    category: "tools",
+    react: "🌐",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, text }) => {
+    try {
+        if (!text) return reply('❌ Please provide a URL\n\n*Example:* .saveweb https://jawad-tech.vercel.app');
+
+        const siteUrl = encodeURIComponent(text.trim());
+        const api = `https://api.hanggts.xyz/tools/saveweb2zip?url=${siteUrl}`;
+
+        // Fetch archive info
+        const { data } = await axios.get(api);
+        if (!data.status || !data.result?.downloadUrl) {
+            return reply('❌ Failed to generate ZIP. Please check the URL and try again.');
+        }
+
+        const downloadUrl = data.result.downloadUrl;
+        const fileName = `website_${Date.now()}.zip`;
+        const filePath = path.join(__dirname, '..', 'temp', fileName);
+
+        // Ensure temp folder exists
+        if (!fs.existsSync(path.dirname(filePath))) {
+            fs.mkdirSync(path.dirname(filePath), { recursive: true });
+        }
+
+        // Download the ZIP file
+        const file = await axios.get(downloadUrl, { responseType: 'arraybuffer' });
+        fs.writeFileSync(filePath, file.data);
+
+        // Send document to user
+        await conn.sendMessage(from, {
+            document: fs.readFileSync(filePath),
+            fileName: fileName,
+            mimetype: 'application/zip',
+            caption: `✅ WEB *Downloaded Successfully*`
+        }, { quoted: mek });
+
+        await reply('✅ Website saved & sent as ZIP 📁');
+
+        // Cleanup
+        fs.unlinkSync(filePath);
+
+    } catch (error) {
+        console.error('SaveWeb Error:', error);
+        reply('❌ Failed to save website. Error: ' + error.message);
     }
-
-    // Clean URL
-    websiteUrl = websiteUrl.replace(/\n/g, '').trim();
-    
-    // Add protocol if missing
-    if (!websiteUrl.startsWith('http')) {
-      websiteUrl = 'https://' + websiteUrl;
-    }
-
-    // Basic URL validation
-    if (!websiteUrl.includes('.') || websiteUrl.length < 5) {
-      return reply("❌ Invalid URL. Please provide a valid website address.");
-    }
-
-    await reply(`🔄 Processing: ${websiteUrl}\nThis may take a moment...`);
-
-    // API call
-    const apiUrl = `https://api.hanggts.xyz/tools/saveweb2zip?url=${encodeURIComponent(websiteUrl)}`;
-    const response = await axios.get(apiUrl, { timeout: 120000 });
-    
-    if (!response.data.status || !response.data.result?.downloadUrl) {
-      throw new Error("Failed to generate download link");
-    }
-
-    const { downloadUrl, copiedFilesAmount } = response.data.result;
-
-    // Download ZIP
-    const zipResponse = await axios.get(downloadUrl, { 
-      responseType: 'arraybuffer', 
-      timeout: 60000 
-    });
-
-    const tempPath = path.join(os.tmpdir(), `web_${Date.now()}.zip`);
-    fs.writeFileSync(tempPath, zipResponse.data);
-
-    await client.sendMessage(message.chat, {
-      document: fs.readFileSync(tempPath),
-      fileName: `website_${websiteUrl.replace(/[^a-zA-Z0-9]/g, '_')}.zip`,
-      mimetype: 'application/zip',
-      caption: `🌐 Website ZIP\n📁 ${websiteUrl}\n📊 Files: ${copiedFilesAmount || 'N/A'}\n👨‍💻 Powered by JawadTechXD`
-    }, { quoted: message });
-
-    fs.unlinkSync(tempPath);
-
-  } catch (error) {
-    console.error('Error:', error);
-    await reply(`❌ Error: ${error.message || 'Failed to download website'}`);
-  }
 });
