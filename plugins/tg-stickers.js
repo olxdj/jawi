@@ -24,7 +24,7 @@ cmd({
     try {
         // Owner restriction
         if (!isCreator) {
-            return await reply("*📛 This is an owner command.*");
+            return await reply("📛 This is an owner command.");
         }
 
         if (!q) return await reply("❌ Please provide a Telegram sticker pack URL!\nExample: .tstick https://t.me/addstickers/Decembershot5_by_fStikBot");
@@ -72,7 +72,6 @@ cmd({
         let sentCount = 0;
         let failedCount = 0;
         const totalStickers = stickers.length;
-        let lastProgressTime = Date.now();
 
         // Send each sticker
         for (const [index, sticker] of stickers.entries()) {
@@ -137,16 +136,9 @@ cmd({
                 }
                 
                 sentCount++;
-
-                // Progress update every 2000ms instead of every 5 stickers
-                const currentTime = Date.now();
-                if (currentTime - lastProgressTime >= 2000) {
-                    await reply(`📦 Progress: ${sentCount}/${totalStickers} stickers sent...`);
-                    lastProgressTime = currentTime;
-                }
                 
-                // Small delay to avoid rate limiting
-                await new Promise(resolve => setTimeout(resolve, 1000));
+                // Delay between stickers (no progress messages)
+                await new Promise(resolve => setTimeout(resolve, 1500));
                 
             } catch (stickerError) {
                 console.error(`[TSTICK] Error sending sticker ${index + 1}:`, stickerError.message);
