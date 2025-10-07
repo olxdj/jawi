@@ -27,7 +27,7 @@ cmd({
             return await reply("📛 This is an owner command.");
         }
 
-        if (!q) return await reply("❌ Please provide a Telegram sticker pack URL!\nExample: .tstick https://t.me/addstickers/Decembershot5_by_fStikBot");
+        if (!q) return await reply("❌ Please provide a Telegram sticker pack URL!\nExample: .tstick https://t.me/addstickers/packname");
 
         // Validate Telegram sticker URL
         if (!q.includes('t.me/addstickers/') && !q.includes('telegram.me/addstickers/')) {
