@@ -11,6 +11,7 @@ cmd(
         alias: ['s', 'take', 'rename', 'stake', 'vsticker', 'gsticker', 'g2s', 'gs', 'v2s', 'vs'],
         desc: 'Create stickers from images, videos, GIFs with custom pack names',
         category: 'sticker',
+        react: "⚡",
         use: '<reply media> | <pack name>',
         filename: __filename,
     },
