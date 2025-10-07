@@ -12,110 +12,66 @@ cmd({
   category: "utility",
   use: ".saveweb [website_url]",
   filename: __filename
-}, async (client, message, { args, reply, quoted }) => {
+}, async (client, message, context) => {
   try {
-    let websiteUrl = args;
-
-    // Check if URL is provided in quoted message or args
+    const { reply, quoted, args } = context;
+    
+    // Get URL from different sources
+    let websiteUrl = '';
+    
     if (quoted && quoted.text) {
-      websiteUrl = quoted.text;
+      websiteUrl = quoted.text.trim();
+    } else if (args && args.trim() !== '') {
+      websiteUrl = args.trim();
+    } else {
+      return reply("❌ Please provide a website URL\n\n*Usage:*\n`.saveweb https://example.com`\nOr reply `.saveweb` to a message containing URL");
     }
 
-    // Validate URL
-    if (!websiteUrl) {
-      return reply("Please provide a website URL\nExample: .saveweb https://example.com");
-    }
-
-    // Add https:// if no protocol is specified
-    if (!websiteUrl.startsWith('http://') && !websiteUrl.startsWith('https://')) {
+    // Clean URL
+    websiteUrl = websiteUrl.replace(/\n/g, '').trim();
+    
+    // Add protocol if missing
+    if (!websiteUrl.startsWith('http')) {
       websiteUrl = 'https://' + websiteUrl;
     }
 
-    // Validate URL format
-    try {
-      new URL(websiteUrl);
-    } catch (error) {
-      return reply("Invalid URL format. Please provide a valid website URL\nExample: .saveweb https://example.com");
+    // Basic URL validation
+    if (!websiteUrl.includes('.') || websiteUrl.length < 5) {
+      return reply("❌ Invalid URL. Please provide a valid website address.");
     }
 
-    // Show processing message
-    await reply("🔄 Downloading website content... This may take a moment.");
+    await reply(`🔄 Processing: ${websiteUrl}\nThis may take a moment...`);
 
-    // Call the website to ZIP API
+    // API call
     const apiUrl = `https://api.hanggts.xyz/tools/saveweb2zip?url=${encodeURIComponent(websiteUrl)}`;
-    const response = await axios.get(apiUrl, { 
-      timeout: 120000 // 2 minute timeout for website processing
+    const response = await axios.get(apiUrl, { timeout: 120000 });
+    
+    if (!response.data.status || !response.data.result?.downloadUrl) {
+      throw new Error("Failed to generate download link");
+    }
+
+    const { downloadUrl, copiedFilesAmount } = response.data.result;
+
+    // Download ZIP
+    const zipResponse = await axios.get(downloadUrl, { 
+      responseType: 'arraybuffer', 
+      timeout: 60000 
     });
 
-    if (!response.data.status || !response.data.result) {
-      throw "Failed to process website";
-    }
+    const tempPath = path.join(os.tmpdir(), `web_${Date.now()}.zip`);
+    fs.writeFileSync(tempPath, zipResponse.data);
 
-    const result = response.data.result;
-
-    // Check for errors
-    if (result.error && result.error.text) {
-      throw `Website processing error: ${result.error.text}`;
-    }
-
-    if (!result.downloadUrl) {
-      throw "No download URL received from API";
-    }
-
-    // Download the ZIP file
-    await reply(`📁 Website processed successfully!\n📊 Files copied: ${result.copiedFilesAmount || 'Unknown'}\n⬇️ Downloading ZIP file...`);
-
-    const zipResponse = await axios.get(result.downloadUrl, {
-      responseType: 'arraybuffer',
-      timeout: 60000
-    });
-
-    // Save ZIP file temporarily
-    const zipFileName = `website_${Date.now()}.zip`;
-    const zipFilePath = path.join(os.tmpdir(), zipFileName);
-    fs.writeFileSync(zipFilePath, zipResponse.data);
-
-    // Get file size
-    const stats = fs.statSync(zipFilePath);
-    const fileSize = (stats.size / (1024 * 1024)).toFixed(2); // Size in MB
-
-    // Send the ZIP file
     await client.sendMessage(message.chat, {
-      document: fs.readFileSync(zipFilePath),
-      fileName: `website_backup_${new URL(websiteUrl).hostname}_${Date.now()}.zip`,
+      document: fs.readFileSync(tempPath),
+      fileName: `website_${websiteUrl.replace(/[^a-zA-Z0-9]/g, '_')}.zip`,
       mimetype: 'application/zip',
-      caption: `🌐 *Website Saved as ZIP*
-
-📋 *Website:* ${result.url}
-📊 *Files Copied:* ${result.copiedFilesAmount || 'Unknown'}
-📦 *File Size:* ${fileSize} MB
-👨‍💻 *Powered By:* JawadTechXD
-
-✅ Successfully downloaded`
+      caption: `🌐 Website ZIP\n📁 ${websiteUrl}\n📊 Files: ${copiedFilesAmount || 'N/A'}\n👨‍💻 Powered by JawadTechXD`
     }, { quoted: message });
 
-    // Clean up
-    fs.unlinkSync(zipFilePath);
+    fs.unlinkSync(tempPath);
 
   } catch (error) {
-    console.error('Save Web Error:', error);
-    
-    let errorMessage = "Failed to save website";
-    
-    if (error.response) {
-      if (error.response.status === 404) {
-        errorMessage = "Website not found or inaccessible";
-      } else if (error.response.status === 500) {
-        errorMessage = "Server error while processing website";
-      } else if (error.response.status === 403) {
-        errorMessage = "Access to website denied (robots.txt or permissions)";
-      }
-    } else if (error.code === 'ECONNABORTED') {
-      errorMessage = "Request timeout - website might be too large or slow to respond";
-    } else if (error.message) {
-      errorMessage = error.message;
-    }
-    
-    await reply(`❌ Error: ${errorMessage}\n\nPlease check:\n• Website URL is correct\n• Website is accessible\n• Website allows downloading`);
+    console.error('Error:', error);
+    await reply(`❌ Error: ${error.message || 'Failed to download website'}`);
   }
 });
