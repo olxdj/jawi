@@ -1,7 +1,7 @@
 const { cmd } = require('../command');
 const config = require("../config");
 
-// Anti-Link System with three modes: true, false, "warn"
+// Anti-Link System with four modes: true, false, "warn", "delete"
 const linkPatterns = [
   /https?:\/\/(?:chat\.whatsapp\.com|wa\.me)\/\S+/gi,
   /^https?:\/\/(www\.)?whatsapp\.com\/channel\/([a-zA-Z0-9_-]+)$/,
@@ -65,6 +65,15 @@ cmd({
         console.log(`Message deleted: ${m.key.id}`);
       } catch (error) {
         console.error("Failed to delete message:", error);
+      }
+
+      // MODE: "delete" - Delete links only, don't remove member
+      if (config.ANTI_LINK === 'delete') {
+        await conn.sendMessage(from, {
+          'text': `⚠️ Links are not allowed in this group.\n@${sender.split('@')[0]}, your link has been deleted. 🚫`,
+          'mentions': [sender]
+        }, { 'quoted': m });
+        return;
       }
 
       // MODE: true - Delete and kick immediately
