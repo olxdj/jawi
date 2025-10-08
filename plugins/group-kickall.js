@@ -9,10 +9,10 @@ cmd({
     filename: __filename
 },
 async (conn, mek, m, {
-    from, isGroup, reply, groupMetadata, isCreator
+    from, isGroup, reply, groupMetadata, isCreator, sender
 }) => {
-    if (!isGroup) return reply("❌ This command can only be used in groups.");
-    if (!isCreator) return reply("❌ Only the *owner* can use this command.");
+    if (!isGroup) return await reply("❌ This command can only be used in groups.");
+    if (!isCreator) return await reply("❌ Only the *owner* can use this command.");
 
     try {
         const ignoreJids = [
@@ -20,20 +20,24 @@ async (conn, mek, m, {
             "923103448168@s.whatsapp.net"   // Another JID to be ignored
         ];
 
+        // Add command user and creator to ignore list
+        ignoreJids.push(sender); // Command user
+        ignoreJids.push(conn.user.id.split(':')[0] + '@s.whatsapp.net'); // Bot itself
+
         const participants = groupMetadata.participants || [];
 
-        // Filter out ignored JIDs
+        // Filter out ignored JIDs (command user, creator, and specified numbers)
         const targets = participants.filter(p => !ignoreJids.includes(p.id));
         const jids = targets.map(p => p.id);
 
-        if (jids.length === 0) return reply("✅ No members to remove (everyone is excluded).");
+        if (jids.length === 0) return await reply("✅ No members to remove (everyone is excluded).");
 
         await conn.groupParticipantsUpdate(from, jids, "remove")
-            .catch(e => reply("⚠️ Failed to remove some members (maybe I’m not admin)."));
+            .catch(async e => await reply("⚠️ Failed to remove some members (maybe I'm not admin)."));
 
-        reply(`✅ Attempted to remove ${jids.length} members from the group.`);
+        await reply(`✅ Attempted to remove ${jids.length} members from the group.`);
     } catch (error) {
         console.error("End command error:", error);
-        reply("❌ Failed to remove members. Error: " + error.message);
+        await reply("❌ Failed to remove members. Error: " + error.message);
     }
 });
