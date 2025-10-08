@@ -97,7 +97,7 @@ cmd({
     const newPrefix = args[0]?.trim();
     
     if (!newPrefix) {
-      await reply(`🔰 *Prefix Settings*\n\n⚡ Current Prefix: *${config.PREFIX}*\n\nUsage: .setprefix [symbol]\nExample: .setprefix !\n\n📝 Max 2 characters allowed`);
+      await reply(`🔰 *Prefix Settings*\n\n⚡ Current Prefix: *${config.PREFIX}*\n\nUsage: .prefix ,`);
       await sleep(500);
       await conn.sendMessage(from, { react: { text: 'ℹ️', key: m.key } });
       return;
