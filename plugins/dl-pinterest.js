@@ -62,8 +62,8 @@ cmd({
             await conn.sendMessage(from, {
                 document: { url: videoMedia.url },
                 mimetype: 'video/mp4',
-                fileName: `pinterest_video_${Date.now()}.mp4`,
-                caption: `*Pinterest Video Download*\n\nSent as document\n\n> ${config.DESCRIPTION}`
+                fileName: `Pinterest Video.mp4`,
+                caption: `*Pinterest Video Downloaded*\n\n> ${config.DESCRIPTION}`
             }, { quoted: mek });
             
         } else if (imageMedia) {
@@ -71,8 +71,8 @@ cmd({
             await conn.sendMessage(from, {
                 document: { url: imageMedia.url },
                 mimetype: 'image/jpeg',
-                fileName: `pinterest_image_${Date.now()}.jpg`,
-                caption: `*Pinterest Image*\n\nSent as document\n\n> ${config.DESCRIPTION}`
+                fileName: `Pinterest Pic.jpg`,
+                caption: `*Pinterest Image*\n\n> ${config.DESCRIPTION}`
             }, { quoted: mek });
             
         } else {
