@@ -79,82 +79,48 @@ cmd({
   alias: ["prefix", "prifix"],
   desc: "Set the bot's command prefix",
   category: "owner",
-  react: "✅",
+  react: "⚡",
   filename: __filename
-}, async (conn, mek, m, { args, isCreator, reply }) => {
-  if (!isCreator) return reply("❗ Only the bot owner can use this command.");
-  const newPrefix = args[0]?.trim();
-  if (!newPrefix || newPrefix.length > 2) return reply("❌ Provide a valid prefix (1–2 characters).");
+}, async (conn, mek, m, { args, isCreator, reply, from }) => {
+  try {
+    // ⏳ React - processing
+    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+    await sleep(300);
 
-  await setConfig("PREFIX", newPrefix);
-
-  await reply(`✅ Prefix updated to: *${newPrefix}*\n\n♻️ Restarting...`);
-  setTimeout(() => exec("pm2 restart all"), 2000);
-});
-
-
-
-// SET BOT NAME
-cmd({
-  pattern: "setbotname",
-  alias: ["botname"],
-  desc: "Set the bot's name",
-  category: "owner",
-  react: "✅",
-  filename: __filename
-}, async (conn, mek, m, { args, isCreator, reply }) => {
-  if (!isCreator) return reply("❗ Only the bot owner can use this command.");
-  const newName = args.join(" ").trim();
-  if (!newName) return reply("❌ Provide a bot name.");
-
-  await setConfig("BOT_NAME", newName);
-
-  await reply(`✅ Bot name updated to: *${newName}*\n\n♻️ Restarting...`);
-  setTimeout(() => exec("pm2 restart all"), 2000);
-});
-
-// SET OWNER NAME
-cmd({
-  pattern: "setownername",
-  alias: ["ownername"],
-  desc: "Set the owner's name",
-  category: "owner",
-  react: "✅",
-  filename: __filename
-}, async (conn, mek, m, { args, isCreator, reply }) => {
-  if (!isCreator) return reply("❗ Only the bot owner can use this command.");
-  const name = args.join(" ").trim();
-  if (!name) return reply("❌ Provide an owner name.");
-
-  await setConfig("OWNER_NAME", name);
-
-  await reply(`✅ Owner name updated to: *${name}*\n\n♻️ Restarting...`);
-  setTimeout(() => exec("pm2 restart all"), 2000);
-});
-
-
-// WELCOME
-cmd({
-    pattern: "welcome",
-    alias: ["setwelcome"],
-    react: "✅",
-    desc: "Enable or disable welcome messages for new members",
-    category: "settings",
-    filename: __filename
-},
-async (conn, mek, m, { from, args, isCreator, reply }) => {
-    if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
-
-    const status = args[0]?.toLowerCase();
-    if (status === "on") {
-        config.WELCOME = "true";
-        return reply("✅ Welcome messages are now enabled.");
-    } else if (status === "off") {
-        config.WELCOME = "false";
-        return reply("❌ Welcome messages are now disabled.");
-    } else {
-        return reply(`Example: .welcome on`);
+    if (!isCreator) {
+      await reply("❗ *Only the bot owner can use this command.*");
+      await sleep(500);
+      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+      return;
     }
+
+    const newPrefix = args[0]?.trim();
+    
+    if (!newPrefix) {
+      await reply(`🔰 *Prefix Settings*\n\n⚡ Current Prefix: *${config.PREFIX}*\n\nUsage: .setprefix [symbol]\nExample: .setprefix !\n\n📝 Max 2 characters allowed`);
+      await sleep(500);
+      await conn.sendMessage(from, { react: { text: 'ℹ️', key: m.key } });
+      return;
+    }
+
+    if (newPrefix.length > 2) {
+      await reply("❌ *Invalid Prefix!*\n\n📏 Prefix must be 1-2 characters only.\n\nExample: .prifix !");
+      await sleep(500);
+      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+      return;
+    }
+
+    await setConfig("PREFIX", newPrefix);
+    await reply(`✅ *Prefix Updated!*\n\n⚡ New Prefix: *${newPrefix}*\n\n📝 Commands will now use: *${newPrefix}command*\n\n♻️ Restarting...`);
+    await sleep(1000);
+    await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
+    setTimeout(() => exec("pm2 restart all"), 2000);
+  } catch (error) {
+    await reply(`❌ *Error!*\n\nFailed to update prefix.\nError: ${error.message}`);
+    await sleep(500);
+    await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+  }
 });
 
 cmd({
@@ -180,7 +146,7 @@ cmd({
         const currentMode = getConfig("MODE") || "public";
 
         if (!args[0]) {
-            await reply(`🔰 *BOT MODE SETTINGS*\n\n📊 Current: *${currentMode.toUpperCase()}*\n\n🟢 INBOX - Only owner\n🟡 PRIVATE - Owner & allowed numbers\n🔴 PUBLIC - Everyone\n\nUse: .mode inbox/private/public`);
+            await reply(`🔰 *BOT MODE SETTINGS*\n\n📊 *Current Mode:* ${currentMode.toUpperCase()}\n\n🟢 *INBOX* - Works only in private chat\n🔴 *PUBLIC* - Everyone can use the bot\n🟡 *PRIVATE* - Only owner can use the bot\n\n💡 *Usage:* .mode inbox / private / public`);
             await sleep(500);
             await conn.sendMessage(from, { react: { text: 'ℹ️', key: m.key } });
             return;
@@ -213,6 +179,135 @@ cmd({
         await sleep(500);
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
     }
+});
+
+// SET BOT NAME
+cmd({
+  pattern: "setbotname",
+  alias: ["botname"],
+  desc: "Set the bot's name",
+  category: "owner",
+  react: "🤖",
+  filename: __filename
+}, async (conn, mek, m, { args, isCreator, reply, from }) => {
+  try {
+    // ⏳ React - processing
+    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+    await sleep(300);
+
+    if (!isCreator) {
+      await reply("❗ *Only the bot owner can use this command.*");
+      await sleep(500);
+      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+      return;
+    }
+
+    const newName = args.join(" ").trim();
+    if (!newName) {
+      await reply("❌ *Please provide a bot name.*\n\nExample: .setbotname MyBot");
+      await sleep(500);
+      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+      return;
+    }
+
+    await setConfig("BOT_NAME", newName);
+    await reply(`✅ *Bot Name Updated!*\n\n🤖 New Name: *${newName}*\n\n♻️ Restarting...`);
+    await sleep(1000);
+    await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
+    setTimeout(() => exec("pm2 restart all"), 2000);
+  } catch (error) {
+    await reply(`❌ *Error!*\n\nFailed to update bot name.\nError: ${error.message}`);
+    await sleep(500);
+    await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+  }
+});
+
+// SET OWNER NAME
+cmd({
+  pattern: "setownername",
+  alias: ["ownername"],
+  desc: "Set the owner's name",
+  category: "owner",
+  react: "👑",
+  filename: __filename
+}, async (conn, mek, m, { args, isCreator, reply, from }) => {
+  try {
+    // ⏳ React - processing
+    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+    await sleep(300);
+
+    if (!isCreator) {
+      await reply("❗ *Only the bot owner can use this command.*");
+      await sleep(500);
+      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+      return;
+    }
+
+    const name = args.join(" ").trim();
+    if (!name) {
+      await reply("❌ *Please provide an owner name.*\n\nExample: .setownername John Doe");
+      await sleep(500);
+      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+      return;
+    }
+
+    await setConfig("OWNER_NAME", name);
+    await reply(`✅ *Owner Name Updated!*\n\n👑 New Name: *${name}*\n\n♻️ Restarting...`);
+    await sleep(1000);
+    await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
+    setTimeout(() => exec("pm2 restart all"), 2000);
+  } catch (error) {
+    await reply(`❌ *Error!*\n\nFailed to update owner name.\nError: ${error.message}`);
+    await sleep(500);
+    await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+  }
+});
+
+// WELCOME
+cmd({
+  pattern: "welcome",
+  alias: ["setwelcome"],
+  react: "👋",
+  desc: "Enable or disable welcome messages for new members",
+  category: "settings",
+  filename: __filename
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+  try {
+    // ⏳ React - processing
+    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+    await sleep(300);
+
+    if (!isCreator) {
+      await reply("*📛 Only the owner can use this command!*");
+      await sleep(500);
+      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+      return;
+    }
+
+    const status = args[0]?.toLowerCase();
+    
+    if (status === "on") {
+      config.WELCOME = "true";
+      await reply("✅ *Welcome Enabled!*\n\n👋 Welcome messages are now active for new members.");
+      await sleep(1000);
+      await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+    } else if (status === "off") {
+      config.WELCOME = "false";
+      await reply("❌ *Welcome Disabled!*\n\n🚫 Welcome messages are now turned off.");
+      await sleep(1000);
+      await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+    } else {
+      await reply(`🔰 *Welcome Settings*\n\nCurrent Status: *${config.WELCOME === 'true' ? 'ON' : 'OFF'}*\n\nUsage: .welcome on/off`);
+      await sleep(500);
+      await conn.sendMessage(from, { react: { text: 'ℹ️', key: m.key } });
+    }
+  } catch (error) {
+    await reply(`❌ *Error!*\n\nFailed to update welcome settings.\nError: ${error.message}`);
+    await sleep(500);
+    await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+  }
 });
 
 cmd({
