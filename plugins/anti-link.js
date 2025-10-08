@@ -24,16 +24,23 @@ cmd({
     // ⏳ React - processing
     await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
     
+    // Small delay to ensure react is visible
+    await sleep(500);
+
     // Check for creator permission
     if (!isCreator) {
+      await reply('*📛 This is an owner command.*');
+      await sleep(500);
       await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-      return reply('*📛 This is an owner command.*');
+      return;
     }
 
     // Check for group
     if (!isGroup) {
+      await reply('*This command can only be used in a group.*');
+      await sleep(500);
       await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-      return reply('*This command can only be used in a group.*');
+      return;
     }
 
     // Enable or disable anti-link feature with different modes
@@ -62,8 +69,6 @@ cmd({
       await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
     }
     else {
-      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-      
       // Perfect WhatsApp-style invalid command message
       const helpMessage = `
 🛡️ *ANTI-LINK SETTINGS*
@@ -76,19 +81,22 @@ Please select a valid option:
 🔵 *DELETE* - Delete links only (no kick)
 
 *Usage Examples:*
-• .antilink on
-• .antilink warn  
-• .antilink delete
-• .antilink off
+• ${prefix}antilink on
+• ${prefix}antilink warn  
+• ${prefix}antilink delete
+• ${prefix}antilink off
 
 📝 *Note:* Only bot owner can use this command
       `.trim();
       
       await reply(helpMessage);
+      await sleep(500);
+      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
     }
   } catch (error) {
+    await reply(`*❌ An error occurred while processing your request.*\n\n_Error:_ ${error.message}`);
+    await sleep(500);
     await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-    return reply(`*❌ An error occurred while processing your request.*\n\n_Error:_ ${error.message}`);
   }
 });
 
