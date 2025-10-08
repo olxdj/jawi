@@ -26,8 +26,6 @@ cmd({
 
         // ⏳ React - processing
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
-        
-        await reply("⏳ Please wait downloading...");
 
         // Get Pinterest download link from API
         const apiUrl = `${pinterestAPI.baseURL}?url=${encodeURIComponent(q)}`;
@@ -41,6 +39,7 @@ cmd({
         });
 
         if (!res.data || !res.data.status || !res.data.data || !res.data.data.medias) {
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
             return await reply("❌ Failed to download from Pinterest API.");
         }
 
@@ -66,6 +65,9 @@ cmd({
                 caption: `*Pinterest Video Downloaded*\n\n> ${config.DESCRIPTION}`
             }, { quoted: mek });
             
+            // ✅ React - success
+            await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+            
         } else if (imageMedia) {
             // Send image as document
             await conn.sendMessage(from, {
@@ -75,12 +77,17 @@ cmd({
                 caption: `*Pinterest Image*\n\n> ${config.DESCRIPTION}`
             }, { quoted: mek });
             
+            // ✅ React - success
+            await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+            
         } else {
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
             await reply("❌ No downloadable media found. Please provide a video URL.");
         }
 
     } catch (error) {
         console.error('[PINTEREST] Command Error:', error?.message || error);
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
         await reply("❌ Download failed: " + (error?.message || 'Unknown error'));
     }
 });
