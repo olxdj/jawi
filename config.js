@@ -48,7 +48,6 @@ module.exports = {
     ANTI_CALL: process.env.ANTI_CALL || "false", // enble to reject calls automatically 
     ANTI_BAD_WORD: process.env.ANTI_BAD_WORD || "false",    // Block bad words?
     ANTI_LINK: process.env.ANTI_LINK || "true",    // Block links in groups
-    ANTI_STATUS_MENTION: process.env.ANTI_STATUS_MENTION || "warn",    // Block status in groups
     ANTI_VV: process.env.ANTI_VV || "true",   // Block view-once messages
     DELETE_LINKS: process.env.DELETE_LINKS || "false",          // Auto-delete links?
     ANTI_DEL_PATH: process.env.ANTI_DEL_PATH || "inbox", // inbox deleted messages (or 'same' to resend)
