@@ -4,7 +4,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const os = require('os');
 const path = require("path");
-const { cmd } = require("../command"); // Add this line to import cmd
+const { cmd } = require("../command");
 
 cmd({
   pattern: "whatmusic",
@@ -54,7 +54,8 @@ cmd({
     form.append('reqtype', 'fileupload');
 
     const uploadResponse = await axios.post("https://catbox.moe/user/api.php", form, {
-      headers: form.getHeaders()
+      headers: form.getHeaders(),
+      timeout: 30000
     });
 
     const mediaUrl = uploadResponse.data;
@@ -66,7 +67,12 @@ cmd({
 
     // Identify music using the API
     const apiUrl = `https://api.zenzxz.my.id/tools/whatmusic?url=${encodeURIComponent(mediaUrl)}`;
-    const response = await axios.get(apiUrl);
+    const response = await axios.get(apiUrl, {
+      timeout: 30000,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    });
 
     if (!response.data || !response.data.status) {
       await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
@@ -116,16 +122,23 @@ cmd({
       await conn.sendMessage(from, {
         image: { url: thumbnail },
         caption: caption
-      });
+      }, { quoted: mek });
     } else {
-      await conn.sendMessage(from, {
-        text: caption
-      });
+      await reply(caption);
     }
 
   } catch (error) {
     console.error("WhatMusic Error:", error);
     await conn.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
-    reply(`❌ An error occurred: ${error.response?.data?.message || error.message || "Unknown error"}`);
+    
+    if (error.code === 'UNABLE_TO_GET_ISSUER_CERT_LOCALLY' || error.code === 'CERT_HAS_EXPIRED') {
+      await reply("❌ SSL certificate error. Please try again later or use a different audio file.");
+    } else if (error.response?.status === 404) {
+      await reply("❌ Music identification service is currently unavailable. Please try again later.");
+    } else if (error.code === 'ECONNABORTED') {
+      await reply("❌ Request timeout. The audio file might be too long or the service is busy.");
+    } else {
+      await reply(`❌ An error occurred: ${error.message || "Unknown error"}`);
+    }
   }
 });
