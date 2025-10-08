@@ -1,8 +1,7 @@
 const converter = require('../data/converter');
-const stickerConverter = require('../data/sticker-converter');
 const { cmd } = require('../command');
 
-
+// Convert sticker to image
 cmd({
     pattern: 'convert',
     alias: ['sticker2img', 'stoimg', 'stickertoimage', 's2i'],
@@ -11,7 +10,6 @@ cmd({
     react: '🖼️',
     filename: __filename
 }, async (client, match, message, { from }) => {
-    // Input validation
     if (!message.quoted) {
         return await client.sendMessage(from, {
             text: "✨ *Sticker Converter*\n\nPlease reply to a sticker message\n\nExample: `.convert` (reply to sticker)"
@@ -24,40 +22,40 @@ cmd({
         }, { quoted: message });
     }
 
-    // Send processing message
-    await client.sendMessage(from, {
-        text: "🔄 Converting sticker to image..."
-    }, { quoted: message });
+    // Add processing reaction
+    await client.sendMessage(from, { react: { text: '⏳', key: message.key } });
 
     try {
         const stickerBuffer = await message.quoted.download();
-        const imageBuffer = await stickerConverter.convertStickerToImage(stickerBuffer);
+        const imageBuffer = await converter.stickerToImage(stickerBuffer);
 
-        // Send result
         await client.sendMessage(from, {
             image: imageBuffer,
-            caption: "> Powered By JawadTechX 🤍",
             mimetype: 'image/png'
         }, { quoted: message });
+
+        // Add success reaction
+        await client.sendMessage(from, { react: { text: '✅', key: message.key } });
 
     } catch (error) {
         console.error('Conversion error:', error);
         await client.sendMessage(from, {
             text: "❌ Please try with a different sticker."
         }, { quoted: message });
+        await client.sendMessage(from, { react: { text: '❌', key: message.key } });
     }
 });
 
+// Convert to MP3 (15 minutes limit, lowest quality)
 cmd({
     pattern: 'tomp3',
     alias: ['mp3', 'audio'],
-    desc: 'Convert media to audio',
+    desc: 'Convert media to audio (max 15 minutes)',
     category: 'audio',
     react: '🎵',
     filename: __filename
 }, async (client, match, message, { from }) => {
     try {
-        // Input validation
         if (!match.quoted) {
             return await client.sendMessage(from, {
                 text: "*🔊 Please reply to a video/audio message*"
@@ -70,25 +68,25 @@ cmd({
             }, { quoted: message });
         }
 
-        if (match.quoted.seconds > 300) {
+        if (match.quoted.seconds > 900) { // 15 minutes limit
             return await client.sendMessage(from, {
-                text: "⏱️ Media too long (max 5 minutes)"
+                text: "⏱️ Media too long (max 15 minutes)"
             }, { quoted: message });
         }
 
-        // Show processing status with reaction
+        // Add processing reaction
         await client.sendMessage(from, { react: { text: '⏳', key: message.key } });
 
         const buffer = await match.quoted.download();
         const ext = match.quoted.mtype === 'videoMessage' ? 'mp4' : 'm4a';
         const audio = await converter.toAudio(buffer, ext);
 
-        // Send result and show success reaction
         await client.sendMessage(from, {
             audio: audio,
             mimetype: 'audio/mpeg'
         }, { quoted: message });
         
+        // Add success reaction
         await client.sendMessage(from, { react: { text: '✅', key: message.key } });
 
     } catch (e) {
@@ -100,15 +98,15 @@ cmd({
     }
 });
 
+// Convert to PTT (15 minutes limit, optimized voice)
 cmd({
     pattern: 'toptt',
     alias: ['voice', 'tovoice'],
-    desc: 'Convert media to voice message',
+    desc: 'Convert media to voice message (max 15 minutes)',
     category: 'audio',
     react: '🎙️',
     filename: __filename
 }, async (client, match, message, { from }) => {
-    // Input validation
     if (!match.quoted) {
         return await client.sendMessage(from, {
             text: "*🗣️ Please reply to a video/audio message*"
@@ -121,34 +119,34 @@ cmd({
         }, { quoted: message });
     }
 
-    if (match.quoted.seconds > 60) {
+    if (match.quoted.seconds > 900) { // 15 minutes limit
         return await client.sendMessage(from, {
-            text: "⏱️ Media too long for voice (max 1 minute)"
+            text: "⏱️ Media too long for voice (max 15 minutes)"
         }, { quoted: message });
     }
 
-    // Send processing message
-    await client.sendMessage(from, {
-        text: "🔄 Converting to voice message..."
-    }, { quoted: message });
+    // Add processing reaction
+    await client.sendMessage(from, { react: { text: '⏳', key: message.key } });
 
     try {
         const buffer = await match.quoted.download();
         const ext = match.quoted.mtype === 'videoMessage' ? 'mp4' : 'm4a';
         const ptt = await converter.toPTT(buffer, ext);
 
-        // Send result
         await client.sendMessage(from, {
             audio: ptt,
             mimetype: 'audio/ogg; codecs=opus',
             ptt: true
         }, { quoted: message });
 
+        // Add success reaction
+        await client.sendMessage(from, { react: { text: '✅', key: message.key } });
+
     } catch (e) {
         console.error('PTT conversion error:', e.message);
         await client.sendMessage(from, {
             text: "❌ Failed to create voice message"
         }, { quoted: message });
+        await client.sendMessage(from, { react: { text: '❌', key: message.key } });
     }
 });
-
