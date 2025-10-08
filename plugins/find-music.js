@@ -6,76 +6,89 @@ const path = require("path");
 const { cmd } = require("../command");
 
 cmd({
-  pattern: "findsong",
-  alias: ["whatmusic", "songid", "findmusic"],
-  react: "🎶",
-  desc: "Identify the name of a song from audio/video using AI",
-  category: "tools",
-  use: ".findsong [reply to audio/video]",
+  pattern: "find",
+  alias: ["whatmusic", "songfind", "musicid"],
+  react: '🎵',
+  desc: "Identify song from audio",
+  category: "utility",
+  use: ".find [reply to audio]",
   filename: __filename
-}, async (conn, m, { reply, quoted, from }) => {
+}, async (client, message, { reply, quoted }) => {
   try {
-    const qMsg = quoted || m;
-    const mime = (qMsg.msg || qMsg).mimetype || '';
+    // Send processing reaction
+    await client.sendMessage(message.chat, { 
+      react: { text: '⏳', key: message.key } 
+    });
 
-    if (!mime || (!mime.startsWith('audio/') && !mime.startsWith('video/'))) {
-      return reply("🎧 Please reply to an *audio* or *video* message to identify the song.");
+    // Check if quoted message exists and has media
+    const quotedMsg = quoted || message;
+    const mimeType = (quotedMsg.msg || quotedMsg).mimetype || '';
+    
+    if (!mimeType || (!mimeType.startsWith('audio/') && !mimeType.startsWith('video/'))) {
+      return reply("❌ Please reply to an audio or video message!");
     }
 
-    // React processing
-    await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
-
     // Download the media
-    const mediaBuffer = await qMsg.download();
-
-    // Save temp file
-    const ext = mime.includes('audio') ? '.mp3' : '.mp4';
-    const tempFilePath = path.join(os.tmpdir(), `findsong_${Date.now()}${ext}`);
+    const mediaBuffer = await quotedMsg.download();
+    
+    // Create temp file
+    const tempFilePath = path.join(os.tmpdir(), `find_audio_${Date.now()}.mp3`);
     fs.writeFileSync(tempFilePath, mediaBuffer);
 
     // Upload to Catbox
     const form = new FormData();
-    form.append('fileToUpload', fs.createReadStream(tempFilePath), `media${ext}`);
+    form.append('fileToUpload', fs.createReadStream(tempFilePath), 'audio.mp3');
     form.append('reqtype', 'fileupload');
 
-    const uploadRes = await axios.post("https://catbox.moe/user/api.php", form, {
-      headers: form.getHeaders()
+    const uploadResponse = await axios.post("https://catbox.moe/user/api.php", form, {
+      headers: form.getHeaders(),
+      timeout: 30000
     });
 
-    fs.unlinkSync(tempFilePath);
-    const fileUrl = uploadRes.data;
+    const audioUrl = uploadResponse.data;
+    fs.unlinkSync(tempFilePath); // Clean up temp file
 
-    if (!fileUrl || !fileUrl.startsWith("https://")) {
-      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-      return reply("❌ Failed to upload file. Try again.");
+    if (!audioUrl) {
+      throw new Error("Failed to upload audio to Catbox");
     }
 
     // Identify song using API
-    const apiURL = `https://api.zenzxz.my.id/tools/whatmusic?url=${encodeURIComponent(fileUrl)}`;
-    const res = await axios.get(apiURL);
+    const encodedUrl = encodeURIComponent(audioUrl);
+    const apiUrl = `https://api.zenzxz.my.id/tools/whatmusic?url=${encodedUrl}`;
+    
+    const response = await axios.get(apiUrl, { 
+      timeout: 45000 
+    });
 
-    if (!res.data.status) {
-      await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-      return reply("❌ Song not found. Try a clearer audio sample.");
+    const result = response.data;
+
+    if (!result.status || !result.title) {
+      throw new Error("No song identified from this audio");
     }
 
-    const { title, artists } = res.data;
+    // Send success reaction
+    await client.sendMessage(message.chat, { 
+      react: { text: '✅', key: message.key } 
+    });
 
-    const caption = 
-`━━━〔 *SONG FINDER* 〕━━━⊷
-┃🎵 *Title:* ${title}
-┃👤 *Artist(s):* ${artists}
-┃🔗 *File Link:* (${fileUrl})
-╰━━━⪼
+    // Format response with styled caption
+    const caption = `━━━〔 *SONG IDENTIFIED* 〕━━━⊷\n`
+      + `┃🎵 *Title:* ${result.title}\n`
+      + `┃🎤 *Artist:* ${result.artists || 'Unknown'}\n`
+      + `┃👨‍💻 *API By:* ${result.creator || 'ZenzzXD'}\n`
+      + `╰━━━⪼\n\n`
+      + `🔹 *Powered by JawadTechX*`;
 
-🔹 *Powered by JawadTechX*`;
+    await reply(caption);
 
-    await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
-    await conn.sendMessage(from, { text: caption }, { quoted: m });
+  } catch (error) {
+    console.error('Song Identification Error:', error);
+    
+    // Send error reaction
+    await client.sendMessage(message.chat, { 
+      react: { text: '❌', key: message.key } 
+    });
 
-  } catch (err) {
-    console.error("Song Finder Error:", err);
-    await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-    reply("❌ Failed to identify the song. The audio might be too short or the API is down.");
+    await reply(`❌ Error: ${error.message || "Failed to identify song. The audio might be too short or unclear."}`);
   }
 });
