@@ -103,7 +103,7 @@
       }, 
 
     "ANTI_LINK": {
-      "description": "Make it true if you want bot auto remove group link.",
+      "description": "Anti-link mode: 'true'(remove immediately), 'false'(off), 'warn'(3 warnings).",
       "required": true,
       "value": "true"
       
@@ -132,13 +132,7 @@
       "required": false,
       "value": "*© ᴘᴏᴡᴇʀᴇᴅ ʙʏ Jᴀᴡᴀᴅ TᴇᴄʜX*"
     },
-
-      "DELETE_LINKS": {
-      "description": "remove links from group automatically without removing member",
-      "required": false,
-      "value": "false"
-    },
-    
+        
     "AUTO_RECORDING": {
       "description": "Make it true if you want auto recoding.",
       "required": false,
