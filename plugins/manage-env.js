@@ -526,76 +526,7 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
     }
 });
 
-//--------------------------------------------
-//  Anti bot COMMANDS
-//--------------------------------------------
-
-cmd({
-  pattern: "antibot",
-  react: "🫟",
-  alias: ["anti-bot"],
-  desc: "Enable or disable anti-link feature in groups",
-  category: "group",
-  react: "🚫",
-  filename: __filename
-}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
-  try {
-    // Check for group, bot admin, and user admin permissions
-    if (!isGroup) return reply('This command can only be used in a group.');
-    if (!isBotAdmins) return reply('Bot must be an admin to use this command.');
-    if (!isAdmins) return reply('You must be an admin to use this command.');
-
-    // Enable or disable anti-link feature
-    if (args[0] === "on") {
-      config.ANTI_BOT = "true";
-      await reply("ANTI_BOT feature is now enabled in this group.");
-    } else if (args[0] === "off") {
-      config.ANTI_BOT = "false";
-      await reply("ANTI_BOT feature is now disabled in this group.");
-    } else {
-      await reply(`*Invalid input! Use either 'on' or 'off'. Example:antibot on*`);
-    }
-  } catch (error) {
-    return reply(`*An error occurred while processing your request.*\n\n_Error:_ ${error.message}`);
-  }
-});
-
-
-//--------------------------------------------
-//  ANTILINK COMMANDS
-//--------------------------------------------
-cmd({
-  pattern: "antilink",
-  react: "🫟",
-  alias: ["anti-link"],
-  desc: "Enable or disable anti-link feature in groups",
-  category: "group",
-  react: "🚫",
-  filename: __filename
-}, async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
-  try {
-    // Check for group, bot admin, and user admin permissions
-    if (!isGroup) return reply('This command can only be used in a group.');
-    if (!isBotAdmins) return reply('Bot must be an admin to use this command.');
-    if (!isAdmins) return reply('You must be an admin to use this command.');
-
-    // Enable or disable anti-link feature
-    if (args[0] === "on") {
-      config.ANTI_LINK = "true";
-      await reply("Anti-link feature is now enabled in this group.");
-    } else if (args[0] === "off") {
-      config.ANTI_LINK = "false";
-      await reply("Anti-link feature is now disabled in this group.");
-    } else {
-      await reply(`*Invalid input! Use either 'on' or 'off'. Example:antilink on*`);
-    }
-  } catch (error) {
-    return reply(`*An error occurred while processing your request.*\n\n_Error:_ ${error.message}`);
-  }
-});
-
-//mention reply 
-
+// men reply 
 
 cmd({
     pattern: "mention-reply",
