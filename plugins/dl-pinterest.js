@@ -8,10 +8,10 @@ const pinterestAPI = {
 };
 
 cmd({
-    pattern: "pins",
-    alias: ["pinterest", "pint"],
+    pattern: "pins2",
+    alias: ["pinterest2", "pint2"],
     react: "📌",
-    desc: "Download video from Pinterest",
+    desc: "Download video from Pinterest as document",
     category: "download",
     use: ".pins <pinterest_url>",
     filename: __filename
@@ -58,19 +58,21 @@ cmd({
         );
 
         if (videoMedia) {
-            // Send video
+            // Send video as document
             await conn.sendMessage(from, {
-                video: { url: videoMedia.url },
+                document: { url: videoMedia.url },
                 mimetype: 'video/mp4',
                 fileName: `pinterest_video_${Date.now()}.mp4`,
-                caption: `*Pinterest Video Download*\n\n> ${config.DESCRIPTION}`
+                caption: `*Pinterest Video Download*\n\nSent as document\n\n> ${config.DESCRIPTION}`
             }, { quoted: mek });
             
         } else if (imageMedia) {
-            // Send image
+            // Send image as document
             await conn.sendMessage(from, {
-                image: { url: imageMedia.url },
-                caption: `*Pinterest Image*\n\n> ${config.DESCRIPTION}`
+                document: { url: imageMedia.url },
+                mimetype: 'image/jpeg',
+                fileName: `pinterest_image_${Date.now()}.jpg`,
+                caption: `*Pinterest Image*\n\nSent as document\n\n> ${config.DESCRIPTION}`
             }, { quoted: mek });
             
         } else {
