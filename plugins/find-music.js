@@ -4,7 +4,7 @@ const FormData = require('form-data');
 const fs = require('fs');
 const os = require('os');
 const path = require("path");
-
+const { cmd } = require("../command"); // Add this line to import cmd
 
 cmd({
   pattern: "whatmusic",
@@ -37,7 +37,6 @@ cmd({
     // Download the media
     const mediaBuffer = await quotedMsg.download();
     
-  
     // Get file extension based on mime type
     let extension = '.mp3';
     if (mimeType.includes('audio/mpeg')) extension = '.mp3';
