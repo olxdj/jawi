@@ -4,7 +4,8 @@ const fs = require('fs');
 const path = require('path');
 
 cmd({
-    pattern: "git",
+    pattern: "gitclone",
+    alias: ["git"],
     desc: "Download any public GitHub repo as ZIP",
     category: "download",
     react: "⬇️",
