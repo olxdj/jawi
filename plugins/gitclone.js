@@ -1,69 +1,65 @@
-const { cmd } = require("../command");
-const fetch = require("node-fetch");
+const { cmd } = require('../command');
+const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 
 cmd({
-  pattern: 'gitclone',
-  alias: ["git"],
-  desc: "Download GitHub repository as a zip file.",
-  react: '📦',
-  category: "downloader",
-  filename: __filename
-}, async (conn, m, store, {
-  from,
-  quoted,
-  args,
-  reply
-}) => {
-  if (!args[0]) {
-    return reply("❌ Where is the GitHub link?\n\nExample:\n.gitclone https://github.com/username/repository");
-  }
+    pattern: "git",
+    desc: "Download any public GitHub repo as ZIP",
+    category: "download",
+    react: "⬇️",
+    filename: __filename
+}, async (conn, mek, m, { args, reply }) => {
+    try {
+        if (!args[0]) return reply("📌 *Usage:* .git <repo_link>");
 
-  if (!/^(https:\/\/)?github\.com\/.+/.test(args[0])) {
-    return reply("⚠️ Invalid GitHub link. Please provide a valid GitHub repository URL.");
-  }
+        // React: processing
+        await conn.sendMessage(m.chat, { react: { text: '⬇️', key: mek.key } });
 
-  try {
-    const regex = /github\.com\/([^\/]+)\/([^\/]+)(?:\.git)?/i;
-    const match = args[0].match(regex);
-
-    if (!match) {
-      throw new Error("Invalid GitHub URL.");
-    }
-
-    const [, username, repo] = match;
-    const zipUrl = `https://api.github.com/repos/${username}/${repo}/zipball`;
-
-    // Check if repository exists
-    const response = await fetch(zipUrl, { method: "HEAD" });
-    if (!response.ok) {
-      throw new Error("Repository not found.");
-    }
-
-    const contentDisposition = response.headers.get("content-disposition");
-    const fileName = contentDisposition ? contentDisposition.match(/filename=(.*)/)[1] : `${repo}.zip`;
-
-    // Notify user of the download
-    reply(`📥 *Downloading repository...*\n\n*Repository:* ${username}/${repo}\n*Filename:* ${fileName}\n\n> *Powered by JawadTechX*`);
-
-    // Send the zip file to the user with custom contextInfo
-    await conn.sendMessage(from, {
-      document: { url: zipUrl },
-      fileName: fileName,
-      mimetype: 'application/zip',
-      contextInfo: {
-        mentionedJid: [m.sender],
-        forwardingScore: 999,
-        isForwarded: true,
-        forwardedNewsletterMessageInfo: {
-          newsletterJid: '120363354023106228@newsletter',
-          newsletterName: 'JawadTechX',
-          serverMessageId: 143
+        const url = args[0];
+        const match = url.match(/github\.com\/([^\/]+)\/([^\/]+)(?:\/|$)/i);
+        if (!match) {
+            await conn.sendMessage(m.chat, { react: { text: '❌', key: mek.key } });
+            return reply("❌ Invalid GitHub link.");
         }
-      }
-    }, { quoted: m });
 
-  } catch (error) {
-    console.error("Error:", error);
-    reply("❌ Failed to download the repository. Please try again later.");
-  }
+        const owner = match[1];
+        const repo = match[2].replace(/\.git$/, '');
+
+        // Try main first, then master if main fails
+        const branches = ['main', 'master'];
+        let zipData = null;
+        for (const branch of branches) {
+            const zipUrl = `https://github.com/${owner}/${repo}/archive/refs/heads/${branch}.zip`;
+            try {
+                const res = await axios.get(zipUrl, { responseType: 'arraybuffer' });
+                zipData = res.data;
+                break;
+            } catch {}
+        }
+
+        if (!zipData) {
+            await conn.sendMessage(m.chat, { react: { text: '❌', key: mek.key } });
+            return reply("❌ Failed to download. Branch not found.");
+        }
+
+        const filePath = path.join(__dirname, `${repo}.zip`);
+        fs.writeFileSync(filePath, zipData);
+
+        await conn.sendMessage(m.chat, {
+            document: fs.readFileSync(filePath),
+            fileName: `${repo}.zip`,
+            mimetype: 'application/zip'
+        }, { quoted: mek });
+
+        fs.unlinkSync(filePath);
+
+        // React: success
+        await conn.sendMessage(m.chat, { react: { text: '✅', key: mek.key } });
+
+    } catch (e) {
+        console.error("Git Download Error:", e);
+        await conn.sendMessage(m.chat, { react: { text: '❌', key: mek.key } });
+        reply("❌ Failed to download repo.");
+    }
 });
