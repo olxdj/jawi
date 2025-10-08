@@ -157,62 +157,61 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
     }
 });
 
-
-// WELCOME
-cmd({
-    pattern: "goodbye",
-    alias: ["setgoodbye"],
-    react: "✅",
-    desc: "Enable or disable welcome messages for new members",
-    category: "settings",
-    filename: __filename
-},
-async (conn, mek, m, { from, args, isCreator, reply }) => {
-    if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
-
-    const status = args[0]?.toLowerCase();
-    if (status === "on") {
-        config.GOODBYE = "true";
-        return reply("✅ GoodBye messages are now enabled.");
-    } else if (status === "off") {
-        config.GOODBYE = "false";
-        return reply("❌ GoodBye messages are now disabled.");
-    } else {
-        return reply(`Example: .welcome on`);
-    }
-});
-
 cmd({
     pattern: "mode",
-    alias: ["setmode", "mod"],
-    react: "✅",
-    desc: "Set bot mode to private or public.",
+    alias: ["mod"],
+    react: "🔐",
+    desc: "Set bot mode to inbox, private or public.",
     category: "settings",
     filename: __filename,
-}, async (conn, mek, m, { args, isCreator, reply }) => {
-    if (!isCreator) return reply("*📛 Only the owner can use this command!*");
+}, async (conn, mek, m, { args, isCreator, reply, from }) => {
+    try {
+        // ⏳ React - processing
+        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+        await sleep(300);
 
-    const currentMode = getConfig("MODE") || "public";
+        if (!isCreator) {
+            await reply("*📛 Only the owner can use this command!*");
+            await sleep(500);
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            return;
+        }
 
-    if (!args[0]) {
-        return reply(`📌 Current mode: *${currentMode}*\n\nUsage: .mode private OR .mode public`);
-    }
+        const currentMode = getConfig("MODE") || "public";
 
-    const modeArg = args[0].toLowerCase();
+        if (!args[0]) {
+            await reply(`🔰 *BOT MODE SETTINGS*\n\n📊 Current: *${currentMode.toUpperCase()}*\n\n🟢 INBOX - Only owner\n🟡 PRIVATE - Owner & allowed numbers\n🔴 PUBLIC - Everyone\n\nUse: .mode inbox/private/public`);
+            await sleep(500);
+            await conn.sendMessage(from, { react: { text: 'ℹ️', key: m.key } });
+            return;
+        }
 
-    if (["private", "public"].includes(modeArg)) {
-        setConfig("MODE", modeArg);
-        await reply(`✅ Bot mode is now set to *${modeArg.toUpperCase()}*.\n\n♻ Restarting bot to apply changes...`);
+        const modeArg = args[0].toLowerCase();
 
-        exec("pm2 restart all", (error, stdout, stderr) => {
-            if (error) {
-                console.error("Restart error:", error);
-                return;
-            }
-            console.log("PM2 Restart:", stdout || stderr);
-        });
-    } else {
-        return reply("❌ Invalid mode. Please use `.mode private` or `.mode public`.");
+        if (["inbox", "private", "public"].includes(modeArg)) {
+            setConfig("MODE", modeArg);
+            
+            await reply(`✅ *Mode Updated!*\n\n📱 New Mode: *${modeArg.toUpperCase()}*\n\n♻ Restarting bot to apply changes...`);
+            await sleep(1000);
+            await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
+            // Restart bot
+            exec("pm2 restart all", (error, stdout, stderr) => {
+                if (error) {
+                    console.error("Restart error:", error);
+                    return;
+                }
+                console.log("PM2 Restart:", stdout || stderr);
+            });
+        } else {
+            await reply(`❌ *Invalid Mode!*\n\nChoose from: *inbox*, *private*, or *public*\n\nExample: .mode private`);
+            await sleep(500);
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+        }
+    } catch (error) {
+        await reply(`❌ *Error!*\n\nFailed to update mode.\nError: ${error.message}`);
+        await sleep(500);
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
     }
 });
 
