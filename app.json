@@ -102,11 +102,10 @@
 
       }, 
 
-    "ANTI_LINK": {
-      "description": "Anti-link mode: 'true'(remove immediately), 'false'(off), 'warn'(3 warnings).",
-      "required": true,
-      "value": "true"
-      
+     "ANTI_LINK": {
+      "description": "Anti-Link System Mode: 'true' (delete+remove), 'false' (disabled), 'warn' (3 warnings), 'delete' (delete only)",
+      "value": "true",
+      "required": false
     },
     
     "ANTI_BAD": {
