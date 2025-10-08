@@ -107,6 +107,13 @@
       "value": "true",
       "required": false
     },
+
+     "ANTI_STATUS_MENTION": {
+     "description": "Anti-Status Mention System Mode: 'true' (delete+remove), 'false' (disabled), 'warn' (3 warnings), 'delete' (delete only)",
+     "value": "warn",
+     "required": false
+   },
+
     
     "ANTI_BAD": {
       "description": "Make it true if you want bot auto delete bad words.",
