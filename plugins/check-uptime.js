@@ -10,6 +10,12 @@ cmd({
 },
 async (conn, mek, m, { from, reply }) => {
     try {
+        // ⏳ React - processing
+        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+        
+        // 1000ms delay to ensure react is visible
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         const formatUptime = (seconds) => {
             const days = Math.floor(seconds / (3600 * 24));
             const hours = Math.floor((seconds % (3600 * 24)) / 3600);
@@ -17,10 +23,10 @@ async (conn, mek, m, { from, reply }) => {
             const secs = Math.floor(seconds % 60);
             
             let timeString = '';
-            if (days > 0) timeString += `${days}d `;
-            if (hours > 0) timeString += `${hours}h `;
-            if (minutes > 0) timeString += `${minutes}m `;
-            timeString += `${secs}s`;
+            if (days > 0) timeString += `${days} day${days > 1 ? 's' : ''} `;
+            if (hours > 0) timeString += `${hours} hour${hours > 1 ? 's' : ''} `;
+            if (minutes > 0) timeString += `${minutes} minute${minutes > 1 ? 's' : ''} `;
+            if (secs > 0 || timeString === '') timeString += `${secs} second${secs !== 1 ? 's' : ''}`;
             
             return timeString.trim();
         };
@@ -31,12 +37,21 @@ async (conn, mek, m, { from, reply }) => {
             text: `⏱️ *Uptime:* ${uptime}`,
             contextInfo: {
                 isForwarded: true,
-                forwardingScore: 999
+                forwardingScore: 999,
+                mentionedJid: [m.sender]
             }
         }, { quoted: mek });
 
+        // 800ms delay before success react
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // ✅ React - success
+        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
     } catch (e) {
         console.error("Error in uptime command:", e);
-        reply(`❌ Error checking uptime: ${e.message}`);
+        // ❌ React - error
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+        await reply(`❌ Error checking uptime: ${e.message}`);
     }
 });
