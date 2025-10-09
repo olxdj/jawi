@@ -1,7 +1,6 @@
 const { cmd, commands } = require('../command');
 const os = require("os");
-const { runtime } = require('../lib/functions');
-const config = require('../config'); // Assuming you have a config file
+const config = require('../config');
 
 cmd({
     pattern: "alive",
@@ -13,14 +12,30 @@ cmd({
 },
 async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, reply }) => {
     try {
+        // ⏳ React - processing
+        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+        
+        // 1000ms delay to ensure react is visible
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         const totalCmds = commands.length;
-        const uptime = () => {
-            let sec = process.uptime();
-            let h = Math.floor(sec / 3600);
-            let m = Math.floor((sec % 3600) / 60);
-            let s = Math.floor(sec % 60);
-            return `${h}h ${m}m ${s}s`;
+        
+        const formatUptime = (seconds) => {
+            const days = Math.floor(seconds / (3600 * 24));
+            const hours = Math.floor((seconds % (3600 * 24)) / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            
+            let timeString = '';
+            if (days > 0) timeString += `${days} day${days > 1 ? 's' : ''} `;
+            if (hours > 0) timeString += `${hours} hour${hours > 1 ? 's' : ''} `;
+            if (minutes > 0) timeString += `${minutes} minute${minutes > 1 ? 's' : ''} `;
+            if (secs > 0 || timeString === '') timeString += `${secs} second${secs !== 1 ? 's' : ''}`;
+            
+            return timeString.trim();
         };
+
+        const uptime = formatUptime(process.uptime());
 
         const status = `╭─〔 *🤖 KHAN-MD STATUS* 〕
 │
@@ -30,7 +45,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 ├─ *🔹 Prefix:* ${config.PREFIX || '.'}
 ├─ *🧩 Version:* 5.0.0 Beta
 ├─ *📁 Total Commands:* ${totalCmds}
-├─ *⏱ Runtime:* ${uptime()}
+├─ *⏱ Runtime:* ${uptime}
 │
 ╰─ *⚡ Powered by KHAN-MD*`;
 
@@ -43,8 +58,16 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
             }
         }, { quoted: mek });
 
+        // 800ms delay before success react
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // ✅ React - success
+        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
     } catch (e) {
         console.error("Error in alive command:", e);
-        reply(`An error occurred: ${e.message}`);
+        // ❌ React - error
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+        await reply(`❌ An error occurred: ${e.message}`);
     }
 });
