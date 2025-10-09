@@ -8,7 +8,7 @@ const pipeline = promisify(stream.pipeline);
 const yts = require('yt-search');
 
 cmd({
-  pattern: "song",
+  pattern: "song2",
   alias: ['play3', "music"],
   react: '🎶',
   desc: "Download YouTube song",
