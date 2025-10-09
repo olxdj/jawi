@@ -125,59 +125,35 @@ cmd({
 
 cmd({
     pattern: "mode",
-    alias: ["mod"],
-    react: "🔐",
-    desc: "Set bot mode to inbox, private or public.",
+    alias: ["setmode", "mod"],
+    react: "✅",
+    desc: "Set bot mode to private or public.",
     category: "settings",
     filename: __filename,
-}, async (conn, mek, m, { args, isCreator, reply, from }) => {
-    try {
-        // ⏳ React - processing
-        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
-        await sleep(300);
+}, async (conn, mek, m, { args, isCreator, reply }) => {
+    if (!isCreator) return reply("*📛 Only the owner can use this command!*");
 
-        if (!isCreator) {
-            await reply("*📛 Only the owner can use this command!*");
-            await sleep(500);
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return;
-        }
+    const currentMode = getConfig("MODE") || "public";
 
-        const currentMode = getConfig("MODE") || "public";
+    if (!args[0]) {
+        return reply(`📌 Current mode: *${currentMode}*\n\nUsage: .mode private OR .mode public`);
+    }
 
-        if (!args[0]) {
-            await reply(`🔰 *BOT MODE SETTINGS*\n\n📊 *Current Mode:* ${currentMode.toUpperCase()}\n\n🟢 *INBOX* - Works only in private chat\n🔴 *PUBLIC* - Everyone can use the bot\n🟡 *PRIVATE* - Only owner can use the bot\n\n💡 *Usage:* .mode inbox / private / public`);
-            await sleep(500);
-            await conn.sendMessage(from, { react: { text: 'ℹ️', key: m.key } });
-            return;
-        }
+    const modeArg = args[0].toLowerCase();
 
-        const modeArg = args[0].toLowerCase();
+    if (["private", "public"].includes(modeArg)) {
+        setConfig("MODE", modeArg);
+        await reply(`✅ Bot mode is now set to *${modeArg.toUpperCase()}*.\n\n♻ Restarting bot to apply changes...`);
 
-        if (["inbox", "private", "public"].includes(modeArg)) {
-            setConfig("MODE", modeArg);
-            
-            await reply(`✅ *Mode Updated!*\n\n📱 New Mode: *${modeArg.toUpperCase()}*\n\n♻ Restarting bot to apply changes...`);
-            await sleep(1000);
-            await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
-
-            // Restart bot
-            exec("pm2 restart all", (error, stdout, stderr) => {
-                if (error) {
-                    console.error("Restart error:", error);
-                    return;
-                }
-                console.log("PM2 Restart:", stdout || stderr);
-            });
-        } else {
-            await reply(`❌ *Invalid Mode!*\n\nChoose from: *inbox*, *private*, or *public*\n\nExample: .mode private`);
-            await sleep(500);
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        }
-    } catch (error) {
-        await reply(`❌ *Error!*\n\nFailed to update mode.\nError: ${error.message}`);
-        await sleep(500);
-        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+        exec("pm2 restart all", (error, stdout, stderr) => {
+            if (error) {
+                console.error("Restart error:", error);
+                return;
+            }
+            console.log("PM2 Restart:", stdout || stderr);
+        });
+    } else {
+        return reply("❌ Invalid mode. Please use `.mode private` or `.mode public`.");
     }
 });
 
