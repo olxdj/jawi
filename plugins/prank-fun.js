@@ -1,4 +1,5 @@
 const { cmd } = require('../command');
+const config = require('../config');
 
 cmd({
     pattern: "hack",
@@ -7,51 +8,50 @@ cmd({
     filename: __filename
 },
 async (conn, mek, m, { 
-    from, quoted, body, isCmd, command, args, q, isGroup, senderNumber, reply 
+    from, quoted, body, isCmd, command, args, q, isGroup, senderNumber, reply, isCreator 
 }) => {
     try {
-        // Get the bot owner's number dynamically from conn.user.id
-        const botOwner = conn.user.id.split(":")[0]; // Extract the bot owner's number
-        if (senderNumber !== botOwner) {
-            return reply("Only the bot owner can use this command.");
+        if (!isCreator) {
+            return reply("📛 *This is an owner command.*");
         }
 
         const steps = [
-            '💻 *HACK STARTING...* 💻',
+            `💻 *${config.BOT_NAME} HACKING SYSTEM ACTIVATED* 💻\n*Initializing cyber attack sequence...* 🚀`,
             
-            '*Initializing hacking tools...* 🛠️',
-            '*Connecting to remote servers...* 🌐',
+            `*${config.BOT_NAME} AI CORE ENGAGED* 🤖\n*Bypassing security protocols...* 🔓`,
+            `*${config.BOT_NAME} deploying penetration tools...* 🛠️\n*Scanning vulnerable endpoints...* 📡`,
             
-            '```[██████████] 10%``` ⏳'                                            ,
-            '```[███████████████████] 20%``` ⏳'                                   ,
-            '```[███████████████████████] 30%``` ⏳'                               ,
-            '```[██████████████████████████] 40%``` ⏳'                            ,
-            '```[███████████████████████████████] 50%``` ⏳'                       ,
-            '```[█████████████████████████████████████] 60%``` ⏳'                 ,
-            '```[██████████████████████████████████████████] 70%``` ⏳'            ,
-            '```[██████████████████████████████████████████████] 80%``` ⏳'        ,
-            '```[██████████████████████████████████████████████████] 90%``` ⏳'    ,
-            '```[████████████████████████████████████████████████████] 100%``` ✅',
+            '```[▰▱▱▱▱▱▱▱▱▱] 10%``` *Accessing mainframe...* ⏳',
+            '```[▰▰▰▱▱▱▱▱▱▱] 20%``` *Injecting malware payload...* 💉',
+            '```[▰▰▰▰▰▱▱▱▱▱] 30%``` *Decrypting security keys...* 🔑',
+            '```[▰▰▰▰▰▰▰▱▱▱] 40%``` *Exploiting zero-day vulnerabilities...* 🕳️',
+            '```[▰▰▰▰▰▰▰▰▰▱] 50%``` *Downloading confidential data...* 📥',
+            '```[▰▰▰▰▰▰▰▰▰▰] 60%``` *Establishing backdoor access...* 🚪',
+            '```[▰▰▰▰▰▰▰▰▰▰▰▱▱▱] 70%``` *Bypassing firewall...* 🔥',
+            '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱] 80%``` *Covering tracks...* 🎭',
+            '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱] 90%``` *Finalizing data extraction...* 📊',
+            '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *MISSION ACCOMPLISHED* ✅',
             
-            '🔒 *System Breach: Successful!* 🔓',
-            '🚀 *Command Execution: Complete!* 🎯',
+            '🔓 *SYSTEM BREACH: SUCCESSFUL!* 🔓\n*All security layers compromised* 💀',
+            '🚀 *COMMAND EXECUTION: COMPLETE!* 🎯\n*Root access achieved* 👑',
             
-            '*📡 Transmitting data...* 📤',
-            '_🕵️‍♂️ Ensuring stealth..._ 🤫',
-            '*🔧 Finalizing operations...* 🏁',
+            `*${config.BOT_NAME} transmitting stolen data...* 📤\n*Data packets: 2.4TB transferred* 💾`,
+            '_🕵️‍♂️ Erasing digital footprints..._ 🤫\n*Anti-forensics activated* 🧹',
+            `*${config.BOT_NAME} finalizing cyber operations...* 🏁\n*Remote connection terminated* 📴`,
             
-            '⚠️ *Note:* All actions are for demonstration purposes only.',
-            '⚠️ *Reminder:* Ethical hacking is the only way to ensure security.',
+            '⚠️ *DANGER: HIGH-RISK OPERATION DETECTED* ⚠️',
+            '⚠️ *WARNING: This is a simulated demonstration only*',
+            '⚠️ *REMEMBER: Ethical hacking ensures digital security*',
             
-            '> *KHAN-MD-HACKING-COMPLETE ☣*'
+            `> *${config.BOT_NAME} HACKING PROTOCOL COMPLETE ☣*\n> *SYSTEM STATUS: TARGET NEUTRALIZED* 🎯\n> *ALL DATA COMPROMISED SUCCESSFULLY* 💀`
         ];
 
         for (const line of steps) {
             await conn.sendMessage(from, { text: line }, { quoted: mek });
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Adjust the delay as needed
+            await new Promise(resolve => setTimeout(resolve, 800)); // 800ms delay as requested
         }
     } catch (e) {
         console.error(e);
-        reply(`❌ *Error:* ${e.message}`);
+        reply(`❌ *CYBER ATTACK FAILED:* ${e.message}`);
     }
 });
