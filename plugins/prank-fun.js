@@ -46,10 +46,38 @@ async (conn, mek, m, {
             `> *${config.BOT_NAME} HACKING PROTOCOL COMPLETE ☣*\n> *SYSTEM STATUS: TARGET NEUTRALIZED* 🎯\n> *ALL DATA COMPROMISED SUCCESSFULLY* 💀`
         ];
 
-        for (const line of steps) {
-            await conn.sendMessage(from, { text: line }, { quoted: mek });
-            await new Promise(resolve => setTimeout(resolve, 800)); // 800ms delay as requested
+        // Send initial message to confirm command is working
+        await reply("🚀 *Hacking sequence initiated... Stand by for updates...*");
+
+        // Send all messages with proper error handling
+        for (let i = 0; i < steps.length; i++) {
+            try {
+                await conn.sendMessage(from, { text: steps[i] }, { quoted: mek });
+                
+                // Add dynamic delay - longer delays for progress bars
+                if (steps[i].includes('```[')) {
+                    await new Promise(resolve => setTimeout(resolve, 1200)); // Longer delay for progress updates
+                } else {
+                    await new Promise(resolve => setTimeout(resolve, 800)); // Normal delay for other messages
+                }
+                
+                // Small delay every 3 messages to avoid rate limiting
+                if ((i + 1) % 3 === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+                
+            } catch (error) {
+                console.error(`Error sending message ${i + 1}:`, error);
+                // Continue with next message instead of stopping
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
         }
+
+        // Final confirmation
+        await conn.sendMessage(from, { 
+            text: `✅ *${config.BOT_NAME} Hacking Simulation Completed Successfully!*` 
+        }, { quoted: mek });
+
     } catch (e) {
         console.error(e);
         reply(`❌ *CYBER ATTACK FAILED:* ${e.message}`);
