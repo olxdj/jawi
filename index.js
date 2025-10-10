@@ -247,10 +247,9 @@ conn.ev.on('presence.update', async (update) => {
 // always Online 
 
 conn.ev.on("presence.update", (update) => PresenceControl(conn, update));
+	
+BotActivityFilter(conn);
 
-	
-BotActivityFilter(conn);	
-	
  /// READ STATUS       
   conn.ev.on('messages.upsert', async(mek) => {
     mek = mek.messages[0]
@@ -271,6 +270,7 @@ BotActivityFilter(conn);
 
   const newsletterJids = [
   "120363420506414431@newsletter",
+  '120363422074850441@newsletter',	  
   "120363354023106228@newsletter",	  
   "120363417971954983@newsletter",	  
   "120363420122180789@newsletter"
