@@ -60,7 +60,7 @@ cmd({
         }
 
         // Get Izumi API link for video
-        const apiUrl = `${izumi.baseURL}/downloader/youtube?url=${encodeURIComponent(videoUrl)}&format=720`;
+        const apiUrl = `${izumi.baseURL}/downloader/youtube?url=${encodeURIComponent(videoUrl)}&format=360`;
         
         const res = await axios.get(apiUrl, {
             timeout: 30000,
