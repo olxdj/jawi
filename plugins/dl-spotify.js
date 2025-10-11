@@ -25,21 +25,13 @@ cmd({
 
         const caption = `🎧 *SPOTIFY DOWNLOADER*\n\n🎵 *Title:* ${title}\n🎤 *Artist:* ${artist}\n🕒 *Duration:* ${duration}\n🔥 *Popularity:* ${popularity}\n\n_🎶 Powered By KHAN-MD_`;
 
+        // Send cover image with info
         await conn.sendMessage(from, {
             image: { url: thumbnail },
-            caption,
-            contextInfo: {
-                externalAdReply: {
-                    title: "🎶 Spotify Downloader",
-                    body: "Powered by KHAN-MD",
-                    thumbnailUrl: thumbnail,
-                    mediaType: 1,
-                    renderLargerThumbnail: true,
-                    sourceUrl: "https://open.spotify.com/"
-                }
-            }
+            caption
         }, { quoted: mek });
 
+        // Send audio with Spotify-style info
         await conn.sendMessage(from, {
             audio: { url: downloadLink },
             mimetype: 'audio/mpeg',
@@ -50,8 +42,7 @@ cmd({
                     body: `🎧 ${artist} | Powered by KHAN-MD`,
                     thumbnailUrl: thumbnail,
                     mediaType: 2,
-                    renderLargerThumbnail: false,
-                    sourceUrl: "https://open.spotify.com/"
+                    renderLargerThumbnail: true
                 }
             }
         }, { quoted: mek });
