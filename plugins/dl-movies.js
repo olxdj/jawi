@@ -84,10 +84,11 @@ cmd({
         const downloadUrl = res.data.result;
         const finalTitle = videoTitle || q || 'movie';
 
-        // Send video as video (not document)
+        // Send video as document with detailed caption
         await conn.sendMessage(from, {
-            video: { url: downloadUrl },
+            document: { url: downloadUrl },
             mimetype: 'video/mp4',
+            fileName: `${finalTitle.replace(/[^\w\s]/gi, '')}.mp4`,
             caption: `*${finalTitle}*\n\n${config.DESCRIPTION || "Powered by KHAN-MD"}`
         }, { quoted: mek });
 
