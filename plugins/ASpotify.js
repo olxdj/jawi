@@ -4,38 +4,60 @@ const axios = require('axios');
 cmd({
     pattern: "spotify",
     alias: ["spotdl", "spdl"],
-    desc: "Download Spotify track in MP3 format",
+    desc: "Download Spotify track by name",
     category: "downloader",
-    react: "🎵",
+    react: "🎧",
     filename: __filename
 }, async (conn, mek, m, { from, args, reply }) => {
     try {
-        if (!args[0]) return reply("🎧 *Please provide a Spotify track URL!*\n\nExample:\n`.spotify https://open.spotify.com/track/4Nwrh5BlZ8I31znYQULS7G`");
+        if (!args[0]) return reply("🎵 *Please provide a Spotify song name!*\n\nExample:\n`.spotify Spectre`");
 
-        const url = args[0];
-        const api = `https://api.siputzx.my.id/api/d/spotify?url=${encodeURIComponent(url)}`;
+        const query = args.join(" ");
+        const api = `https://apis-keith.vercel.app/download/spotify?q=${encodeURIComponent(query)}`;
 
         const { data } = await axios.get(api);
 
-        if (!data.status || !data.data) return reply("❌ Failed to fetch Spotify data.");
+        if (!data.status || !data.result || !data.result.track) {
+            return reply("❌ No results found for your query.");
+        }
 
-        const { title, artis, durasi, image, download } = data.data;
+        const { title, artist, duration, popularity, thumbnail, downloadLink } = data.result.track;
 
-        const caption = `🎧 *SPOTIFY DOWNLOADER*\n\n🎵 *Title:* ${title}\n🎤 *Artist:* ${artis}\n🕒 *Duration:* ${(durasi / 1000 / 60).toFixed(2)} mins\n\n_🎶 Powered By KHAN-MD_`;
+        const caption = `🎧 *SPOTIFY DOWNLOADER*\n\n🎵 *Title:* ${title}\n🎤 *Artist:* ${artist}\n🕒 *Duration:* ${duration}\n🔥 *Popularity:* ${popularity}\n\n_🎶 Powered By KHAN-MD_`;
 
         await conn.sendMessage(from, {
-            image: { url: image },
-            caption
+            image: { url: thumbnail },
+            caption,
+            contextInfo: {
+                externalAdReply: {
+                    title: "🎶 Spotify Downloader",
+                    body: "Powered by KHAN-MD",
+                    thumbnailUrl: thumbnail,
+                    mediaType: 1,
+                    renderLargerThumbnail: true,
+                    sourceUrl: "https://open.spotify.com/"
+                }
+            }
         }, { quoted: mek });
 
         await conn.sendMessage(from, {
-            audio: { url: download },
+            audio: { url: downloadLink },
             mimetype: 'audio/mpeg',
-            fileName: `${title}.mp3`
+            fileName: `${title}.mp3`,
+            contextInfo: {
+                externalAdReply: {
+                    title: `${title}`,
+                    body: `🎧 ${artist} | Powered by KHAN-MD`,
+                    thumbnailUrl: thumbnail,
+                    mediaType: 2,
+                    renderLargerThumbnail: false,
+                    sourceUrl: "https://open.spotify.com/"
+                }
+            }
         }, { quoted: mek });
 
-    } catch (e) {
-        console.error("Spotify Error:", e);
-        reply("❌ *Error while fetching Spotify track.*");
+    } catch (err) {
+        console.error("Spotify Command Error:", err);
+        reply("❌ *Error fetching or downloading track.*");
     }
 });
