@@ -70,6 +70,7 @@ const getCategorizedCommands = () => {
 
 cmd({
     pattern: "menu",
+    alias: ["m", "help"],
     desc: "Show all bot commands in selection menu",
     category: "menu",
     react: "⚡",
@@ -85,7 +86,9 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
         let optionNumber = 1;
         
         availableCategories.slice(0, 14).forEach(cat => {
-            menuOptions += `*├▢ ${optionNumber}. ${cat} Menu*\n`;
+            // Capitalize first letter of category
+            const displayName = cat.charAt(0).toUpperCase() + cat.slice(1);
+            menuOptions += `*├▢ ${optionNumber}. ${displayName} Menu*\n`;
             optionNumber++;
         });
 
@@ -124,30 +127,17 @@ ${menuOptions}*╰───────────────────⊷*
 
         const messageID = sentMsg.key.id;
         const menuCategories = availableCategories.slice(0, 14);
-        
-        // Set timeout to automatically close the menu after 40 seconds
-        const timeout = setTimeout(() => {
-            conn.ev.removeAllListeners("messages.upsert");
-        }, 40000);
 
-        const messageHandler = async (msgData) => {
+        conn.ev.on("messages.upsert", async (msgData) => {
             const receivedMsg = msgData.messages[0];
-            if (!receivedMsg.message || receivedMsg.key.remoteJid !== from) return;
+            if (!receivedMsg.message) return;
 
             const receivedText = receivedMsg.message.conversation || receivedMsg.message.extendedTextMessage?.text;
+            const senderID = receivedMsg.key.remoteJid;
             const isReplyToBot = receivedMsg.message.extendedTextMessage?.contextInfo?.stanzaId === messageID;
 
-            if (isReplyToBot && receivedMsg.key.fromMe === false) {
-                // Don't remove listener - allow multiple selections
-                // Only clear timeout when we get a response to reset the 40-second timer
-                clearTimeout(timeout);
-                
-                // Reset the timeout for another 40 seconds
-                const newTimeout = setTimeout(() => {
-                    conn.ev.removeAllListeners("messages.upsert");
-                }, 40000);
-
-                await conn.sendMessage(from, {
+            if (isReplyToBot) {
+                await conn.sendMessage(senderID, {
                     react: { text: '⬇️', key: receivedMsg.key }
                 });
 
@@ -156,31 +146,32 @@ ${menuOptions}*╰───────────────────⊷*
                     const selectedCategory = menuCategories[selectedNumber - 1];
                     const categoryCommands = categorized[selectedCategory];
                     
+                    // Capitalize first letter for display
+                    const displayName = selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1);
+                    
                     // Build category menu with same style as menu2
                     const categorySection = formatCategory(selectedCategory, categoryCommands);
                     
-                    let categoryMenu = `*╭┈───〔 ${selectedCategory} Menu 〕┈───⊷*\n`;
+                    let categoryMenu = `*╭┈───〔 ${displayName} Menu 〕┈───⊷*\n`;
                     categoryMenu += `*├▢ 📜 Category:* ${selectedCategory}\n`;
                     categoryMenu += `*├▢ 🔢 Total Commands:* ${categoryCommands.length}\n`;
                     categoryMenu += `*╰───────────────────⊷*`;
                     categoryMenu += `${categorySection}\n\n`;
-                    categoryMenu += `> *ʀᴇᴘʟʏ ᴡɪᴛʜ ᴀɴᴏᴛʜᴇʀ ɴᴜᴍʙᴇʀ ᴛᴏ sᴇʟᴇᴄᴛ ᴀɴᴏᴛʜᴇʀ ᴍᴇɴᴜ*`;
+                    categoryMenu += `> *ᴜsᴇ ${config.PREFIX}ᴍᴇɴᴜ ᴛᴏ sᴇᴇ ᴀʟʟ ᴍᴇɴᴜs ᴀɢᴀɪɴ*`;
 
-                    await conn.sendMessage(from, {
+                    await conn.sendMessage(senderID, {
                         image: { url: config.MENU_IMAGE_URL || 'https://files.catbox.moe/7zfdcq.jpg' },
                         caption: categoryMenu,
                         contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                     }, { quoted: receivedMsg });
                 } else {
-                    await conn.sendMessage(from, {
-                        text: "❌ *Invalid selection! Please reply with a valid number (1-" + menuCategories.length + ").*",
+                    await conn.sendMessage(senderID, {
+                        text: "❌ *Invalid selection! Please use .menu again to select a valid number.*",
                         contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                     }, { quoted: receivedMsg });
                 }
             }
-        };
-
-        conn.ev.on("messages.upsert", messageHandler);
+        });
 
     } catch (e) {
         console.error(e);
