@@ -16,24 +16,27 @@ async (conn, mek, m, { from, q, reply }) => {
         // ⏳ React - processing
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-        // Fetch APK from new API
-        const apiUrl = `https://api.princetechn.com/api/download/apkdl?apikey=prince&appName=${encodeURIComponent(q)}`;
-        const { data } = await axios.get(apiUrl);
+        const { data } = await axios.get(`https://www.dark-yasiya-api.site/download/apk?id=${encodeURIComponent(q)}`);
 
-        if (!data.success || !data.result?.download_url) {
+        if (!data.status || !data.result) {
             await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return reply("❌ *No APK found with that name, please try again.*");
+            return reply("❌ *App not found or API error.*");
         }
 
         const app = data.result;
-
-        // Send APK file
-        await conn.sendMessage(from, {
-            document: { url: app.download_url },
-            mimetype: app.mimetype || "application/vnd.android.package-archive",
-            fileName: `${app.appname}.apk`,
-            caption: `✅ *APK successfully downloaded*\nPowered By KHAN-MD 🤍`
+        
+        // Send info message with thumbnail
+        const infoMsg = await conn.sendMessage(from, {
+            image: { url: app.image },
+            caption: `📱 *${app.name}*\n\n📦 Package: ${app.package}\n📅 Last Update: ${app.lastUpdate}\n💾 Size: ${app.size}\n\n_Powered by Dark Yasiya API_`
         }, { quoted: mek });
+
+        // Send APK file as reply to the info message
+        await conn.sendMessage(from, {
+            document: { url: app.dl_link },
+            mimetype: "application/vnd.android.package-archive",
+            fileName: `${app.name}.apk`
+        }, { quoted: infoMsg });
 
         // ✅ React - success
         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
