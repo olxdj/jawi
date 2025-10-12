@@ -63,7 +63,6 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 
         // Main menu text with new bar styles
         let dec = `*╭┈───〔 ${config.BOT_NAME} 〕┈───⊷*
-│
 *├▢ 🤖 Owner:* ${config.OWNER_NAME}
 *├▢ 📜 Commands:* ${totalCommands}
 *├▢ ⏱️ Runtime:* ${runtime(process.uptime())}
@@ -72,9 +71,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 *├▢ 📦 Prefix:* ${config.PREFIX}
 *├▢ ⚙️ Mode:* ${config.MODE}
 *├▢ 🏷️ Version:* 5.0.0 Bᴇᴛᴀ
-│
 *╰───────────────────⊷*
-
 ${menuSections}
 
 > ${config.DESCRIPTION || ''}`;
