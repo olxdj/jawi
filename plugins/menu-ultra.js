@@ -80,13 +80,13 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
     try {
         const { categorized, totalCommands } = getCategorizedCommands();
         
-        // Create menu options from available categories
+        // Create menu options from ALL available categories
         const availableCategories = Object.keys(categorized);
-        const displayedCategories = availableCategories.slice(0, 14); // Only show first 14
         let menuOptions = '';
         let optionNumber = 1;
         
-        displayedCategories.forEach(cat => {
+        // Show ALL categories without limiting to 14
+        availableCategories.forEach(cat => {
             // Capitalize first letter of category
             const displayName = cat.charAt(0).toUpperCase() + cat.slice(1);
             menuOptions += `*├▢ ${optionNumber}. ${displayName} Menu*\n`;
@@ -104,7 +104,7 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *╭───⬡ SELECT MENU ⬡───*
 ${menuOptions}*╰───────────────────⊷*
 
-> *ʀᴇᴘʟʏ ᴡɪᴛʜ ᴛʜᴇ ɴᴜᴍʙᴇʀ ᴛᴏ sᴇʟᴇᴄᴛ ᴍᴇɴᴜ (1-${displayedCategories.length})*`;
+> *ʀᴇᴘʟʏ ᴡɪᴛʜ ᴛʜᴇ ɴᴜᴍʙᴇʀ ᴛᴏ sᴇʟᴇᴄᴛ ᴍᴇɴᴜ (1-${availableCategories.length})*`;
 
         // Send menu image with caption
         const sentMsg = await conn.sendMessage(from, {
@@ -141,8 +141,8 @@ ${menuOptions}*╰───────────────────⊷*
                 });
 
                 const selectedNumber = parseInt(receivedText);
-                if (selectedNumber >= 1 && selectedNumber <= displayedCategories.length) {
-                    const selectedCategory = displayedCategories[selectedNumber - 1];
+                if (selectedNumber >= 1 && selectedNumber <= availableCategories.length) {
+                    const selectedCategory = availableCategories[selectedNumber - 1];
                     const categoryCommands = categorized[selectedCategory];
                     
                     // Capitalize first letter for display
@@ -165,7 +165,7 @@ ${menuOptions}*╰───────────────────⊷*
                     }, { quoted: receivedMsg });
                 } else {
                     await conn.sendMessage(senderID, {
-                        text: `❌ *Invalid selection! Please reply with a valid number (1-${displayedCategories.length}).*`,
+                        text: `❌ *Invalid selection! Please reply with a valid number (1-${availableCategories.length}).*`,
                         contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                     }, { quoted: receivedMsg });
                 }
