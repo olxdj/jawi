@@ -19,7 +19,7 @@ cmd({
   alias: ["edit", "editimg"],
   react: '🧠',
   desc: "Edit image using AI with a custom prompt",
-  category: "img_edit",
+  category: "utility",
   use: ".imix <prompt> [reply to image]",
   filename: __filename
 }, async (conn, message, m, { reply, text }) => {
