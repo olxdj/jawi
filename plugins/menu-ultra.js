@@ -70,7 +70,6 @@ const getCategorizedCommands = () => {
 
 cmd({
     pattern: "menu",
-    alias: ["m", "help"],
     desc: "Show all bot commands in selection menu",
     category: "menu",
     react: "⚡",
@@ -82,10 +81,11 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
         
         // Create menu options from available categories
         const availableCategories = Object.keys(categorized);
+        const displayedCategories = availableCategories.slice(0, 14); // Only show first 14
         let menuOptions = '';
         let optionNumber = 1;
         
-        availableCategories.slice(0, 14).forEach(cat => {
+        displayedCategories.forEach(cat => {
             // Capitalize first letter of category
             const displayName = cat.charAt(0).toUpperCase() + cat.slice(1);
             menuOptions += `*├▢ ${optionNumber}. ${displayName} Menu*\n`;
@@ -100,11 +100,10 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
 *├▢ 📜 Plugins:* ${totalCommands}
 *├▢ ⏰ Runtime:* ${runtime(process.uptime())}
 *╰───────────────────⊷*
-
 *╭───⬡ SELECT MENU ⬡───*
 ${menuOptions}*╰───────────────────⊷*
 
-> *ʀᴇᴘʟʏ ᴡɪᴛʜ ᴛʜᴇ ɴᴜᴍʙᴇʀ ᴛᴏ sᴇʟᴇᴄᴛ ᴍᴇɴᴜ (1-${availableCategories.length})*`;
+> *ʀᴇᴘʟʏ ᴡɪᴛʜ ᴛʜᴇ ɴᴜᴍʙᴇʀ ᴛᴏ sᴇʟᴇᴄᴛ ᴍᴇɴᴜ (1-${displayedCategories.length})*`;
 
         // Send menu image with caption
         const sentMsg = await conn.sendMessage(from, {
@@ -126,7 +125,6 @@ ${menuOptions}*╰───────────────────⊷*
         }
 
         const messageID = sentMsg.key.id;
-        const menuCategories = availableCategories.slice(0, 14);
 
         conn.ev.on("messages.upsert", async (msgData) => {
             const receivedMsg = msgData.messages[0];
@@ -142,8 +140,8 @@ ${menuOptions}*╰───────────────────⊷*
                 });
 
                 const selectedNumber = parseInt(receivedText);
-                if (selectedNumber >= 1 && selectedNumber <= menuCategories.length) {
-                    const selectedCategory = menuCategories[selectedNumber - 1];
+                if (selectedNumber >= 1 && selectedNumber <= displayedCategories.length) {
+                    const selectedCategory = displayedCategories[selectedNumber - 1];
                     const categoryCommands = categorized[selectedCategory];
                     
                     // Capitalize first letter for display
@@ -166,7 +164,7 @@ ${menuOptions}*╰───────────────────⊷*
                     }, { quoted: receivedMsg });
                 } else {
                     await conn.sendMessage(senderID, {
-                        text: "❌ *Invalid selection! Please use .menu again to select a valid number.*",
+                        text: `❌ *Invalid selection! Please reply with a valid number (1-${displayedCategories.length}).*`,
                         contextInfo: commonContextInfo(receivedMsg.key.participant || receivedMsg.key.remoteJid)
                     }, { quoted: receivedMsg });
                 }
