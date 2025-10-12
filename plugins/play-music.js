@@ -12,7 +12,7 @@ cmd({
   alias: ['play3', "music"],
   react: '🎶',
   desc: "Download YouTube song",
-  category: "media",
+  category: "download",
   use: ".song <song name or YouTube link>",
   filename: __filename
 }, async (message, match, mek, { from, sender, reply, q }) => {
