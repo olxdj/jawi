@@ -6,7 +6,7 @@ cmd({
     pattern: "list",
     alias: ["listcmd", "commands"],
     desc: "Show all available commands with descriptions",
-    category: "menu",
+    category: "main",
     react: "📜",
     filename: __filename
 }, async (conn, mek, m, { from, reply }) => {
