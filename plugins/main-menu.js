@@ -41,7 +41,7 @@ cmd({
     alias: ["allmenu","fullmenu"],
     use: '.menu2',
     desc: "Show all bot commands",
-    category: "menu",
+    category: "main",
     react: "📜",
     filename: __filename
 },
