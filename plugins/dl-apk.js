@@ -28,7 +28,7 @@ async (conn, mek, m, { from, q, reply }) => {
         // Send info message with thumbnail
         const infoMsg = await conn.sendMessage(from, {
             image: { url: app.image },
-            caption: `📱 *${app.name}*\n\n📦 Package: ${app.package}\n📅 Last Update: ${app.lastUpdate}\n💾 Size: ${app.size}\n\n_Powered by Dark Yasiya API_`
+            caption: `📱 *${app.name}*\n\n📦 Package: ${app.package}\n📅 Last Update: ${app.lastUpdate}\n💾 Size: ${app.size}\n\n_Powered by KHAN-MD-BOT_`
         }, { quoted: mek });
 
         // Send APK file as reply to the info message
@@ -36,7 +36,7 @@ async (conn, mek, m, { from, q, reply }) => {
             document: { url: app.dl_link },
             mimetype: "application/vnd.android.package-archive",
             fileName: `${app.name}.apk`
-        }, { quoted: infoMsg });
+        }, { quoted: mek });
 
         // ✅ React - success
         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
