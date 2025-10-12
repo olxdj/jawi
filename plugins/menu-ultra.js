@@ -72,7 +72,7 @@ cmd({
     pattern: "menu",
     alias: ["m", "help"],
     desc: "Show all bot commands in selection menu",
-    category: "menu",
+    category: "main",
     react: "⚡",
     filename: __filename
 },
