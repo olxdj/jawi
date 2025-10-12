@@ -9,7 +9,7 @@ cmd({
     alias: ["mega", "meganz"],
     react: "📦",
     desc: "Download ZIP or any file from Mega.nz",
-    category: "downloader",
+    category: "download",
     use: '.megadl <mega file link>',
     filename: __filename
 },
