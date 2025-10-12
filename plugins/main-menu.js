@@ -22,8 +22,13 @@ const toSmallCaps = (text) => {
 
 // Format category with your exact styles
 const formatCategory = (category, cmds) => {
+    // Filter out commands with empty or undefined patterns
+    const validCmds = cmds.filter(cmd => cmd.pattern && cmd.pattern.trim() !== '');
+    
+    if (validCmds.length === 0) return ''; // Skip empty categories
+    
     let title = `\n\`『 ${category.toUpperCase()} 』\`\n╭───────────────────⊷\n`;
-    let body = cmds.map(cmd => {
+    let body = validCmds.map(cmd => {
         const commandName = cmd.pattern || '';
         return `*┋ ⬡ ${toSmallCaps(commandName)}*`;
     }).join('\n');
@@ -44,20 +49,30 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
     try {
         let totalCommands = Object.keys(commands).length;
         
-        // Get all unique categories
-        const categories = [...new Set(Object.values(commands).map(c => c.category))].filter(Boolean);
+        // Get all unique categories and filter out undefined/null categories
+        const categories = [...new Set(Object.values(commands).map(c => c.category))].filter(cat => 
+            cat && cat.trim() !== '' && cat !== 'undefined'
+        );
         
-        // Organize commands by category
+        // Organize commands by category and filter out empty categories
         const categorized = {};
         categories.forEach(cat => {
-            categorized[cat] = Object.values(commands).filter(c => c.category === cat);
+            const categoryCommands = Object.values(commands).filter(c => c.category === cat);
+            // Only add category if it has valid commands
+            const validCommands = categoryCommands.filter(cmd => cmd.pattern && cmd.pattern.trim() !== '');
+            if (validCommands.length > 0) {
+                categorized[cat] = validCommands;
+            }
         });
 
-        // Build menu sections
+        // Build menu sections - only for categories that have commands
         let menuSections = '';
         for (const [category, cmds] of Object.entries(categorized)) {
             if (cmds && cmds.length > 0) {
-                menuSections += formatCategory(category, cmds);
+                const section = formatCategory(category, cmds);
+                if (section !== '') {
+                    menuSections += section;
+                }
             }
         }
 
