@@ -70,6 +70,7 @@ const getCategorizedCommands = () => {
 
 cmd({
     pattern: "menu",
+    alias: ["m", "help"],
     desc: "Show all bot commands in selection menu",
     category: "menu",
     react: "⚡",
