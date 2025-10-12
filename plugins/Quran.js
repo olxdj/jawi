@@ -89,7 +89,7 @@ cmd({
     pattern: "quranmenu",
     alias: ["surahmenu", "surahlist"],
     desc: "menu the bot",
-    category: "menu",
+    category: "main",
     react: "❤️",
     filename: __filename
 }, 
