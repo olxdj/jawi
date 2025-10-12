@@ -12,7 +12,7 @@ cmd({
     alias: ["texttomusic", "ttm", "aimusic"],
     react: "🎵",
     desc: "Generate music from text prompt",
-    category: "AI",
+    category: "ai",
     use: ".music <prompt>",
     filename: __filename
 }, async (conn, m, mek, { from, q, reply }) => {
