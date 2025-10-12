@@ -8,6 +8,7 @@ const axios = require('axios')
 
 // Helper function for small caps text
 const toSmallCaps = (text) => {
+    if (!text || typeof text !== 'string') return '';
     const smallCapsMap = {
         'a': 'ᴀ', 'b': 'ʙ', 'c': 'ᴄ', 'd': 'ᴅ', 'e': 'ᴇ', 'f': 'ғ', 'g': 'ɢ', 'h': 'ʜ', 'i': 'ɪ',
         'j': 'ᴊ', 'k': 'ᴋ', 'l': 'ʟ', 'm': 'ᴍ', 'n': 'ɴ', 'o': 'ᴏ', 'p': 'ᴘ', 'q': 'ǫ', 'r': 'ʀ',
@@ -22,7 +23,10 @@ const toSmallCaps = (text) => {
 // Format category with your exact styles
 const formatCategory = (category, cmds) => {
     let title = `\n\`『 ${category.toUpperCase()} 』\`\n╭───────────────────⊷\n`;
-    let body = cmds.map(cmd => `*┋ ⬡ ${toSmallCaps(cmd.pattern)}*`).join('\n');
+    let body = cmds.map(cmd => {
+        const commandName = cmd.pattern || '';
+        return `*┋ ⬡ ${toSmallCaps(commandName)}*`;
+    }).join('\n');
     let footer = `\n╰───────────────────⊷`;
     return `${title}${body}${footer}`;
 };
@@ -52,11 +56,14 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
         // Build menu sections
         let menuSections = '';
         for (const [category, cmds] of Object.entries(categorized)) {
-            menuSections += formatCategory(category, cmds);
+            if (cmds && cmds.length > 0) {
+                menuSections += formatCategory(category, cmds);
+            }
         }
 
-        // Main menu text with your exact header style
-        let dec = `*╭────⬡ ${config.BOT_NAME} ⬡────⭓* 
+        // Main menu text with new bar styles
+        let dec = `*╭┈───〔 ${config.BOT_NAME} 〕┈───⊷*
+│
 *├▢ 🤖 Owner:* ${config.OWNER_NAME}
 *├▢ 📜 Commands:* ${totalCommands}
 *├▢ ⏱️ Runtime:* ${runtime(process.uptime())}
@@ -65,11 +72,12 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 *├▢ 📦 Prefix:* ${config.PREFIX}
 *├▢ ⚙️ Mode:* ${config.MODE}
 *├▢ 🏷️ Version:* 5.0.0 Bᴇᴛᴀ
-*╰─────────────────⭓*
+│
+*╰───────────────────⊷*
 
 ${menuSections}
 
-> ${config.DESCRIPTION}`;
+> ${config.DESCRIPTION || ''}`;
 
         await conn.sendMessage(from, { 
             image: { url: config.MENU_IMAGE_URL || 'https://files.catbox.moe/7zfdcq.jpg' }, 
