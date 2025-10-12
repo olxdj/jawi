@@ -93,7 +93,7 @@ cmd({
     pattern: "video2",
     alias: ["ytv"],
     desc: "Download YouTube videos",
-    category: "downloader",
+    category: "download",
     react: "📹",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
