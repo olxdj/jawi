@@ -8,7 +8,7 @@ const fs = require('fs');
 cmd({
     pattern: "menu3",
     desc: "menu the bot",
-    category: "menu2",
+    category: "main",
     react: "⚡",
     filename: __filename
 },
@@ -193,7 +193,7 @@ cmd({
     pattern: "logo",
     alias: ["logomenu"],
     desc: "menu the bot",
-    category: "menu",
+    category: "main",
     react: "🧃",
     filename: __filename
 }, 
@@ -263,7 +263,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 cmd({
     pattern: "reactions",
     desc: "Shows the reaction commands",
-    category: "menu",
+    category: "main",
     react: "💫",
     filename: __filename
 }, 
@@ -331,7 +331,7 @@ async (conn, mek, m, { from, quoted, reply }) => {
 cmd({
     pattern: "dlmenu",
     desc: "menu the bot",
-    category: "menu",
+    category: "main",
     react: "⤵️",
     filename: __filename
 }, 
@@ -414,7 +414,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 cmd({
     pattern: "groupmenu",
     desc: "menu the bot",
-    category: "menu",
+    category: "main",
     react: "⤵️",
     filename: __filename
 }, 
@@ -492,7 +492,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 cmd({
     pattern: "funmenu",
     desc: "menu the bot",
-    category: "menu",
+    category: "main",
     react: "😎",
     filename: __filename
 }, 
@@ -559,7 +559,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 cmd({
     pattern: "othermenu",
     desc: "menu the bot",
-    category: "menu",
+    category: "main",
     react: "🤖",
     filename: __filename
 }, 
@@ -630,7 +630,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 cmd({
     pattern: "mainmenu",
     desc: "menu the bot",
-    category: "menu",
+    category: "main",
     react: "🗿",
     filename: __filename
 }, 
@@ -682,7 +682,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 cmd({
     pattern: "ownermenu",
     desc: "menu the bot",
-    category: "menu",
+    category: "main",
     react: "🔰",
     filename: __filename
 }, 
@@ -741,7 +741,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 cmd({
     pattern: "convertmenu",
     desc: "menu the bot",
-    category: "menu",
+    category: "main",
     react: "🥀",
     filename: __filename
 }, 
@@ -803,7 +803,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 cmd({
     pattern: "animemenu",
     desc: "menu the bot",
-    category: "menu",
+    category: "main",
     react: "🧚",
     filename: __filename
 }, 
@@ -872,7 +872,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 cmd({
     pattern: "aimenu",
     desc: "menu the bot",
-    category: "menu",
+    category: "main",
     react: "🤖",
     filename: __filename
 }, 
