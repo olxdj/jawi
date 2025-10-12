@@ -6,7 +6,7 @@ cmd({
     alias: ["instagram", "insta", "ig"],
     react: "⬇️",
     desc: "Download Instagram videos/reels",
-    category: "downloader",
+    category: "download",
     use: ".igdl <Instagram URL>",
     filename: __filename
 }, async (conn, mek, m, { from, reply, args, q }) => {
@@ -152,7 +152,7 @@ cmd({
     pattern: "ig3",
     alias: ["insta3", "instagram3"],
     desc: "Download Instagram video",
-    category: "downloader",
+    category: "download",
     react: "⤵️",
     filename: __filename
 },
