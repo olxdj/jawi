@@ -10,7 +10,7 @@ cmd({
   alias: ['addplugin','installplugin'],
   react: '📥',
   desc: 'Install plugins from Gist URLs',
-  category: 'plugin',
+  category: 'tools',
   filename: __filename,
   use: '<gist_url>',
   owner: true
@@ -58,7 +58,7 @@ cmd({
   alias: ['listplugins'],
   react: '️✳️',
   desc: 'List installed plugins',
-  category: 'plugin',
+  category: 'tools',
   filename: __filename
 }, async (conn, mek, m, { reply }) => {
   try {
@@ -85,7 +85,7 @@ cmd({
   alias: ['removeplugin', 'uninstall'],
   react: '🗑️',
   desc: 'Delete an installed plugin',
-  category: 'plugin',
+  category: 'tools',
   filename: __filename,
   use: '<plugin_name>',
   owner: true
