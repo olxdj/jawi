@@ -47,51 +47,6 @@ cmd({
     }
 });
 
-// Play command 2
-cmd({
-    pattern: "jawi",
-    alias: ["muski", "yt"],
-    desc: "Download YouTube songs - API 2",
-    category: "downloader",
-    react: "🎵",
-    filename: __filename
-}, async (conn, mek, m, { from, q, reply }) => {
-    try {
-        if (!q) return await reply("🎶 Please provide song name!\n\nExample: .play2 Faded");
-        
-        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
-
-        const { videos } = await yts(q);
-        if (!videos || videos.length === 0) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return await reply("❌ No results found!");
-        }
-
-        const vid = videos[0];
-        const api = `https://apis-keith.vercel.app/download/yta?url=${encodeURIComponent(vid.url)}`;
-        const res = await axios.get(api);
-        const json = res.data;
-
-        if (!json?.success || !json?.result) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return await reply("❌ Download failed! Try again later.");
-        }
-
-        await conn.sendMessage(from, {
-            audio: { url: json.result },
-            mimetype: "audio/mpeg",
-            fileName: `${vid.title}.mp3`
-        }, { quoted: mek });
-
-        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
-
-    } catch (e) {
-        console.error("Error in .play2:", e);
-        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        await reply("❌ Error occurred, try again later!");
-    }
-});
-
 cmd({
   pattern: "play2",
   alias: ["music", "song"],
