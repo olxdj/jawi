@@ -9,7 +9,7 @@ cmd({
     pattern: "privacy",
     alias: ["privacymenu"],
     desc: "Privacy settings menu",
-    category: "privacy",
+    category: "setting",
     react: "🔐",
     filename: __filename
 }, 
@@ -67,7 +67,7 @@ async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sen
 cmd({
     pattern: "blocklist",
     desc: "View the list of blocked users.",
-    category: "privacy",
+    category: "setting",
     react: "📋",
     filename: __filename
 },
@@ -98,7 +98,7 @@ async (conn, mek, m, { from, isCreator, reply }) => {
 cmd({
     pattern: "getbio",
     desc: "Displays the user's bio.",
-    category: "privacy",
+    category: "setting",
     filename: __filename,
 }, async (conn, mek, m, { args, reply }) => {
     try {
@@ -114,7 +114,7 @@ cmd({
 cmd({
     pattern: "setppall",
     desc: "Update Profile Picture Privacy",
-    category: "privacy",
+    category: "setting",
     react: "🔐",
     filename: __filename
 }, 
@@ -138,7 +138,7 @@ async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, 
 cmd({
     pattern: "setonline",
     desc: "Update Online Privacy",
-    category: "privacy",
+    category: "setting",
     react: "🔐",
     filename: __filename
 }, 
@@ -161,38 +161,9 @@ async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, 
 });
 
 cmd({
-    pattern: "setpp",
-    desc: "Set bot profile picture.",
-    category: "privacy",
-    react: "🖼️",
-    filename: __filename
-},
-async (conn, mek, m, { from, isCreator, quoted, reply }) => {
-    if (!isCreator) return reply("❌ You are not the owner!");
-    if (!quoted || !quoted.message.imageMessage) return reply("❌ Please reply to an image.");
-    try {
-        const stream = await downloadContentFromMessage(quoted.message.imageMessage, 'image');
-        let buffer = Buffer.from([]);
-        for await (const chunk of stream) {
-            buffer = Buffer.concat([buffer, chunk]);
-        }
-
-        const mediaPath = path.join(__dirname, `${Date.now()}.jpg`);
-        fs.writeFileSync(mediaPath, buffer);
-
-        // Update profile picture with the saved file
-        await conn.updateProfilePicture(conn.user.jid, { url: `file://${mediaPath}` });
-        reply("🖼️ Profile picture updated successfully!");
-    } catch (error) {
-        console.error("Error updating profile picture:", error);
-        reply(`❌ Error updating profile picture: ${error.message}`);
-    }
-});
-
-cmd({
-    pattern: "setmyname",
+    pattern: "setname",
     desc: "Set your WhatsApp display name.",
-    category: "privacy",
+    category: "setting",
     react: "⚙️",
     filename: __filename
 },
@@ -226,7 +197,7 @@ cmd({
     pattern: "updatebio",
     react: "🥏",
     desc: "Change the Bot number Bio.",
-    category: "privacy",
+    category: "setting",
     use: '.updatebio',
     filename: __filename
 },
@@ -245,7 +216,7 @@ async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, 
 cmd({
     pattern: "groupsprivacy",
     desc: "Update Group Add Privacy",
-    category: "privacy",
+    category: "setting",
     react: "🔐",
     filename: __filename
 }, 
@@ -270,7 +241,7 @@ async (conn, mek, m, { from, l, quoted, body, isCmd, command, args, q, isGroup, 
 cmd({
     pattern: "getprivacy",
     desc: "Get the bot Number Privacy Setting Updates.",
-    category: "privacy",
+    category: "setting",
     use: '.getprivacy',
     filename: __filename
 },
