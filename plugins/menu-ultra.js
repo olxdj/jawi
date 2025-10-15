@@ -42,7 +42,8 @@ const formatMenuOptions = (categories) => {
     categories.forEach(cat => {
         // Capitalize first letter of category and convert to small caps
         const displayName = toSmallCaps(cat.charAt(0).toUpperCase() + cat.slice(1));
-        menuOptions += `*┋ ⬡ ${optionNumber}. ${displayName}*\n`;
+        const menuText = toSmallCaps(' Menu'); // Add "Menu" in small caps
+        menuOptions += `*┋ ⬡ ${optionNumber}. ${displayName}${menuText}*\n`;
         optionNumber++;
     });
     
