@@ -128,7 +128,7 @@ cmd({
     alias: ["setmode", "mod"],
     react: "✅",
     desc: "Set bot mode to private or public.",
-    category: "settings",
+    category: "setting",
     filename: __filename,
 }, async (conn, mek, m, { args, isCreator, reply }) => {
     if (!isCreator) return reply("*📛 Only the owner can use this command!*");
@@ -247,7 +247,7 @@ cmd({
   alias: ["setwelcome"],
   react: "👋",
   desc: "Enable or disable welcome messages for new members",
-  category: "settings",
+  category: "setting",
   filename: __filename
 }, async (conn, mek, m, { from, args, isCreator, reply }) => {
   try {
@@ -314,7 +314,7 @@ cmd({
     alias: ["auto-typing", "typing"],
     react: "🫟",
     description: "Enable or disable auto-typing feature.",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -336,7 +336,7 @@ cmd({
     alias: ["online", "always-online"],
     react: "🫟",
     desc: "Enable or disable auto-viewing of statuses",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -362,7 +362,7 @@ cmd({
     alias: ["recoding", "auto-recoding"],
     react: "🫟",
     desc: "Enable or disable auto-viewing of statuses",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -388,7 +388,7 @@ cmd({
     alias: ["status-react", "statusreact", "sreact"],
     react: "🫟",
     desc: "Enable or disable auto-viewing of statuses",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -414,7 +414,7 @@ cmd({
     pattern: "autostatusview",
     alias: ["status-view","sview","statusview"],
     desc: "Enable or disable autoview of statuses",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -440,7 +440,7 @@ cmd({
     pattern: "read-message",
     alias: ["autoread"],
     desc: "enable or disable readmessage.",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -468,7 +468,7 @@ cmd({
     react: "🫟",
     alias: ["antibadword"],
     desc: "enable or disable antibad.",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -495,7 +495,7 @@ cmd({
     react: "🫟",
     alias: ["autosticker"],
     desc: "enable or disable auto-sticker.",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -522,7 +522,7 @@ cmd({
     react: "🫟",
     alias: ["autoreply"],
     desc: "enable or disable auto-reply.",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -550,7 +550,7 @@ cmd({
     react: "🫟",
     alias: ["autoreact"],
     desc: "Enable or disable the autoreact feature",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -577,7 +577,7 @@ cmd({
     react: "🫟",
     alias: ["statusreply", "status-reply"],
     desc: "enable or disable status-reply.",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -602,7 +602,7 @@ cmd({
     pattern: "mention-reply",
     alias: ["menetionreply", "mee"],
     description: "Set bot status to always online or offline.",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -626,7 +626,7 @@ cmd({
     pattern: "admin-events",
     alias: ["adminevents", "adminaction"],
     desc: "Enable or disable admin event notifications",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -649,7 +649,7 @@ cmd({
     alias: ["owner-react", "selfreact", "self-react"],
     react: "👑",
     desc: "Enable or disable the owner react feature",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },    
 async (conn, mek, m, { from, args, isCreator, reply }) => {
@@ -702,7 +702,7 @@ cmd({
     alias: ["creact", "reactc"],
     react: "😎",
     desc: "Enable or disable custom reactions",
-    category: "settings",
+    category: "setting",
     filename: __filename
 },
 async (conn, mek, m, { from, args, isCreator, reply }) => {
