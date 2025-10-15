@@ -1015,6 +1015,7 @@ cmd(
 cmd(
     {
         pattern: "kiss",
+        alias: ["chumi"],
         desc: "Send a kiss reaction GIF.",
         category: "fun",
         react: "💋",
@@ -1037,7 +1038,7 @@ cmd(
                 message = `> © Powered By JawadTechX 🖤`;
             }
 
-            const apiUrl = "https://api.waifu.pics/sfw/kiss";
+            const apiUrl = "https://okatsu-rolezapiiz.vercel.app/anime/kiss";
             let res = await axios.get(apiUrl);
             let gifUrl = res.data.url;
 
