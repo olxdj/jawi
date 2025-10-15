@@ -1,3 +1,4 @@
+const { cmd } = require('../command');
 const axios = require("axios");
 const yts = require("yt-search");
 const config = require("../config");
