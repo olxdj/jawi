@@ -4,7 +4,7 @@ cmd({
     pattern: "end",
     alias: ["byeall", "kickall", "endgc"],
     desc: "Removes all members (including admins) from the group except specified numbers",
-    category: "admin",
+    category: "group",
     react: "⚠️",
     filename: __filename
 },
