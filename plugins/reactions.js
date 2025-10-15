@@ -1013,46 +1013,54 @@ cmd(
 );
 
 cmd(
-    {
-        pattern: "kiss",
-        alias: ["chumi"],
-        desc: "Send a kiss reaction GIF.",
-        category: "fun",
-        react: "💋",
-        filename: __filename,
-        use: "@tag (optional)",
-    },
-    async (conn, mek, m, { args, q, reply }) => {
-        try {
-            let sender = `@${mek.sender.split("@")[0]}`;
-            let mentionedUser = m.mentionedJid[0] || (mek.quoted && mek.quoted.sender);
-            let isGroup = m.isGroup;
+  {
+    pattern: "kiss",
+    alias: ["chumi"],
+    desc: "Send a kiss reaction GIF.",
+    category: "fun",
+    react: "💋",
+    filename: __filename,
+    use: "@tag (optional)",
+  },
+  async (conn, mek, m, { reply }) => {
+    try {
+      const sender = `@${mek.sender.split("@")[0]}`;
+      const mentionedUser =
+        (m.mentionedJid && m.mentionedJid[0]) ||
+        (mek.quoted && mek.quoted.sender);
 
-            let message;
-            if (mentionedUser) {
-                let target = `@${mentionedUser.split("@")[0]}`;
-                message = `${sender} kissed ${target}`;
-            } else if (isGroup) {
-                message = `${sender} kissed everyone`;
-            } else {
-                message = `> © Powered By JawadTechX 🖤`;
-            }
+      let message;
+      if (mentionedUser) {
+        const target = `@${mentionedUser.split("@")[0]}`;
+        message = `${sender} kissed ${target} 💋`;
+      } else if (m.isGroup) {
+        message = `${sender} kissed everyone 💋`;
+      } else {
+        message = `> 💋 Sending love...\n> © Powered By JawadTechX 🖤`;
+      }
 
-            const apiUrl = "https://okatsu-rolezapiiz.vercel.app/anime/kiss";
-            let res = await axios.get(apiUrl);
-            let gifUrl = res.data.url;
+      // Direct GIF API
+      const { data } = await axios.get(
+        "https://okatsu-rolezapiiz.vercel.app/anime/kiss"
+      );
 
-            let gifBuffer = await fetchGif(gifUrl);
-            let videoBuffer = await gifToVideo(gifBuffer);
+      if (!data?.url)
+        return reply("❌ Failed to fetch kiss GIF. Try again later.");
 
-            await conn.sendMessage(
-                mek.chat,
-                { video: videoBuffer, caption: message, gifPlayback: true, mentions: [mek.sender, mentionedUser].filter(Boolean) },
-                { quoted: mek }
-            );
-        } catch (error) {
-            console.error("❌ Error in .kiss command:", error);
-            reply(`❌ *Error in .kiss command:*\n\`\`\`${error.message}\`\`\``);
-        }
+      await conn.sendMessage(
+        mek.chat,
+        {
+          video: { url: data.url },
+          gifPlayback: true,
+          caption: message,
+          mentions: [mek.sender, mentionedUser].filter(Boolean),
+        },
+        { quoted: mek }
+      );
+    } catch (error) {
+      console.error("❌ Error in .kiss command:", error);
+      reply(`❌ *Error in .kiss command:*\n\`\`\`${error.message}\`\`\``);
     }
+  }
 );
+                          
