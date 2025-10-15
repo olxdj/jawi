@@ -13,7 +13,7 @@ cmd({
     pattern: "chatbot",
     alias: ["aichat", "dj", "khanbot"],
     desc: "Enable or disable AI chatbot responses",
-    category: "settings",
+    category: "ai",
     filename: __filename,
     react: "✅"
 }, async (conn, mek, m, { from, args, isOwner, reply, prefix }) => {
