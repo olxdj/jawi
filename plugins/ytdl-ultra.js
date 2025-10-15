@@ -5,64 +5,63 @@ const yts = require("yt-search");
 cmd({
     pattern: "video",
     alias: ["ytv", "vid", "ytmp4"],
-    desc: "Download YouTube videos",
+    desc: "Download YouTube videos using PrivateZia API",
     category: "downloader",
     react: "📽️",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return await reply("🎬 Please provide a video name or YouTube link!\n\nExample: .video Alan Walker Faded");
+        if (!q) {
+            return await reply("🎬 Please provide a video name or link!\n\nExample: .video Faded Alan Walker");
+        }
 
-        // 🔍 Check if user input is a direct YouTube link
-        const isLink = q.includes("youtube.com") || q.includes("youtu.be");
-        let videoUrl, vid;
+        // 1️⃣ Search on YouTube if not a direct link
+        const isUrl = q.includes("youtube.com") || q.includes("youtu.be");
+        let videoUrl = q;
+        let vid = null;
 
-        if (isLink) {
-            // Direct link — no search
-            videoUrl = q.trim();
-            const { videos } = await yts(videoUrl);
-            vid = videos[0] || { title: "YouTube Video", thumbnail: "https://i.imgur.com/8Y4M3zD.png" };
-        } else {
-            // Search YouTube for the first result
+        if (!isUrl) {
             const { videos } = await yts(q);
             if (!videos || videos.length === 0) return await reply("❌ No results found!");
             vid = videos[0];
             videoUrl = vid.url;
         }
 
-        const api = `https://apis-keith.vercel.app/download/video?url=${encodeURIComponent(videoUrl)}`;
+        const api = `https://api.privatezia.biz.id/api/downloader/ytmp4?url=${encodeURIComponent(videoUrl)}`;
 
-        // 🖼️ Send thumbnail & video info before download
-        await conn.sendMessage(from, {
-            image: { url: vid.thumbnail },
-            caption: `🎬 *${vid.title}*\n\n👤 *Channel:* ${vid.author?.name || "Unknown"}\n👁️ *Views:* ${vid.views || "N/A"}\n⏱️ *Duration:* ${vid.timestamp || "Unknown"}\n📅 *Uploaded:* ${vid.ago || "N/A"}\n\n📥 *Status:* Downloading...`
-        }, { quoted: mek });
-
-        // 🌐 Fetch video link
+        // 2️⃣ Fetch video details from API
         const res = await axios.get(api);
         const json = res.data;
 
-        if (!json?.status || !json?.result) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return await reply("❌ Failed to download video. Please try again later.");
+        if (!json?.status || !json?.result?.downloadUrl) {
+            return await reply("❌ Failed to fetch video data. Please try again later.");
         }
 
-        const videoDownloadUrl = json.result;
+        const result = json.result;
 
-        // 📽️ Send video directly
+        // 3️⃣ Send video details (thumbnail + info)
         await conn.sendMessage(from, {
-            video: { url: videoDownloadUrl },
+            image: { url: result.thumbnail || (vid ? vid.thumbnail : "") },
+            caption: `🎬 *${result.title || (vid ? vid.title : "Unknown Title")}*\n\n` +
+                     `📏 *Quality:* ${result.quality || "N/A"}\n` +
+                     `⏱️ *Duration:* ${result.duration ? `${result.duration}s` : (vid ? vid.timestamp : "N/A")}\n` +
+                     `👤 *Source:* YouTube\n\n📥 *Status:* Downloading...`
+        }, { quoted: mek });
+
+        // 4️⃣ Send the actual video
+        await conn.sendMessage(from, {
+            video: { url: result.downloadUrl },
             mimetype: "video/mp4",
-            fileName: `${vid.title}.mp4`,
+            fileName: `${result.title || "video"}.mp4`,
             caption: `📥 *Downloaded By KHAN-MD*`
         }, { quoted: mek });
 
-        // ✅ Success react
+        // 5️⃣ React success ✅
         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
 
     } catch (e) {
-        console.error("Error in .video command:", e);
-        await reply("❌ An unexpected error occurred while processing your request!");
+        console.error("Error in .video:", e);
+        await reply("❌ Error occurred while processing your request!");
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
     }
 });
