@@ -4,7 +4,7 @@ cmd({
     pattern: "out",
     alias: ["ck", "🦶"],
     desc: "Removes all members with specific country code from the group",
-    category: "admin",
+    category: "group",
     react: "❌",
     filename: __filename
 },
