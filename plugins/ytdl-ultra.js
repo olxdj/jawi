@@ -4,7 +4,7 @@ const config = require("../config");
 
 cmd({
     pattern: "video",
-    alias: ["ytv", "ytmp4"],
+    alias: ["ytv", "vid", "ytmp4"],
     desc: "Download YouTube videos",
     category: "downloader",
     react: "📽️",
