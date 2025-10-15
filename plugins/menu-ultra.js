@@ -34,6 +34,21 @@ const formatCategory = (category, cmds) => {
     return `${title}${body}${footer}`;
 };
 
+// Format menu options with same font style as category
+const formatMenuOptions = (categories) => {
+    let menuOptions = '';
+    let optionNumber = 1;
+    
+    categories.forEach(cat => {
+        // Capitalize first letter of category and convert to small caps
+        const displayName = toSmallCaps(cat.charAt(0).toUpperCase() + cat.slice(1));
+        menuOptions += `*┋ ⬡ ${optionNumber}. ${displayName}*\n`;
+        optionNumber++;
+    });
+    
+    return menuOptions;
+};
+
 const commonContextInfo = (sender) => ({
     mentionedJid: [sender],
     forwardingScore: 999,
@@ -82,16 +97,7 @@ async (conn, mek, m, { from, sender, pushname, reply }) => {
         
         // Create menu options from ALL available categories
         const availableCategories = Object.keys(categorized);
-        let menuOptions = '';
-        let optionNumber = 1;
-        
-        // Show ALL categories without limiting to 14
-        availableCategories.forEach(cat => {
-            // Capitalize first letter of category
-            const displayName = cat.charAt(0).toUpperCase() + cat.slice(1);
-            menuOptions += `*├▢ ${optionNumber}. ${displayName} Menu*\n`;
-            optionNumber++;
-        });
+        const menuOptions = formatMenuOptions(availableCategories);
 
         const caption = `*╭┈───〔 ${config.BOT_NAME} 〕┈───⊷*
 *├▢ 🇵🇸 Owner:* ${config.OWNER_NAME}
