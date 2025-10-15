@@ -19,7 +19,7 @@ cmd({
   alias: ["invertedit"],
   react: '📸',
   desc: "Scan and remove bg from images",
-  category: "img_edit",
+  category: "media",
   use: ".invert [reply to image]",
   filename: __filename
 }, async (conn, message, m,  { reply, mek }) => {
