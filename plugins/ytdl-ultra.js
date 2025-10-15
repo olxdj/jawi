@@ -5,51 +5,52 @@ const yts = require("yt-search");
 cmd({
     pattern: "video",
     alias: ["ytv", "vid", "ytmp4"],
-    desc: "Download YouTube videos using ZenzzXD API",
+    desc: "Download YouTube videos",
     category: "downloader",
     react: "📽️",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return await reply("🎬 Please provide a video name or link!\n\nExample: .video Faded Alan Walker");
+        if (!q) return await reply("🎬 Please provide a video name or link!\n\nExample: .video Alan Walker Faded");
 
-        // 1️⃣ Search YouTube for the video
+        // 🔍 Search YouTube
         const { videos } = await yts(q);
         if (!videos || videos.length === 0) return await reply("❌ No results found!");
 
         const vid = videos[0];
         const videoUrl = vid.url;
-        const api = `https://api.zenzxz.my.id/api/downloader/ytmp4v2?url=${encodeURIComponent(videoUrl)}&resolution=360`;
+        const api = `https://api.hanggts.xyz/download/ytmp4?url=${encodeURIComponent(videoUrl)}`;
 
-        // 2️⃣ Send video info before downloading
+        // 🖼️ Send thumbnail + info message first
         await conn.sendMessage(from, {
             image: { url: vid.thumbnail },
-            caption: `🎬 *${vid.title}*\n\n👤 *Channel:* ${vid.author.name}\n👁️ *Views:* ${vid.views}\n⏱️ *Duration:* ${vid.timestamp}\n📅 *Uploaded:* ${vid.ago}\n\n📥 *Status:* Fetching download link...`
+            caption: `🎬 *${vid.title}*\n\n👤 *Channel:* ${vid.author.name}\n👁️ *Views:* ${vid.views}\n⏱️ *Duration:* ${vid.timestamp}\n📅 *Uploaded:* ${vid.ago}\n\n📥 *Status:* Downloading...`
         }, { quoted: mek });
 
-        // 3️⃣ Fetch download link from API
+        // 🌐 Fetch video link
         const res = await axios.get(api);
         const json = res.data;
 
-        if (!json?.success || !json?.data?.download_url) {
-            return await reply("❌ Failed to fetch video link! Try again later.");
+        if (!json?.status || !json?.result) {
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            return await reply("❌ Failed to fetch video link. Try again later.");
         }
 
-        const videoData = json.data;
+        const videoDownloadUrl = json.result;
 
-        // 4️⃣ Send the video
+        // 📽️ Send the video
         await conn.sendMessage(from, {
-            video: { url: videoData.download_url },
+            video: { url: videoDownloadUrl },
             mimetype: "video/mp4",
-            fileName: `${videoData.title || vid.title}.mp4`,
-            caption: `🎬 *${videoData.title || vid.title}*\n📺 *Quality:* ${videoData.format}\n💾 *Downloaded By KHAN-MD*`
+            fileName: `${vid.title}.mp4`,
+            caption: `📥 *Downloaded By KHAN-MD*`
         }, { quoted: mek });
 
-        // 5️⃣ React ✅
+        // ✅ React success
         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
 
     } catch (e) {
-        console.error("Error in .video:", e);
+        console.error("Error in .video command:", e);
         await reply("❌ Error occurred while processing your request!");
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
     }
