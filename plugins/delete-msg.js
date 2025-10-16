@@ -42,6 +42,8 @@ cmd({
         });
       } else {
         // Delete for me only (clear from bot's view)
+        // Use current timestamp or message timestamp if available
+        const timestamp = quotedMsg.messageTimestamp || Math.floor(Date.now() / 1000);
         await client.chatModify(
           {
             clear: {
@@ -49,7 +51,7 @@ cmd({
                 {
                   id: quotedMsg.id,
                   fromMe: quotedMsg.fromMe,
-                  timestamp: quotedMsg.messageTimestamp.toString()
+                  timestamp: timestamp.toString()
                 }
               ]
             }
@@ -66,6 +68,8 @@ cmd({
         });
       } else {
         // Others' message in private chat = delete for me only
+        // Use current timestamp or message timestamp if available
+        const timestamp = quotedMsg.messageTimestamp || Math.floor(Date.now() / 1000);
         await client.chatModify(
           {
             clear: {
@@ -73,7 +77,7 @@ cmd({
                 {
                   id: quotedMsg.id,
                   fromMe: quotedMsg.fromMe,
-                  timestamp: quotedMsg.messageTimestamp.toString()
+                  timestamp: timestamp.toString()
                 }
               ]
             }
