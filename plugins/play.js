@@ -7,7 +7,7 @@ cmd({
     pattern: "play",
     alias: ["ytmp3", "yta"],
     desc: "Download YouTube songs",
-    category: "downloader",
+    category: "download",
     react: "🎵",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
