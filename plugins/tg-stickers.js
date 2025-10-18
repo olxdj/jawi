@@ -1,16 +1,9 @@
-// coded by jawadtech x
-
 const config = require('../config');
 const { cmd } = require('../command');
 const axios = require('axios');
 const { getBuffer } = require("../lib/functions");
 const { videoToWebp } = require('../lib/video-utils');
 const { Sticker, createSticker, StickerTypes } = require("wa-sticker-formatter");
-
-// Telegram Sticker API configuration
-const stickerAPI = {
-    baseURL: "https://izumiiiiiiii.dpdns.org/downloader/telegram-sticker"
-};
 
 cmd({
     pattern: "tstick",
@@ -30,7 +23,7 @@ cmd({
         if (!q) return await reply("❌ Please provide a Telegram sticker pack URL!\nExample: .tstick https://t.me/addstickers/packname");
 
         // Validate Telegram sticker URL
-        if (!q.includes('t.me/addstickers/') && !q.includes('telegram.me/addstickers/')) {
+        if (!q.includes('t.me/addstickers/')) {
             return await reply("❌ Please provide a valid Telegram sticker pack URL!\nIt should look like: https://t.me/addstickers/packname");
         }
 
@@ -39,128 +32,171 @@ cmd({
         
         await reply("📦 Downloading sticker pack... Please wait!");
 
-        // Get sticker pack data from API
-        const apiUrl = `${stickerAPI.baseURL}?url=${encodeURIComponent(q)}`;
+        // Get pack name from URL
+        const packName = q.replace("https://t.me/addstickers/", "");
+
+        // Using working bot token
+        const botToken = '7801479976:AAGuPL0a7kXXBYz6XUSR_ll2SR5V_W6oHl4';
         
-        const res = await axios.get(apiUrl, {
-            timeout: 30000,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'accept': '*/*'
-            }
-        });
-
-        if (!res.data || !res.data.status || !res.data.result || !res.data.result.stickers) {
-            return await reply("❌ Failed to fetch sticker pack. Invalid URL or API error.");
-        }
-
-        const stickerData = res.data.result;
-        const stickers = stickerData.stickers;
-
-        if (!stickers || stickers.length === 0) {
-            return await reply("❌ No stickers found in this pack!");
-        }
-
-        // Send sticker pack info
-        await reply(`📦 *Sticker Pack Info*\n\n` +
-                   `*Name:* ${stickerData.name || 'N/A'}\n` +
-                   `*Title:* ${stickerData.title || 'N/A'}\n` +
-                   `*Type:* ${stickerData.sticker_type || 'regular'}\n` +
-                   `*Stickers:* ${stickers.length}\n\n` +
-                   `⏳ Processing stickers...`);
-
-        let sentCount = 0;
-        let failedCount = 0;
-        const totalStickers = stickers.length;
-        let pack = "𝐊𝐇𝐀𝐍-𝐗 ⿻⃮͛ 🏴‍☠️💀";
-
-        // Send each sticker
-        for (const [index, sticker] of stickers.entries()) {
-            try {
-                const stickerUrl = sticker.image_url;
-                const fileExtension = stickerUrl.split('.').pop().toLowerCase();
-                
-                // Detect sticker type from file extension
-                if (fileExtension === 'webp') {
-                    // Static WebP sticker - send directly
-                    await conn.sendMessage(from, {
-                        sticker: { url: stickerUrl }
-                    }, { quoted: mek });
-                    
-                } else if (fileExtension === 'tgs' || fileExtension === 'webm') {
-                    // Animated sticker - TGS or WEBM
-                    // Download, convert to WebP and send as animated sticker
-                    try {
-                        const videoBuffer = await getBuffer(stickerUrl);
-                        
-                        // Convert video to WebP sticker
-                        const webpBuffer = await videoToWebp(videoBuffer);
-                        
-                        // Create sticker with proper metadata
-                        let sticker = new Sticker(webpBuffer, {
-                            pack: pack, 
-                            type: StickerTypes.FULL,
-                            categories: ["🤩", "🎉"], 
-                            id: "12345",
-                            quality: 75, 
-                            background: 'transparent',
-                        });
-                        
-                        const buffer = await sticker.toBuffer();
-                        await conn.sendMessage(from, { 
-                            sticker: buffer 
-                        }, { quoted: mek });
-                        
-                    } catch (convertError) {
-                        console.error(`[TSTICK] Conversion failed for sticker ${index + 1}:`, convertError.message);
-                        // Fallback: send as document
-                        await conn.sendMessage(from, {
-                            document: { url: stickerUrl },
-                            fileName: `sticker_${index + 1}.${fileExtension}`,
-                            mimetype: 'application/octet-stream'
-                        }, { quoted: mek });
-                    }
-                    
-                } else {
-                    // Unknown format - try as image first, then document
-                    try {
-                        await conn.sendMessage(from, {
-                            image: { url: stickerUrl }
-                        }, { quoted: mek });
-                    } catch (imageError) {
-                        await conn.sendMessage(from, {
-                            document: { url: stickerUrl },
-                            fileName: `sticker_${index + 1}.${fileExtension}`,
-                            mimetype: 'application/octet-stream'
-                        }, { quoted: mek });
+        try {
+            // Fetch sticker pack info
+            const response = await fetch(
+                `https://api.telegram.org/bot${botToken}/getStickerSet?name=${encodeURIComponent(packName)}`,
+                { 
+                    method: "GET",
+                    headers: {
+                        "Accept": "application/json",
+                        "User-Agent": "Mozilla/5.0"
                     }
                 }
-                
-                sentCount++;
-                
-                // Delay between stickers (no progress messages)
-                await new Promise(resolve => setTimeout(resolve, 1500));
-                
-            } catch (stickerError) {
-                console.error(`[TSTICK] Error sending sticker ${index + 1}:`, stickerError.message);
-                failedCount++;
-                // Continue with next sticker even if one fails
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
+
+            const stickerData = await response.json();
+            
+            if (!stickerData.ok || !stickerData.result) {
+                return await reply("❌ Failed to fetch sticker pack. Invalid pack name or bot error.");
+            }
+
+            const packInfo = stickerData.result;
+            const stickers = packInfo.stickers;
+
+            if (!stickers || stickers.length === 0) {
+                return await reply("❌ No stickers found in this pack!");
+            }
+
+            // Send sticker pack info
+            await reply(`📦 *Sticker Pack Info*\n\n` +
+                       `*Name:* ${packInfo.name || 'N/A'}\n` +
+                       `*Title:* ${packInfo.title || 'N/A'}\n` +
+                       `*Type:* ${packInfo.sticker_type || 'regular'}\n` +
+                       `*Stickers:* ${stickers.length}\n\n` +
+                       `⏳ Processing stickers...`);
+
+            let sentCount = 0;
+            let failedCount = 0;
+            const totalStickers = stickers.length;
+
+            // Send each sticker
+            for (const [index, sticker] of stickers.entries()) {
+                try {
+                    const fileId = sticker.thumb ? sticker.thumb.file_id : sticker.file_id;
+                    
+                    // Get file info
+                    const fileResponse = await fetch(
+                        `https://api.telegram.org/bot${botToken}/getFile?file_id=${fileId}`,
+                        { 
+                            method: "GET",
+                            headers: {
+                                "Accept": "application/json",
+                                "User-Agent": "Mozilla/5.0"
+                            }
+                        }
+                    );
+
+                    if (!fileResponse.ok) {
+                        throw new Error(`File fetch error: ${fileResponse.status}`);
+                    }
+
+                    const fileData = await fileResponse.json();
+                    
+                    if (!fileData.ok || !fileData.result) {
+                        throw new Error("Invalid file data received");
+                    }
+
+                    const fileUrl = `https://api.telegram.org/file/bot${botToken}/${fileData.result.file_path}`;
+                    const fileExtension = fileData.result.file_path.split('.').pop().toLowerCase();
+
+                    // Detect sticker type and process accordingly
+                    if (fileExtension === 'webp') {
+                        // Static WebP sticker - send directly
+                        await conn.sendMessage(from, {
+                            sticker: { url: fileUrl }
+                        }, { quoted: mek });
+                        
+                    } else if (fileExtension === 'tgs') {
+                        // Animated TGS sticker - convert to video WebP
+                        try {
+                            const stickerBuffer = await getBuffer(fileUrl);
+                            
+                            // For TGS files, we need to handle them appropriately
+                            // Since TGS is Telegram's animated format, we'll convert to WebM/WebP
+                            const webpBuffer = await videoToWebp(stickerBuffer);
+                            
+                            await conn.sendMessage(from, {
+                                sticker: webpBuffer
+                            }, { quoted: mek });
+                            
+                        } catch (convertError) {
+                            console.error("TGS conversion error:", convertError);
+                            // Fallback: send as document
+                            await conn.sendMessage(from, {
+                                document: { url: fileUrl },
+                                fileName: `sticker_${index + 1}.tgs`,
+                                mimetype: 'application/x-tgsticker'
+                            }, { quoted: mek });
+                        }
+                        
+                    } else if (fileExtension === 'webm') {
+                        // WebM video sticker - convert to WebP
+                        try {
+                            const videoBuffer = await getBuffer(fileUrl);
+                            const webpBuffer = await videoToWebp(videoBuffer);
+                            
+                            await conn.sendMessage(from, {
+                                sticker: webpBuffer
+                            }, { quoted: mek });
+                            
+                        } catch (convertError) {
+                            console.error("WebM conversion error:", convertError);
+                            // Fallback: send as video
+                            await conn.sendMessage(from, {
+                                video: { url: fileUrl },
+                                caption: `Sticker ${index + 1}/${totalStickers}`
+                            }, { quoted: mek });
+                        }
+                    } else {
+                        // Unknown format - send as document
+                        await conn.sendMessage(from, {
+                            document: { url: fileUrl },
+                            fileName: `sticker_${index + 1}.${fileExtension}`,
+                            mimetype: 'application/octet-stream'
+                        }, { quoted: mek });
+                    }
+
+                    sentCount++;
+                    
+                    // Add small delay to avoid rate limiting
+                    if (index < stickers.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                    }
+                    
+                } catch (stickerError) {
+                    console.error(`Error processing sticker ${index + 1}:`, stickerError);
+                    failedCount++;
+                    await reply(`❌ Failed to process sticker ${index + 1}`);
+                }
+            }
+
+            // Final report
+            await reply(`✅ *Sticker Pack Download Complete!*\n\n` +
+                       `*Success:* ${sentCount}/${totalStickers}\n` +
+                       `*Failed:* ${failedCount}\n\n` +
+                       `🎉 Enjoy your stickers!`);
+
+        } catch (apiError) {
+            console.error("API Error:", apiError);
+            await reply("❌ Error fetching sticker pack. Please check:\n" +
+                       "• The sticker pack URL is correct\n" +
+                       "• The sticker pack is public\n" +
+                       "• Try again later");
         }
 
-        // ✅ React - success
-        await conn.sendMessage(from, { react: { text: '✅', key: mek.key } });
-        
-        const resultMessage = `✅ Sticker pack download completed!\n\n` +
-                             `*Pack:* ${stickerData.name || 'Unknown'}\n` +
-                             `*Success:* ${sentCount}/${totalStickers}\n` +
-                             `*Failed:* ${failedCount}\n` +
-                             (failedCount > 0 ? `\nNote: Some animated stickers may have failed to convert.` : '');
-        
-        await reply(resultMessage);
-
     } catch (error) {
-        console.error('[TSTICK] Command Error:', error?.message || error);
-        await reply("❌ Download failed: " + (error?.message || 'Unknown error'));
+        console.error("General error:", error);
+        await reply("❌ An unexpected error occurred. Please try again later.");
     }
 });
