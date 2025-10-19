@@ -47,7 +47,6 @@ cmd({
 ───────────────────────────────*/
 cmd({
     pattern: "play",
-    alias: ["ytmp3", "yta"],
     desc: "Download YouTube audio using updated API",
     category: "downloader",
     react: "🎧",
