@@ -87,7 +87,6 @@ cmd({
 ───────────────────────────────*/
 cmd({
     pattern: "play2",
-    alias: ["song", "music"],
     desc: "Download YouTube audio with thumbnail (JawadTech API)",
     category: "downloader",
     react: "🎶",
