@@ -1,8 +1,10 @@
-const config = require('../config');
 const { cmd } = require('../command');
-const yts = require('yt-search');
 const axios = require('axios');
+const yts = require('yt-search');
 
+/*───────────────────────────────
+ 🔹 1. .play — Old API Version
+───────────────────────────────*/
 cmd({
     pattern: "play",
     alias: ["ytmp3", "yta"],
@@ -14,7 +16,6 @@ cmd({
     try {
         if (!q) return await reply("🎶 Please provide song name!\n\nExample: .play Moye Moye");
 
-        // 🔍 Search on YouTube
         const { videos } = await yts(q);
         if (!videos || videos.length === 0) return await reply("❌ No results found!");
 
@@ -23,69 +24,110 @@ cmd({
         const res = await axios.get(api);
         const json = res.data;
 
-        // ⚠️ Check valid response
-        if (!json?.status || !json?.result) {
-            return await reply("❌ Download failed! Try again later.");
-        }
+        if (!json?.status || !json?.result) return await reply("❌ Download failed! Try again later.");
 
         const audioUrl = json.result;
         const title = vid.title || "Unknown Song";
 
-        // 🎧 Send the MP3
         await conn.sendMessage(from, {
             audio: { url: audioUrl },
             mimetype: "audio/mpeg",
-            fileName: `${title}.mp3`,
-            caption: `🎶 *${title}*\n\n📦 Powered by *JawadTechX*`
+            fileName: `${title}.mp3`
         }, { quoted: mek });
 
-        // ✅ React success
         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
-
     } catch (e) {
         console.error("Error in .play:", e);
+        await reply("❌ Error occurred, try again later!");
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+    }
+});
+
+/*───────────────────────────────
+ 🔹 2. .play2 — New Keith Audio API
+───────────────────────────────*/
+cmd({
+    pattern: "play2",
+    alias: ["ytmp32", "yta2"],
+    desc: "Download YouTube audio using updated API",
+    category: "downloader",
+    react: "🎧",
+    filename: __filename
+}, async (conn, mek, m, { from, q, reply }) => {
+    try {
+        if (!q) return await reply("🎵 Please provide a song name!\n\nExample: .play2 Faded Alan Walker");
+
+        const { videos } = await yts(q);
+        if (!videos || videos.length === 0) return await reply("❌ No results found!");
+
+        const vid = videos[0];
+        const api = `https://apis-keith.vercel.app/download/audio?url=${encodeURIComponent(vid.url)}`;
+        const res = await axios.get(api);
+        const json = res.data;
+
+        if (!json?.status || !json?.result) return await reply("❌ Download failed! Try again later.");
+
+        const audioUrl = json.result;
+        const title = vid.title || "Unknown Song";
+
+        await conn.sendMessage(from, {
+            audio: { url: audioUrl },
+            mimetype: "audio/mpeg",
+            fileName: `${title}.mp3`
+        }, { quoted: mek });
+
+        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+    } catch (e) {
+        console.error("Error in .play2:", e);
         await reply("❌ Error occurred, please try again later!");
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
     }
 });
 
+/*───────────────────────────────
+ 🔹 3. .play3 — JawadTech API + Thumbnail (No caption on audio)
+───────────────────────────────*/
 cmd({
-  pattern: "play2",
-  alias: ["music", "song"],
-  desc: "Download YouTube audio by title",
-  category: "download",
-  react: "🎵",
-  filename: __filename
-}, async (conn, mek, m, { from, args, q, reply }) => {
-  try {
-    if (!q) return reply("❌ Please give me a song name.");
+    pattern: "play3",
+    alias: ["ytmp33", "yta3"],
+    desc: "Download YouTube audio with thumbnail (JawadTech API)",
+    category: "downloader",
+    react: "🎶",
+    filename: __filename
+}, async (conn, mek, m, { from, q, reply }) => {
+    try {
+        if (!q) return await reply("🎧 Please provide a song name!\n\nExample: .play3 Faded Alan Walker");
 
-    // 1. Search video on YouTube
-    let search = await yts(q);
-    let video = search.videos[0];
-    if (!video) return reply("❌ No results found.");
+        const { videos } = await yts(q);
+        if (!videos || videos.length === 0) return await reply("❌ No results found!");
 
-    // 2. Call your API with video URL
-    let apiUrl = `https://jawad-tech.vercel.app/download/yt?url=${encodeURIComponent(video.url)}`;
-    let res = await axios.get(apiUrl);
+        const vid = videos[0];
 
-    if (!res.data.status) {
-      return reply("❌ Failed to fetch audio. Try again later.");
+        // Send thumbnail and video details first
+        await conn.sendMessage(from, {
+            image: { url: vid.thumbnail },
+            caption: `🎶 *${vid.title}*\n⏱️ *Duration:* ${vid.timestamp}\n👀 *Views:* ${vid.views.toLocaleString()}\n📡 *Status:* Downloading...`
+        }, { quoted: mek });
+
+        const api = `https://jawad-tech.vercel.app/download/yt?url=${encodeURIComponent(vid.url)}`;
+        const res = await axios.get(api);
+        const json = res.data;
+
+        if (!json?.status || !json?.result) return await reply("❌ Download failed! Try again later.");
+
+        const audioUrl = json.result;
+        const title = vid.title || "Unknown Song";
+
+        await conn.sendMessage(from, {
+            audio: { url: audioUrl },
+            mimetype: "audio/mpeg",
+            fileName: `${title}.mp3`
+        }, { quoted: mek });
+
+        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+    } catch (e) {
+        console.error("Error in .play3:", e);
+        await reply("❌ Error occurred, please try again later!");
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
     }
-
-    // 3. Send audio file first
-    await conn.sendMessage(from, {
-      audio: { url: res.data.result },
-      mimetype: "audio/mpeg",
-      ptt: false,
-      contextInfo: { forwardingScore: 999, isForwarded: false }
-    }, { quoted: mek });
-
-    // 4. Then reply with success message
-    await reply(`✅ *${video.title}* Downloaded Successfully!`);
-
-  } catch (e) {
-    console.error("play2 error:", e);
-    reply("❌ Error while downloading audio.");
-  }
 });
