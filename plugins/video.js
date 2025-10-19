@@ -15,9 +15,16 @@ cmd({
     try {
         if (!q) return await reply("🎥 Please provide a YouTube video name or URL!\n\nExample: `.video alone marshmello`");
 
-        // 🔍 Search video if query isn't a YouTube URL
         let url = q;
-        if (!q.includes("youtube.com") && !q.includes("youtu.be")) {
+        
+        // 🔍 Check if query is a URL or title
+        if (q.startsWith('http://') || q.startsWith('https://')) {
+            // It's a URL - use directly
+            if (!q.includes("youtube.com") && !q.includes("youtu.be")) {
+                return await reply("❌ Please provide a valid YouTube URL!");
+            }
+        } else {
+            // It's a title - search for video
             const search = await yts(q);
             const video = search.videos[0];
             if (!video) return await reply("❌ No video results found!");
