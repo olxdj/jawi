@@ -16,19 +16,37 @@ cmd({
         if (!q) return await reply("🎥 Please provide a YouTube video name or URL!\n\nExample: `.video alone marshmello`");
 
         let url = q;
+        let videoInfo = null;
         
         // 🔍 Check if query is a URL or title
         if (q.startsWith('http://') || q.startsWith('https://')) {
-            // It's a URL - use directly
+            // It's a URL - use directly and fetch info
             if (!q.includes("youtube.com") && !q.includes("youtu.be")) {
                 return await reply("❌ Please provide a valid YouTube URL!");
             }
+            // Fetch video info for URL
+            const searchFromUrl = await yts({ videoId: getVideoId(q) });
+            videoInfo = searchFromUrl;
         } else {
             // It's a title - search for video
             const search = await yts(q);
-            const video = search.videos[0];
-            if (!video) return await reply("❌ No video results found!");
-            url = video.url;
+            videoInfo = search.videos[0];
+            if (!videoInfo) return await reply("❌ No video results found!");
+            url = videoInfo.url;
+        }
+
+        // Helper function to extract video ID from URL
+        function getVideoId(url) {
+            const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+            return match ? match[1] : null;
+        }
+
+        // 📸 Send thumbnail with title and downloading status
+        if (videoInfo) {
+            await conn.sendMessage(from, {
+                image: { url: videoInfo.thumbnail },
+                caption: `🎬 *${videoInfo.title}*\n📥 Status: Downloading Please Wait...\n\n⏳ This may take a few seconds...`
+            }, { quoted: mek });
         }
 
         // 🎬 Fetch video from API
@@ -45,7 +63,7 @@ cmd({
         // 🧾 Send video
         await conn.sendMessage(from, {
             video: { url: vid.download },
-            caption: `🎬 *${vid.title}*\n📥 *Quality:* ${vid.quality}p\n🕒 *Duration:* ${vid.duration}s\n\n> Powered by *JawadTechX ⚡*`
+            caption: `🎬 *${vid.title}*\n📥 *Quality:* ${vid.quality}p\n🕒 *Duration:* ${vid.duration}s\n\n✅ Download Completed!\n\n> Powered by *JawadTechX ⚡*`
         }, { quoted: mek });
 
         // ✅ React success
