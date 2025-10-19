@@ -95,7 +95,7 @@ cmd({
                         const webpBuffer = await videoToWebp(videoBuffer);
                         
                         // Create sticker with proper metadata
-                        let sticker = new Sticker(webpBuffer, {
+                        let stickerObj = new Sticker(webpBuffer, {
                             pack: pack, 
                             type: StickerTypes.FULL,
                             categories: ["🤩", "🎉"], 
@@ -104,7 +104,7 @@ cmd({
                             background: 'transparent',
                         });
                         
-                        const buffer = await sticker.toBuffer();
+                        const buffer = await stickerObj.toBuffer();
                         await conn.sendMessage(from, { 
                             sticker: buffer 
                         }, { quoted: mek });
