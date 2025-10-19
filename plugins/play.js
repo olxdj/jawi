@@ -6,8 +6,7 @@ const yts = require('yt-search');
  🔹 1. .play — Old API Version
 ───────────────────────────────*/
 cmd({
-    pattern: "play",
-    alias: ["ytmp3", "yta"],
+    pattern: "play3",
     desc: "Download YouTube songs",
     category: "downloader",
     react: "🎵",
@@ -47,8 +46,8 @@ cmd({
  🔹 2. .play2 — New Keith Audio API
 ───────────────────────────────*/
 cmd({
-    pattern: "play2",
-    alias: ["ytmp32", "yta2"],
+    pattern: "play",
+    alias: ["ytmp3", "yta"],
     desc: "Download YouTube audio using updated API",
     category: "downloader",
     react: "🎧",
@@ -88,8 +87,8 @@ cmd({
  🔹 3. .play3 — JawadTech API + Thumbnail (No caption on audio)
 ───────────────────────────────*/
 cmd({
-    pattern: "play3",
-    alias: ["ytmp33", "yta3"],
+    pattern: "play2",
+    alias: ["song", "music"],
     desc: "Download YouTube audio with thumbnail (JawadTech API)",
     category: "downloader",
     react: "🎶",
