@@ -7,42 +7,44 @@ cmd({
     pattern: "play",
     alias: ["ytmp3", "yta"],
     desc: "Download YouTube songs",
-    category: "download",
+    category: "downloader",
     react: "🎵",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
     try {
         if (!q) return await reply("🎶 Please provide song name!\n\nExample: .play Moye Moye");
 
-        // 1. Search on YouTube
+        // 🔍 Search on YouTube
         const { videos } = await yts(q);
         if (!videos || videos.length === 0) return await reply("❌ No results found!");
 
         const vid = videos[0];
-        const api = `https://apis-keith.vercel.app/download/audio?url=${encodeURIComponent(vid.url)}`;
+        const api = `https://apis-keith.vercel.app/download/dlmp3?url=${encodeURIComponent(vid.url)}`;
         const res = await axios.get(api);
         const json = res.data;
 
+        // ⚠️ Check valid response
         if (!json?.status || !json?.result) {
             return await reply("❌ Download failed! Try again later.");
         }
 
         const audioUrl = json.result;
-        const title = vid.title || "song";
+        const title = vid.title || "Unknown Song";
 
-        // 2. Send audio file
+        // 🎧 Send the MP3
         await conn.sendMessage(from, {
             audio: { url: audioUrl },
             mimetype: "audio/mpeg",
-            fileName: `${title}.mp3`
+            fileName: `${title}.mp3`,
+            caption: `🎶 *${title}*\n\n📦 Powered by *JawadTechX*`
         }, { quoted: mek });
 
-        // 3. Success reaction ✅
+        // ✅ React success
         await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
 
     } catch (e) {
         console.error("Error in .play:", e);
-        await reply("❌ Error occurred, try again later!");
+        await reply("❌ Error occurred, please try again later!");
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
     }
 });
