@@ -3,7 +3,7 @@ const axios = require('axios');
 const yts = require('yt-search');
 
 cmd({
-    pattern: "play2",
+    pattern: "play",
     desc: "Download YouTube audio with thumbnail (JawadTech API)",
     category: "downloader",
     react: "🎶",
