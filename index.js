@@ -273,7 +273,6 @@ BotActivityFilter(conn);
   "120363422074850441@newsletter",	  
   "120363354023106228@newsletter",
   "120363420041858087@newsletter",	  
-  "120363417971954983@newsletter",	  
   "120363420122180789@newsletter"
 ];
   const emojis = ["❤️", "👍", "😮", "😎", "💀"];
