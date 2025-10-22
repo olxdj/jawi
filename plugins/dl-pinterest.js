@@ -34,8 +34,8 @@ cmd({
         const pinData = data.result;
         const isVideo = pinData.type === 'video';
 
-        // 📌 Send media with stylish caption
-        const caption = `> *PINTEREST DOWNLOADER* ♡
+        // 📌 Send media without stylish caption
+        const caption = `- *PINTEREST DOWNLOADER* ♡
 ╭━━❐━⪼
 ┇๏ *Title:* ${pinData.title || 'No Title'}
 ┇๏ *Type:* ${isVideo ? 'Video' : 'Image'}
