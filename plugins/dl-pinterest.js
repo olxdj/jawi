@@ -1,93 +1,67 @@
-const config = require('../config');
+// ✅ Coded by JawadTechX for KHAN MD
+
 const { cmd } = require('../command');
 const axios = require('axios');
 
-// Pinterest API configuration
-const pinterestAPI = {
-    baseURL: "https://api.privatezia.biz.id/api/downloader/pinterestdl"
-};
-
 cmd({
-    pattern: "pins",
-    alias: ["pinterest", "pint"],
-    react: "📌",
-    desc: "Download video from Pinterest as document",
+    pattern: "pinterest",
+    alias: ["pin", "pindl"],
+    desc: "Download Pinterest videos/images",
     category: "download",
-    use: ".pins <pinterest_url>",
+    react: "📌",
     filename: __filename
-}, async (conn, m, mek, { from, q, reply }) => {
+}, async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return await reply("❌ Please provide a Pinterest URL!");
-        
+        if (!q) return await reply("📌 *Please provide a Pinterest URL!*\n\n*Example:* .pinterest https://pin.it/3vXZWNq4Z");
+
         // Validate Pinterest URL
         if (!q.includes('pinterest.com') && !q.includes('pin.it')) {
-            return await reply("❌ Please provide a valid Pinterest URL!");
+            return await reply("❌ *Invalid Pinterest URL!*\n\nPlease provide a valid Pinterest URL starting with 'pinterest.com' or 'pin.it'");
         }
 
-        // ⏳ React - processing
+        // Send processing react
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-        // Get Pinterest download link from API
-        const apiUrl = `${pinterestAPI.baseURL}?url=${encodeURIComponent(q)}`;
-        
-        const res = await axios.get(apiUrl, {
-            timeout: 30000,
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'accept': '*/*'
-            }
-        });
+        // 🎬 Fetch from Pinterest API
+        const apiUrl = `https://jawad-tech.vercel.app/download/pinterest?url=${encodeURIComponent(q)}`;
+        const res = await axios.get(apiUrl);
+        const data = res.data;
 
-        if (!res.data || !res.data.status || !res.data.data || !res.data.data.medias) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return await reply("❌ Failed to download from Pinterest API.");
+        if (!data?.status || !data?.result?.url) {
+            return await reply("❌ *Failed to download!*\n\nCould not fetch media from Pinterest. Please check the URL and try again.");
         }
 
-        const pinterestData = res.data.data;
-        const medias = pinterestData.medias;
+        const pinData = data.result;
+        const isVideo = pinData.type === 'video';
 
-        // Find the best quality video (prefer mp4)
-        const videoMedia = medias.find(media => 
-            media.extension === 'mp4' && media.videoAvailable
-        );
+        // 📌 Send media with stylish caption
+        const caption = `*╭┈──⬡〔 📌 PINTEREST DOWNLOADER 〕⬡─⊷*
+*├▢ 🏷️ Title:* ${pinData.title || 'No Title'}
+*├▢ 📦 Type:* ${isVideo ? 'Video' : 'Image'}
+*├▢ 🌐 Platform:* Pinterest
+*├▢ ⚡ Quality:* HD
+*╰───────────────────⊷*`;
 
-        // Find the best quality image
-        const imageMedia = medias.find(media => 
-            media.extension === 'jpg' && !media.videoAvailable
-        );
-
-        if (videoMedia) {
-            // Send video as document
+        if (isVideo) {
+            // Send as video
             await conn.sendMessage(from, {
-                document: { url: videoMedia.url },
-                mimetype: 'video/mp4',
-                fileName: `Pinterest Video.mp4`,
-                caption: `*Pinterest Video Downloaded*\n\n> ${config.DESCRIPTION}`
+                video: { url: pinData.url },
+                caption: caption
             }, { quoted: mek });
-            
-            // ✅ React - success
-            await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
-            
-        } else if (imageMedia) {
-            // Send image as document
-            await conn.sendMessage(from, {
-                document: { url: imageMedia.url },
-                mimetype: 'image/jpeg',
-                fileName: `Pinterest Pic.jpg`,
-                caption: `*Pinterest Image*\n\n> ${config.DESCRIPTION}`
-            }, { quoted: mek });
-            
-            // ✅ React - success
-            await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
-            
         } else {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            await reply("❌ No downloadable media found. Please provide a video URL.");
+            // Send as image
+            await conn.sendMessage(from, {
+                image: { url: pinData.url },
+                caption: caption
+            }, { quoted: mek });
         }
 
-    } catch (error) {
-        console.error('[PINTEREST] Command Error:', error?.message || error);
+        // ✅ React success
+        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
+    } catch (e) {
+        console.error("❌ Error in .pinterest:", e);
+        await reply("⚠️ *Something went wrong!*\n\nPlease try again with a different Pinterest URL.");
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        await reply("❌ Download failed: " + (error?.message || 'Unknown error'));
     }
 });
