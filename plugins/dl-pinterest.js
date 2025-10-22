@@ -52,7 +52,7 @@ cmd({
             // Send video as document
             await conn.sendMessage(from, {
                 document: { url: pinData.url },
-                fileName: `pinterest_video_${Date.now()}.mp4`,
+                fileName: `Pinterest Video.mp4`,
                 mimetype: 'video/mp4',
                 caption: caption
             }, { quoted: mek });
@@ -60,7 +60,7 @@ cmd({
             // Send image as document
             await conn.sendMessage(from, {
                 document: { url: pinData.url },
-                fileName: `pinterest_image_${Date.now()}.jpg`,
+                fileName: `Pinterest Image.jpg`,
                 mimetype: 'image/jpeg',
                 caption: caption
             }, { quoted: mek });
