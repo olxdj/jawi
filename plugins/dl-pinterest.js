@@ -37,10 +37,10 @@ cmd({
         // 📌 Send media with stylish caption
         const caption = `> *PINTEREST DOWNLOADER* ♡
 ╭━━❐━⪼
-┇๏ Title:* ${pinData.title || 'No Title'}
-┇๏ Type:* ${isVideo ? 'Video' : 'Image'}
-┇๏ Platform:* Pinterest
-┇๏ Quality:* HD Ultra
+┇๏ *Title:* ${pinData.title || 'No Title'}
+┇๏ *Type:* ${isVideo ? 'Video' : 'Image'}
+┇๏ *Platform:* Pinterest
+┇๏ *Quality:* HD Ultra
 ╰━━❑━⪼
 > *© Pᴏᴡᴇʀᴇᴅ Bʏ KʜᴀɴX-Aɪ ♡*`;
 
