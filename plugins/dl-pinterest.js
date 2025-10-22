@@ -35,11 +35,7 @@ cmd({
         const isVideo = pinData.type === 'video';
 
         // 📌 Send media with stylish caption
-        const caption = `╭━━━〔 *KHAN-MD* 〕━━━┈⊷
-┃▸╭───────────
-┃▸┃๏ *PINS DOWNLOADER*
-┃▸└───────────···๏
-╰────────────────┈⊷
+        const caption = `> 〔 *PINTEREST DOWNLOADER* 〕
 ╭━━❐━⪼
 ┇๏ Title:* ${pinData.title || 'No Title'}
 ┇๏ Type:* ${isVideo ? 'Video' : 'Image'}
