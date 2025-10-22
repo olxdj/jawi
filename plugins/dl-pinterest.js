@@ -35,11 +35,11 @@ cmd({
         const isVideo = pinData.type === 'video';
 
         // 📌 Send media with stylish caption
-        const caption = `*╭┈──⬡〔 📌 PINTEREST DOWNLOADER 〕⬡─⊷*
-*├▢ 🏷️ Title:* ${pinData.title || 'No Title'}
-*├▢ 📦 Type:* ${isVideo ? 'Video' : 'Image'}
-*├▢ 🌐 Platform:* Pinterest
-*├▢ ⚡ Quality:* HD
+        const caption = `*╭┈──⬡〔 PINTEREST DOWNLOADER 〕⬡─⊷*
+*├▢ Title:* ${pinData.title || 'No Title'}
+*├▢ Type:* ${isVideo ? 'Video' : 'Image'}
+*├▢ Platform:* Pinterest
+*├▢ Quality:* HD Ultra
 *╰───────────────────⊷*`;
 
         if (isVideo) {
