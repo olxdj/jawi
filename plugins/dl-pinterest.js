@@ -34,26 +34,34 @@ cmd({
         const pinData = data.result;
         const isVideo = pinData.type === 'video';
 
-        // 📌 Send media without stylish caption
-        const caption = `- *PINTEREST DOWNLOADER* ♡
+        // 📌 Send media with stylish caption
+        const caption = `╭━━━〔 *KHAN-MD* 〕━━━┈⊷
+┃▸╭───────────
+┃▸┃๏ *PINS DOWNLOADER*
+┃▸└───────────···๏
+╰────────────────┈⊷
 ╭━━❐━⪼
-┇๏ *Title:* ${pinData.title || 'No Title'}
-┇๏ *Type:* ${isVideo ? 'Video' : 'Image'}
-┇๏ *Platform:* Pinterest
-┇๏ *Quality:* HD Ultra
+┇๏ Title:* ${pinData.title || 'No Title'}
+┇๏ Type:* ${isVideo ? 'Video' : 'Image'}
+┇๏ Platform:* Pinterest
+┇๏ Quality:* HD Ultra
 ╰━━❑━⪼
 > *© Pᴏᴡᴇʀᴇᴅ Bʏ KʜᴀɴX-Aɪ ♡*`;
 
         if (isVideo) {
-            // Send as video
+            // Send video as document
             await conn.sendMessage(from, {
-                video: { url: pinData.url },
+                document: { url: pinData.url },
+                fileName: `pinterest_video_${Date.now()}.mp4`,
+                mimetype: 'video/mp4',
                 caption: caption
             }, { quoted: mek });
         } else {
-            // Send as image
+            // Send image as document
             await conn.sendMessage(from, {
-                image: { url: pinData.url },
+                document: { url: pinData.url },
+                fileName: `pinterest_image_${Date.now()}.jpg`,
+                mimetype: 'image/jpeg',
                 caption: caption
             }, { quoted: mek });
         }
