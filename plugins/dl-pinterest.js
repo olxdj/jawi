@@ -41,10 +41,10 @@ cmd({
 ┃▸└───────────···๏
 ╰────────────────┈⊷
 ╭━━❐━⪼
-┇๏ Title:* ${pinData.title || 'No Title'}
-┇๏ Type:* ${isVideo ? 'Video' : 'Image'}
-┇๏ Platform:* Pinterest
-┇๏ Quality:* HD Ultra
+┇๏ *Title:* ${pinData.title || 'No Title'}
+┇๏ *Type:* ${isVideo ? 'Video' : 'Image'}
+┇๏ *Platform:* Pinterest
+┇๏ *Quality:* HD Ultra
 ╰━━❑━⪼
 > *© Pᴏᴡᴇʀᴇᴅ Bʏ KʜᴀɴX-Aɪ ♡*`;
 
