@@ -10,7 +10,7 @@ cmd({
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return await reply("🎧 Please provide a song name!\n\nExample: .music Faded Alan Walker");
+        if (!q) return await reply("🎧 Please provide a song name!\n\nExample: .play Faded Alan Walker");
 
         const { videos } = await yts(q);
         if (!videos || videos.length === 0) return await reply("❌ No results found!");
@@ -20,7 +20,7 @@ cmd({
         // 🎵 Send video thumbnail + info first
         await conn.sendMessage(from, {
             image: { url: vid.thumbnail },
-            caption: `AUDIO DOWNLOADER 🎧\n\n*YT AUDIO DOWNLOADER*\n╭━━❐━⪼\n┇๏ *Title* - ${vid.title}\n┇๏ *Duration* - ${vid.timestamp}\n┇๏ *Views* - ${vid.views.toLocaleString()}\n┇๏ *Author* - ${vid.author.name}\n┇๏ *Status* - Downloading...\n╰━━❑━⪼\n\n> *© Pᴏᴡᴇʀᴇᴅ Bʏ KHAN-MD ♡*`
+            caption: `*AUDIO DOWNLOADER 🎧*\n╭━━❐━⪼\n┇๏ *Title* - ${vid.title}\n┇๏ *Duration* - ${vid.timestamp}\n┇๏ *Views* - ${vid.views.toLocaleString()}\n┇๏ *Author* - ${vid.author.name}\n┇๏ *Status* - Downloading...\n╰━━❑━⪼\n> *© Pᴏᴡᴇʀᴇᴅ Bʏ KHAN-MD ♡*`
         }, { quoted: mek });
 
         const api = `https://jawad-tech.vercel.app/download/audio?url=${encodeURIComponent(vid.url)}`;
