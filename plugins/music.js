@@ -23,7 +23,7 @@ cmd({
 
         if (!json?.status || !json?.result) return await reply("❌ Download failed! Try again later.");
 
-        // 🎧 Send audio directly with externalAdReply
+        // 🎧 Send audio directly with externalAdReply including thumbnail
         await conn.sendMessage(from, {
             audio: { url: json.result },
             mimetype: 'audio/mpeg',
@@ -33,6 +33,7 @@ cmd({
                     title: vid.title.length > 25 ? `${vid.title.substring(0, 22)}...` : vid.title,
                     body: "⇆  ||◁◁ㅤ ❚❚ ㅤ▷▷||ㅤ ⇆",
                     mediaType: 1,
+                    thumbnailUrl: vid.thumbnail,
                     sourceUrl: "KHAN-MD",
                     showAdAttribution: true,
                     renderLargerThumbnail: true
