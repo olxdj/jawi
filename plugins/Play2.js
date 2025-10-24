@@ -1,6 +1,6 @@
 const fetch = require('node-fetch');
 const yts = require('yt-search');
-const { cmd } = require('../lib/command');
+const { cmd } = require('../command');
 
 cmd({
   pattern: 'music',
