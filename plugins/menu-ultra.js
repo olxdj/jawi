@@ -115,7 +115,7 @@ ${menuOptions}*╰───────────────────⊷*
 
         // Send menu image with caption
         const sentMsg = await conn.sendMessage(from, {
-            image: { url: config.MENU_IMAGE_URL || 'https://files.catbox.moe/7zfdcq.jpg' },
+            image: { url: config.MENU_IMAGE_URL || 'https://ibb.co/278yncrG' },
             caption: caption,
             contextInfo: commonContextInfo(sender)
         }, { quoted: mek });
