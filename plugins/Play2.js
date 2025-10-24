@@ -11,26 +11,20 @@ cmd({
   filename: __filename
 }, async (conn, m, { text, usedPrefix, command }) => {
   try {
-    if (!text) return m.reply(`❌ Please provide a song name or YouTube link.\n\nExample:\n${usedPrefix + command} Moye Moye`);
+    if (!text)
+      return m.reply(`❌ Please provide a song name or YouTube link.\n\nExample:\n${usedPrefix + command} Moye Moye`);
 
-    m.react('⏳');
+    await m.react('⏳');
 
     let videoUrl;
-
-    // ✅ If user provided direct YouTube link
     if (text.includes('youtube.com') || text.includes('youtu.be')) {
       videoUrl = text;
     } else {
-      // 🔍 Search YouTube
       const search = await yts(text);
-      if (!search || !search.videos || !search.videos.length)
-        return m.reply('❌ No results found.');
-
-      const vid = search.videos[0];
-      videoUrl = vid.url;
+      if (!search?.videos?.length) return m.reply('❌ No results found.');
+      videoUrl = search.videos[0].url;
     }
 
-    // 🎧 Fetch from API
     const apiUrl = `https://jawad-tech.vercel.app/download/audio?url=${videoUrl}`;
     const res = await fetch(apiUrl);
     const data = await res.json();
@@ -38,22 +32,21 @@ cmd({
     if (!data.status || !data.result)
       return m.reply('❌ Failed to fetch audio. Try again later.');
 
-    const { title, thumbnail, author } = data.metadata;
+    const song = data.metadata;
 
-    // 🎶 Send audio with external preview only
     await conn.sendMessage(m.chat, {
       audio: { url: data.result },
       mimetype: 'audio/mpeg',
       ptt: false,
       contextInfo: {
         externalAdReply: {
-          title: title || 'Unknown Title',
-          body: `🎧 ${author || 'Unknown Channel'} • Powered by JawadTechXD`,
-          thumbnailUrl: thumbnail,
-          sourceUrl: videoUrl,
+          title: song.title.length > 25 ? `${song.title.substring(0, 22)}...` : song.title,
+          body: "⇆  ||◁◁ㅤ ❚❚ ㅤ▷▷||ㅤ ⇆",
           mediaType: 1,
-          renderLargerThumbnail: true,
-          showAdAttribution: true
+          thumbnailUrl: song.thumbnail,
+          sourceUrl: videoUrl,
+          showAdAttribution: true,
+          renderLargerThumbnail: false
         }
       }
     }, { quoted: m });
