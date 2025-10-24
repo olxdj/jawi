@@ -37,7 +37,7 @@ cmd({
                     thumbnailUrl: json.metadata.thumbnail,
                     sourceUrl: "KHAN-MD",
                     showAdAttribution: true,
-                    renderLargerThumbnail: false
+                    renderLargerThumbnail: true 
                 }
             }
         }, { quoted: mek });
