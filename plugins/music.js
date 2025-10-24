@@ -4,13 +4,14 @@ const yts = require('yt-search');
 
 cmd({
     pattern: "music",
+    alias: ["song"],
     desc: "Download YouTube audio with thumbnail (JawadTech API)",
     category: "downloader",
     react: "🎶",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
     try {
-        if (!q) return await reply("🎧 Please provide a song name!\n\nExample: .music Faded Alan Walker");
+        if (!q) return await reply("🎧 Please provide a song name!\n\nExample: .song Faded Alan Walker");
 
         const { videos } = await yts(q);
         if (!videos || videos.length === 0) return await reply("❌ No results found!");
@@ -23,7 +24,7 @@ cmd({
 
         if (!json?.status || !json?.result) return await reply("❌ Download failed! Try again later.");
 
-        // 🎧 Send audio directly with externalAdReply including thumbnail
+        // 🎧 Send audio directly with externalAdReply using API thumbnail
         await conn.sendMessage(from, {
             audio: { url: json.result },
             mimetype: 'audio/mpeg',
@@ -33,10 +34,10 @@ cmd({
                     title: vid.title.length > 25 ? `${vid.title.substring(0, 22)}...` : vid.title,
                     body: "⇆  ||◁◁ㅤ ❚❚ ㅤ▷▷||ㅤ ⇆",
                     mediaType: 1,
-                    thumbnailUrl: vid.thumbnail,
+                    thumbnailUrl: json.metadata.thumbnail,
                     sourceUrl: "KHAN-MD",
                     showAdAttribution: true,
-                    renderLargerThumbnail: true
+                    renderLargerThumbnail: false
                 }
             }
         }, { quoted: mek });
