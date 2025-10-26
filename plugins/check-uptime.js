@@ -2,7 +2,7 @@ const { cmd } = require('../command');
 
 cmd({
     pattern: "uptime",
-    alias: ["runtime"],
+    alias: ["runtime", "up"],
     desc: "Check bot uptime",
     category: "utility",
     react: "⏱️",
