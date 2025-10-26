@@ -4,7 +4,7 @@ const { sleep } = require('../lib/functions');
 
 cmd({
     pattern: "update",
-    alias: ["sync", "up", "r", "reboot", "restart"],
+    alias: ["sync", "u", "r", "reboot", "restart"],
     react: "🚀",
     desc: "update the bot",
     category: "owner",
