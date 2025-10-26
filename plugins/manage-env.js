@@ -449,10 +449,10 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
     const status = args[0]?.toLowerCase();
     // Check the argument for enabling or disabling the anticall feature
     if (args[0] === "on") {
-        config.READ_MESSAGE = "true";
+        config.AUTO_READ_MESSAGE = "true";
         return reply("readmessage feature is now enabled.");
     } else if (args[0] === "off") {
-        config.READ_MESSAGE = "false";
+        config.AUTO_READ_MESSAGE = "false";
         return reply("readmessage feature is now disabled.");
     } else {
         return reply(`_example:  .readmessage on_`);
