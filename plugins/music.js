@@ -41,7 +41,7 @@ cmd({
         }
 
         // 🖼 Menu Caption
-        const caption = `*╭┈───〔 ${toSmallCaps('YouTube Downloader')} 〕┈───⊷*
+        const caption = `*╭┈───〔 ${toSmallCaps('YT Downloader')} 〕┈───⊷*
 *├▢ 🎬 Title:* ${video.title}
 *├▢ 📺 Channel:* ${video.author.name}
 *├▢ ⏰ Duration:* ${video.timestamp}
