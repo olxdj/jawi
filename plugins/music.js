@@ -1,7 +1,3 @@
-// ✅ Coded by JawadTechX
-// 🎧 Command: song / yt / ytdl
-// 🔗 API: https://jawad-tech.vercel.app/download/ytdl?url=
-
 const { cmd } = require('../command');
 const axios = require('axios');
 const yts = require('yt-search');
@@ -51,7 +47,7 @@ cmd({
 *┋ ⬡ 2.* 📹 ${toSmallCaps('Video (MP4)')}
 *╰───────────────────⊷*
 
-> *Please reply with 1 or 2*`;
+> ${toSmallCaps('*Please Reply With 1 or 2')}*`;
 
         const sent = await conn.sendMessage(from, {
             image: { url: video.thumbnail },
@@ -75,34 +71,33 @@ cmd({
                 if (text === "1" || text === "2") {
                     const type = text === "1" ? "mp3" : "mp4";
 
-                    const apiUrl = `https://jawad-tech.vercel.app/download/ytdl?url=${encodeURIComponent(video.url)}`;
-                    const { data } = await axios.get(apiUrl);
+                    if (type === "mp3") {
+                        // Use audio API for MP3
+                        const apiUrl = `https://jawad-tech.vercel.app/download/audio?url=${encodeURIComponent(video.url)}`;
+                        const { data } = await axios.get(apiUrl);
 
-                    if (!data?.status || !data?.result) {
-                        return await conn.sendMessage(sender, { text: "❌ Download failed, please try again later." }, { quoted: received });
-                    }
+                        if (!data?.status || !data?.result) {
+                            return await conn.sendMessage(sender, { text: "❌ Audio download failed, please try again later." }, { quoted: received });
+                        }
 
-                    const result = data.result;
-                    if (type === "mp3" && result.mp3) {
-                        // Clean filename for document
-                        const cleanTitle = video.title.replace(/[^\w\s]/gi, '').substring(0, 50);
-                        
                         await conn.sendMessage(sender, {
-                            document: { 
-                                url: result.mp3 
-                            },
-                            mimetype: 'audio/mpeg',
-                            fileName: `${cleanTitle}.mp3`,
-                            caption: `🎵 *${video.title}*\n\n📁 Sent as document for better compatibility\n\n> *Powered by JawadTechX*`
+                            audio: { url: data.result },
+                            mimetype: "audio/mpeg",
+                            ptt: false
                         }, { quoted: received });
-                    } else if (type === "mp4" && result.mp4) {
-                        await conn.sendMessage(sender, {
-                            video: { url: result.mp4 },
-                            caption: `🎬 *${video.title}*\n\n> *Powered by JawadTechX*`
-                        }, { quoted: received });
+
                     } else {
+                        // Use original video API for MP4
+                        const apiUrl = `https://jawad-tech.vercel.app/download/ytdl?url=${encodeURIComponent(video.url)}`;
+                        const { data } = await axios.get(apiUrl);
+
+                        if (!data?.status || !data?.result || !data.result.mp4) {
+                            return await conn.sendMessage(sender, { text: "❌ Video download failed, please try again later." }, { quoted: received });
+                        }
+
                         await conn.sendMessage(sender, {
-                            text: "⚠️ Format not found on server."
+                            video: { url: data.result.mp4 },
+                            caption: `🎬 *${video.title}*\n\n> *Powered by JawadTechX*`
                         }, { quoted: received });
                     }
 
