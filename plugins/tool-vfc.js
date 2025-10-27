@@ -40,7 +40,7 @@ cmd({
             document: fs.readFileSync(nmfilect), 
             mimetype: 'text/vcard', 
             fileName: 'JawadTechX.vcf', 
-            caption: `\nDone saving.\nGroup Name: *${cmiggc.subject}*\nContacts: *${cmiggc.participants.length}*\n> ᴘᴏᴡᴇʀᴇᴅ ʙʏ ᴅᴀᴠɪᴅx ᴛᴇᴄʜ`}, { quoted: mek });
+            caption: `\nDone saving.\nGroup Name: *${cmiggc.subject}*\nContacts: *${cmiggc.participants.length}*\n>  Powered By JawadTechX `}, { quoted: mek });
 
         fs.unlinkSync(nmfilect); // Cleanup the file after sending
     } catch (err) {
