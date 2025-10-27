@@ -1,5 +1,5 @@
 // ✅ Coded by JawadTechX for KHAN MD
-// ⚙️ API: https://api.hanggts.xyz/download/ytdl?url=
+// ⚙️ API: https://jawad-tech.vercel.app/download/ytdl?url=
 
 const { cmd } = require('../command');
 const yts = require('yt-search');
@@ -8,7 +8,7 @@ const axios = require('axios');
 cmd({
     pattern: "drama",
     alias: ["ep", "episode"],
-    desc: "Download YouTube videos as document using HangGTS API",
+    desc: "Download YouTube videos as document (via JawadTech API)",
     category: "download",
     react: "📺",
     filename: __filename
@@ -19,7 +19,7 @@ cmd({
         let url = q;
         let videoInfo = null;
 
-        // 🔍 Detect URL or title
+        // 🔍 Detect URL or Search by Title
         if (q.startsWith('http://') || q.startsWith('https://')) {
             if (!q.includes("youtube.com") && !q.includes("youtu.be")) {
                 return await reply("❌ Please provide a valid YouTube URL!");
@@ -35,34 +35,34 @@ cmd({
             url = videoInfo.url;
         }
 
-        // 🧩 Extract Video ID
+        // 🎯 Extract video ID
         function getVideoId(url) {
             const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
             return match ? match[1] : null;
         }
 
-        // 🎞️ Send thumbnail with info
+        // 🖼️ Send thumbnail preview
         await conn.sendMessage(from, {
             image: { url: videoInfo.thumbnail },
-            caption: `*🎬 DRAMA DOWNLOADER*\n\n🎞️ *Title:* ${videoInfo.title}\n📺 *Channel:* ${videoInfo.author.name}\n🕒 *Duration:* ${videoInfo.timestamp}\n\n*Status:* Downloading drama episode...\n\n*© ᴘᴏᴡᴇʀᴇᴅ ʙʏ Jᴀᴡᴀᴅ TᴇᴄʜX*`
+            caption: `*🎬 DRAMA DOWNLOADER*\n\n🎞️ *Title:* ${videoInfo.title}\n📺 *Channel:* ${videoInfo.author.name}\n🕒 *Duration:* ${videoInfo.timestamp}\n\n*Status:* Download Drama...\n\n*© ᴘᴏᴡᴇʀᴇᴅ ʙʏ Jᴀᴡᴀᴅ TᴇᴄʜX*`
         }, { quoted: mek });
 
-        // ⚙️ Fetch from HangGTS API
-        const apiUrl = `https://api.hanggts.xyz/download/ytdl?url=${encodeURIComponent(url)}`;
+        // ⚙️ Fetch from JawadTech API
+        const apiUrl = `https://jawad-tech.vercel.app/download/ytdl?url=${encodeURIComponent(url)}`;
         const { data } = await axios.get(apiUrl);
 
         if (!data?.status || !data?.result?.mp4) {
             return await reply("❌ Failed to fetch download link! Please try again later.");
         }
 
-        const videoData = data.result;
+        const vid = data.result;
 
         // 📦 Send as document (.mp4)
         await conn.sendMessage(from, {
-            document: { url: videoData.mp4 },
-            fileName: `${videoData.title}.mp4`,
+            document: { url: vid.mp4 },
+            fileName: `${vid.title}.mp4`,
             mimetype: 'video/mp4',
-            caption: `🎬 *${videoData.title}*\n\n🎧 Audio: ${videoData.mp3 ? "Available ✅" : "N/A"}\n\n*© ᴘᴏᴡᴇʀᴇᴅ ʙʏ ʜᴀɴɢGᴛs & Jᴀᴡᴀᴅ TᴇᴄʜX*`
+            caption: `🎬 *${vid.title}*\n\n*© ᴘᴏᴡᴇʀᴇᴅ ʙʏ Jᴀᴡᴀᴅ TᴇᴄʜX*`
         }, { quoted: mek });
 
         // ✅ React success
