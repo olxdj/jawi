@@ -83,24 +83,24 @@ cmd({
                     }
 
                     const result = data.result;
-
-                    // ✅ Fixed: Send playable MP3 as document
                     if (type === "mp3" && result.mp3) {
+                        // Clean filename for document
+                        const cleanTitle = video.title.replace(/[^\w\s]/gi, '').substring(0, 50);
+                        
                         await conn.sendMessage(sender, {
-                            document: { url: result.mp3 },
-                            mimetype: "audio/mpeg",
-                            fileName: `${video.title}.mp3`,
-                            audio: { url: result.mp3 }, // ensures it's playable inline
+                            document: { 
+                                url: result.mp3 
+                            },
+                            mimetype: 'audio/mpeg',
+                            fileName: `${cleanTitle}.mp3`,
+                            caption: `🎵 *${video.title}*\n\n📁 Sent as document for better compatibility\n\n> *Powered by JawadTechX*`
                         }, { quoted: received });
-                    } 
-                    // 🎬 Video send
-                    else if (type === "mp4" && result.mp4) {
+                    } else if (type === "mp4" && result.mp4) {
                         await conn.sendMessage(sender, {
                             video: { url: result.mp4 },
                             caption: `🎬 *${video.title}*\n\n> *Powered by JawadTechX*`
                         }, { quoted: received });
-                    } 
-                    else {
+                    } else {
                         await conn.sendMessage(sender, {
                             text: "⚠️ Format not found on server."
                         }, { quoted: received });
