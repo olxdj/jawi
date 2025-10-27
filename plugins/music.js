@@ -51,7 +51,7 @@ cmd({
 *┋ ⬡ 2.* 📹 ${toSmallCaps('Video (MP4)')}
 *╰───────────────────⊷*
 
-> *Reply with 1 or 2 to choose format*`;
+> *Please reply with 1 or 2*`;
 
         const sent = await conn.sendMessage(from, {
             image: { url: video.thumbnail },
@@ -85,9 +85,9 @@ cmd({
                     const result = data.result;
                     if (type === "mp3" && result.mp3) {
                         await conn.sendMessage(sender, {
-                            audio: { url: result.mp3 },
+                            document: { url: result.mp3 },
                             mimetype: "audio/mpeg",
-                            ptt: false
+                            fileName: `${video.title}.mp3`
                         }, { quoted: received });
                     } else if (type === "mp4" && result.mp4) {
                         await conn.sendMessage(sender, {
