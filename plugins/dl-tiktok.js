@@ -45,7 +45,7 @@ cmd({
     pattern: "tiktok2",
     alias: ["tt2", "ttdl2"],
     desc: "Download TikTok video using JawadTech API",
-    category: "downloader",
+    category: "download",
     react: "🎬",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
@@ -84,7 +84,7 @@ cmd({
     pattern: "tiktok3",
     alias: ["tt3", "ttdl3"],
     desc: "Download HD TikTok videos using JawadTechXD API",
-    category: "downloader",
+    category: "download",
     react: "🎬",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
