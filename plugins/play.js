@@ -5,7 +5,7 @@ const yts = require('yt-search');
 cmd({
     pattern: "play",
     desc: "Download YouTube audio with thumbnail (JawadTech API)",
-    category: "downloader",
+    category: "download",
     react: "🎶",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
@@ -51,7 +51,7 @@ cmd({
 cmd({
     pattern: "play2",
     desc: "Download YouTube audio with thumbnail (JawadTech API)",
-    category: "downloader",
+    category: "download",
     react: "🎶",
     filename: __filename
 }, async (conn, mek, m, { from, q, reply }) => {
