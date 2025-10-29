@@ -544,30 +544,51 @@ async (conn, mek, m, { from, args, isCreator, reply }) => {
 //--------------------------------------------
 //   AUTO-REACT COMMANDS
 //--------------------------------------------
+
 cmd({
     pattern: "autoreact",
-    alias: ["auto-react"],
+    alias: ["auto-react", "autoreaction"],
     react: "🫟",
-    alias: ["autoreact"],
     desc: "Enable or disable the autoreact feature",
     category: "setting",
     filename: __filename
-},    
-async (conn, mek, m, { from, args, isCreator, reply }) => {
-    if (!isCreator) return reply("*📛 ᴏɴʟʏ ᴛʜᴇ ᴏᴡɴᴇʀ ᴄᴀɴ ᴜsᴇ ᴛʜɪs ᴄᴏᴍᴍᴀɴᴅ!*");
+}, async (conn, mek, m, { from, args, isCreator, reply }) => {
+    try {
+        // ⏳ React - processing
+        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
+        await sleep(800);
 
-    const status = args[0]?.toLowerCase();
-    // Check the argument for enabling or disabling the anticall feature
-    if (args[0] === "on") {
-        config.AUTO_REACT = "true";
-        await reply("autoreact feature is now enabled.");
-    } else if (args[0] === "off") {
-        config.AUTO_REACT = "false";
-        await reply("autoreact feature is now disabled.");
-    } else {
-        await reply(`*🔥 ᴇxᴀᴍᴘʟᴇ: .ᴀᴜᴛᴏʀᴇᴀᴄᴛ ᴏɴ*`);
+        if (!isCreator) {
+            await reply("*📛 Only the owner can use this command!*");
+            await sleep(900);
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            return;
+        }
+
+        const status = args[0]?.toLowerCase();
+        
+        if (status === "on") {
+            config.AUTO_REACT = "true";
+            await reply("✅ *Auto React Enabled!*\n\n🤖 Bot will now automatically react to messages.");
+            await sleep(1000);
+            await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+        } else if (status === "off") {
+            config.AUTO_REACT = "false";
+            await reply("❌ *Auto React Disabled!*\n\n🚫 Auto reactions are now turned off.");
+            await sleep(1000);
+            await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+        } else {
+            await reply(`🔰 *Auto React Settings*\n\nCurrent Status: *${config.AUTO_REACT === 'true' ? 'ON' : 'OFF'}*\n\nUsage: .autoreact on/off`);
+            await sleep(800);
+            await conn.sendMessage(from, { react: { text: 'ℹ️', key: m.key } });
+        }
+    } catch (error) {
+        await reply(`❌ *Error!*\n\nFailed to update auto react settings.\nError: ${error.message}`);
+        await sleep(500);
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
     }
 });
+
 //--------------------------------------------
 //  STATUS-REPLY COMMANDS
 //--------------------------------------------
