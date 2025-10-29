@@ -1,67 +1,52 @@
-const { cmd } = require("../command");
-const axios = require("axios");
+// ✅ Coded by JawadTechX
+// 🔍 Command: playstore / ps / appsearch
+// 📁 Category: utility
+
+const { cmd } = require('../command');
+const axios = require('axios');
+const config = require('../config');
 
 cmd({
-    pattern: "playstore",
-    react: '📲',
-    alias: ["ps", "app"],
-    desc: "Search for an app on the Play Store",
-    category: "search",
-    filename: __filename
-},
-async (conn, mek, m, { from, q, sender, reply }) => {
-    try {
-        if (!q) return reply("❌ Please provide an app name to search.");
+  pattern: "playstore",
+  alias: ["ps", "appsearch"],
+  desc: "Search any Android app from Play Store.",
+  category: "utility",
+  react: "📱",
+  use: ".playstore <app name>",
+  filename: __filename
+}, async (conn, mek, m, { from, args, reply }) => {
+  try {
+    if (!args[0]) return reply("📍 Please provide an app name.\n\nExample: *.playstore Free Fire*");
 
-        // React: Processing ⏳
-        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
-
-        const apiUrl = `https://apis.davidcyriltech.my.id/search/playstore?q=${encodeURIComponent(q)}`;
-        const response = await axios.get(apiUrl);
-
-        if (!response.data.success || !response.data.result) {
-            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return reply("❌ No results found for the given app name.");
-        }
-
-        const app = response.data.result;
-
-        const infoMessage = `
-📲 *PLAY STORE SEARCH*
-╭──────────────◆
-│• 📌 Name: ${app.title}
-│• 📖 Summary: ${app.summary}
-│• 📥 Installs: ${app.installs}
-│• ⭐ Rating: ${app.score}
-│• 💲 Price: ${app.price}
-│• 📦 Size: ${app.size || 'Not available'}
-│• 📱 Android: ${app.androidVersion}
-│• 👨‍💻 Developer: ${app.developer}
-│• 📅 Released: ${app.released}
-│• 🔄 Updated: ${app.updated}
-│• 🔗 Link: ${app.url}
-╰─────────────────
-*Powered By JawadTechX 🤍*`.trim();
-
-        if (app.icon) {
-            await conn.sendMessage(
-                from,
-                {
-                    image: { url: app.icon },
-                    caption: infoMessage
-                },
-                { quoted: mek }
-            );
-        } else {
-            await reply(infoMessage);
-        }
-
-        // React: Success ✅
-        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
-
-    } catch (error) {
-        console.error("Play Store Error:", error);
-        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        reply("❌ Error searching for the app. Please try again.");
+    const query = args.join(" ");
+    const apiUrl = `https://api.hanggts.xyz/search/playstore?q=${encodeURIComponent(query)}`;
+    
+    const { data } = await axios.get(apiUrl);
+    if (!data.status || !data.result || data.result.length === 0) {
+      return reply("❌ No results found for your query.");
     }
+
+    const app = data.result[0]; // Show only the first result
+
+    const caption = `
+📱 *PLAY STORE APP FOUND!*
+
+🏷️ *Name:* ${app.nama}
+👨‍💻 *Developer:* ${app.developer}
+⭐ *Rating:* ${app.rate2}
+🌐 *App Link:* ${app.link}
+🧑‍💻 *Dev Page:* ${app.link_dev}
+
+🔋 *Powered By JawadTechX 🇵🇰*
+    `.trim();
+
+    await conn.sendMessage(from, {
+      image: { url: app.img },
+      caption
+    }, { quoted: mek });
+
+  } catch (err) {
+    console.error("PLAYSTORE SEARCH ERROR:", err);
+    reply("⚠️ Error fetching Play Store results. Please try again later.");
+  }
 });
