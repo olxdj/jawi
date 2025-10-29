@@ -20,7 +20,9 @@ cmd({
     const mimeType = (quotedMsg.msg || quotedMsg).mimetype || '';
     
     if (!mimeType || (!mimeType.startsWith('audio/') && !mimeType.startsWith('video/'))) {
-      return reply("Please reply to an audio or video file (MP3/MP4)");
+      return await client.sendMessage(message.chat, {
+        text: "Please reply to an audio or video file (MP3/MP4)"
+      }, { quoted: mek });
     }
 
     // Download the media
@@ -32,7 +34,9 @@ cmd({
     else if (mimeType.includes('video/mp4')) extension = '.mp4';
     else if (mimeType.includes('audio/')) extension = '.mp3';
     else {
-      return reply("Unsupported format. Please use MP3 or MP4");
+      return await client.sendMessage(message.chat, {
+        text: "Unsupported format. Please use MP3 or MP4"
+      }, { quoted: mek });
     }
 
     // Create temp file
@@ -70,18 +74,25 @@ cmd({
 
     const { title, artists } = result.data;
 
-    // Create stylish box response
+    // Create stylish box response with contextInfo
     const songInfo = `
-╭──「 🎵 *MUSIC FINDER* 」
+┌─「 🎵 *SONG FOUND* 」  
 │
-│ • *Title:* ${title || 'Unknown'}
-│ • *Artist:* ${artists || 'Unknown'}
+│  📝 *Title:* ${title || 'Unknown'}
+│  🎤 *Artist:* ${artists || 'Unknown'}
 │
-│ *Powered by KHAN-MD*
-╰─────────────────
+│  ╰─「 Powered by *JawadTechX* 」
+└─────────────────
     `.trim();
 
-    await reply(songInfo);
+    await client.sendMessage(message.chat, {
+      text: songInfo,
+      contextInfo: {
+        mentionedJid: [],
+        forwardingScore: 999,
+        isForwarded: true
+      }
+    }, { quoted: mek });
 
   } catch (error) {
     console.error('Song Finder Error:', error);
@@ -95,6 +106,8 @@ cmd({
       errorMsg += error.message || "Failed to identify song. The audio might be too short or unclear.";
     }
     
-    await reply(errorMsg);
+    await client.sendMessage(message.chat, {
+      text: errorMsg
+    }, { quoted: mek });
   }
 });
