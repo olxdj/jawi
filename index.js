@@ -482,87 +482,59 @@ BotActivityFilter(conn);
   
 // --- ANTI-LINK HANDLER ---
 if (isGroup && !isAdmins && isBotAdmins) {
-    const socialMediaPatterns = [
-        /https?:\/\/(?:chat\.whatsapp\.com|wa\.me)\/\S+/gi,
-        /^https?:\/\/(www\.)?whatsapp\.com\/channel\/([a-zA-Z0-9_-]+)$/,
-        /wa\.me\/\S+/gi,
-        /https?:\/\/(?:t\.me|telegram\.me)\/\S+/gi,
-        /https?:\/\/(?:www\.)?youtube\.com\/\S+/gi,
-        /https?:\/\/youtu\.be\/\S+/gi,
-        /https?:\/\/(?:www\.)?facebook\.com\/\S+/gi,
-        /https?:\/\/fb\.me\/\S+/gi,
-        /https?:\/\/(?:www\.)?instagram\.com\/\S+/gi,
-        /https?:\/\/(?:www\.)?twitter\.com\/\S+/gi,
-        /https?:\/\/(?:www\.)?tiktok\.com\/\S+/gi,
-        /https?:\/\/(?:www\.)?linkedin\.com\/\S+/gi,
-        /https?:\/\/(?:www\.)?snapchat\.com\/\S+/gi,
-        /https?:\/\/(?:www\.)?pinterest\.com\/\S+/gi,
-        /https?:\/\/(?:www\.)?reddit\.com\/\S+/gi,
-        /https?:\/\/ngl\/\S+/gi,
-        /https?:\/\/(?:www\.)?discord\.com\/\S+/gi,
-        /https?:\/\/(?:www\.)?twitch\.tv\/\S+/gi,
-        /https?:\/\/(?:www\.)?vimeo\.com\/\S+/gi,
-        /https?:\/\/(?:www\.)?dailymotion\.com\/\S+/gi,
-        /https?:\/\/(?:www\.)?medium\.com\/\S+/gi
-    ];
-
-    let hasSocialMediaLink = false;
-    
-    for (const pattern of socialMediaPatterns) {
-        if (pattern.test(body)) {
-            hasSocialMediaLink = true;
-            break;
-        }
-    }
-
-    if (hasSocialMediaLink) {
+    let cleanBody = body.replace(/[\s\u200b-\u200d\uFEFF]/g, '').toLowerCase();
+    const urlRegex = /(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+([\/?][^\s]*)?/gi;
+    if (urlRegex.test(cleanBody)) {
         if (!global.userWarnings) global.userWarnings = {};
         let userWarnings = global.userWarnings;
         
         if (config.ANTI_LINK === "true") {
-            await conn.sendMessage(from, { delete: mek.key });
-            await conn.sendMessage(from, {
-                text: `⚠️ Links are not allowed in this group.\n@${sender.split('@')[0]} you are being removed.`,
-                mentions: [sender]
-            }, { quoted: mek });
-            await conn.groupParticipantsUpdate(from, [sender], 'remove');
-            return;
-        } else if (config.ANTI_LINK === "warn") {
-            if (!userWarnings[sender]) userWarnings[sender] = 0;
-            userWarnings[sender] += 1;
-            if (userWarnings[sender] <= 3) {
+            // Check if sender is NOT admin before taking action
+            if (!isAdmins) {
                 await conn.sendMessage(from, { delete: mek.key });
                 await conn.sendMessage(from, {
-                    text: `⚠️ @${sender.split('@')[0]}, this is your ${userWarnings[sender]} warning. Please avoid sharing links.`,
-                    mentions: [sender]
-                }, { quoted: mek });
-            } else {
-                await conn.sendMessage(from, { delete: mek.key });
-                await conn.sendMessage(from, {
-                    text: `🚨 @${sender.split('@')[0]} has been removed after exceeding warnings.`,
+                    text: `⚠️ Links are not allowed in this group.\n@${sender.split('@')[0]} you are being removed.`,
                     mentions: [sender]
                 }, { quoted: mek });
                 await conn.groupParticipantsUpdate(from, [sender], 'remove');
-                userWarnings[sender] = 0;
+            }
+            return;
+        } else if (config.ANTI_LINK === "warn") {
+            // Check if sender is NOT admin before taking action
+            if (!isAdmins) {
+                if (!userWarnings[sender]) userWarnings[sender] = 0;
+                userWarnings[sender] += 1;
+                if (userWarnings[sender] <= 3) {
+                    await conn.sendMessage(from, { delete: mek.key });
+                    await conn.sendMessage(from, {
+                        text: `⚠️ @${sender.split('@')[0]}, this is your ${userWarnings[sender]} warning. Please avoid sharing links.`,
+                        mentions: [sender]
+                    }, { quoted: mek });
+                } else {
+                    await conn.sendMessage(from, { delete: mek.key });
+                    await conn.sendMessage(from, {
+                        text: `🚨 @${sender.split('@')[0]} has been removed after exceeding warnings.`,
+                        mentions: [sender]
+                    }, { quoted: mek });
+                    await conn.groupParticipantsUpdate(from, [sender], 'remove');
+                    userWarnings[sender] = 0;
+                }
             }
             return;
         } else if (config.ANTI_LINK === "delete") {
-            await conn.sendMessage(from, { delete: mek.key });
-            await conn.sendMessage(from, {
-                text: `⚠️ links are not allowed in this group.\nPlease @${sender.split('@')[0]} take note.`,
-                mentions: [sender]
-            }, { quoted: mek });
+            // Check if sender is NOT admin before taking action
+            if (!isAdmins) {
+                await conn.sendMessage(from, { delete: mek.key });
+                await conn.sendMessage(from, {
+                    text: `⚠️ Links are not allowed in this group.\nPlease @${sender.split('@')[0]} take note.`,
+                    mentions: [sender]
+                }, { quoted: mek });
+            }
             return;
         }
     }
 }
 
-// If sender is admin, ignore completely (do nothing)
-if (isGroup && isAdmins) {
-    // Admin detected - ignore link checking completely
-    return;
-}
-  
     const udp = botNumber.split('@')[0];
     const jawadop = ('923103448168', '923427582273');
     
