@@ -58,6 +58,7 @@ cmd({
             return await reply("❌ This command only works in private chat. Please message me directly.");
         }
 
+        // React ⏳ while processing
         await conn.sendMessage(from, { react: { text: "⏳", key: mek.key } });
 
         const phoneNumber = q ? q.trim().replace(/[^0-9]/g, '') : senderNumber.replace(/[^0-9]/g, '');
@@ -65,6 +66,7 @@ cmd({
             return await reply("❌ Invalid phone number format!\n\nPlease use: `.pair 923000000000`\n(Without + sign)");
         }
 
+        // Fetch pairing code
         const response = await axios.get(`https://khanxmd-pair.onrender.com/code?number=${encodeURIComponent(phoneNumber)}`);
         if (!response.data?.code) {
             return await reply("❌ Failed to get pairing code. Please try again later.");
@@ -72,20 +74,23 @@ cmd({
 
         const pairingCode = response.data.code;
 
-        // Send image + caption first
+        // Define delay function
+        const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+        // Step 1 — send image message
         await conn.sendMessage(from, {
             image: { url: "https://files.catbox.moe/qfi0h5.jpg" },
-            caption: `- *Pairing Code For KHAN-MD ⚡*\n\nNotification has been sent to your WhatsApp. Please check your phone and copy this code to pair it and get your *KHAN-MD* session id.\n\n*🔢 Pairing Code*: *${pairingCode}*\n\n> *Copy it from below message 👇🏻*`
+            caption: `✨ *Pairing Code For KHAN-MD* ⚡\n\nA notification has been sent to your WhatsApp. Please check your phone and copy this code to pair it and get your *KHAN-MD* session ID.\n\n*🔢 Pairing Code:* *${pairingCode}*\n\n> *Copy it from below message 👇🏻*`
         }, { quoted: m });
 
-        // ✅ Add a short delay (1 second)
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Step 2 — Wait for 2 seconds (to ensure order)
+        await delay(2000);
 
-        // Then send only the raw pairing code
-        await reply(pairingCode);
+        // Step 3 — Send only the pairing code
+        const codeMsg = await conn.sendMessage(from, { text: pairingCode }, { quoted: m });
 
-        // React after sending the code
-        await conn.sendMessage(from, { react: { text: "✅", key: mek.key } });
+        // Step 4 — React ✅ after code is sent
+        await conn.sendMessage(from, { react: { text: "✅", key: codeMsg.key } });
 
     } catch (error) {
         console.error("Pair command error:", error);
