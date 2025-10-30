@@ -26,7 +26,7 @@ cmd({
         if (!q) return await reply("🔍 Please provide a search");
 
         // 🔍 Search IK
-        const searchUrl = `https://api.hanggts.xyz/search/ik?q=${encodeURIComponent(q)}`;
+        const searchUrl = `https://api.hanggts.xyz/search/xnxx?q=${encodeURIComponent(q)}`;
         const { data } = await axios.get(searchUrl);
 
         if (!data?.status || !data?.result || !data.result.length) {
@@ -80,7 +80,7 @@ cmd({
 
                     try {
                         // Download video using the API
-                        const downloadUrl = `https://api.hanggts.xyz/download/ik?url=${encodeURIComponent(selectedItem.link)}`;
+                        const downloadUrl = `https://api.hanggts.xyz/download/xnxx?url=${encodeURIComponent(selectedItem.link)}`;
                         const downloadData = await axios.get(downloadUrl);
 
                         if (!downloadData?.data?.status || !downloadData?.data?.result) {
