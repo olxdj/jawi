@@ -54,24 +54,65 @@ async (conn, mek, m, { from, quoted, sender, reply }) => {
     }
 });
 
-// ping2 
-
 cmd({
     pattern: "ping2",
-    desc: "Check bot's response time.",
+    desc: "Check bot's response time with progress bar",
     category: "main",
-    react: "🍂",
+    react: "⚡",
     filename: __filename
 },
-async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply }) => {
+async (conn, mek, m, { from, reply }) => {
     try {
-        const startTime = Date.now()
-        const message = await conn.sendMessage(from, { text: '*PINGING...*' })
-        const endTime = Date.now()
-        const ping = endTime - startTime
-        await conn.sendMessage(from, { text: `*🔥 KHAN-MD SPEED : ${ping}ms*` }, { quoted: message })
+        const start = new Date().getTime();
+
+        const progressSteps = [
+            "```[▱▱▱▱▱▱▱▱▱▱] 0%``` ",
+            "```[▰▱▱▱▱▱▱▱▱▱] 10%``` ",
+            "```[▰▰▰▱▱▱▱▱▱▱] 20%``` ",
+            "```[▰▰▰▰▰▱▱▱▱▱] 30%``` ",
+            "```[▰▰▰▰▰▰▰▱▱▱] 40%``` ",
+            "```[▰▰▰▰▰▰▰▰▰▱] 50%``` ",
+            "```[▰▰▰▰▰▰▰▰▰▰] 60%``` ",
+            "```[▰▰▰▰▰▰▰▰▰▰▰▱▱▱] 70%``` ",
+            "```[▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱] 80%``` ",
+            "```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱] 90%``` ",
+            "```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` "
+        ];
+
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
+        for (const step of progressSteps) {
+            currentText = step;
+            await sleep(500);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
+        }
+
+        const end = new Date().getTime();
+        const responseTime = (end - start) / 1000;
+
+        // Text emojis for the final message
+        const textEmojis = ['🔥', '⚡', '🚀', '💨', '🎯', '🎉', '🌟', '💥', '🕐', '💎', '🏆', '🎶', '🌠', '🌀', '🔱', '🛡️', '✨'];
+        
+        // Select random text emoji
+        const textEmoji = textEmojis[Math.floor(Math.random() * textEmojis.length)];
+
+        currentText = `> *ᴋʜᴀɴ-ᴍᴅ sᴘᴇᴇᴅ:* ${responseTime.toFixed(2)}ᴍs ${textEmoji}`;
+        
+        const finalMsg = {
+            key: sentMessage.key,
+            type: 0xe,
+            editedMessage: { conversation: currentText }
+        };
+        await conn.relayMessage(from, { protocolMessage: finalMsg }, {});
+
     } catch (e) {
-        console.log(e)
-        reply(`${e}`)
+        console.error("Error in ping2 command:", e);
+        reply(`❌ *Test Failed:* ${e.message}`);
     }
-})
+});
