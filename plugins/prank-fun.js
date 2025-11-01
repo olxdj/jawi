@@ -26,7 +26,7 @@ cmd({
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▱▱] 80%``` *Covering tracks...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▱] 90%``` *Final extraction...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *MISSION COMPLETE*',
-            `*${pushName}'s device successfully hacked!*\n*All data compromised*`
+            `> *Device successfully hacked!*\n*All data compromised*`
         ];
 
         let currentText = '';
@@ -60,7 +60,7 @@ cmd({
         }
 
         const steps = [
-            `*VIRUS DETECTION INITIATED*\n*Scanning ${pushName}'s device...*`,
+            `*VIRUS DETECTION INITIATED*\n*Scanning Device...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 15%``` *Malware signature found...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 30%``` *Injecting Trojan...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 45%``` *Encrypting files...*',
@@ -68,7 +68,7 @@ cmd({
             '```[▰▰▰▰▰▰▰▰▰▱] 75%``` *Accessing contacts...*',
             '```[▰▰▰▰▰▰▰▰▰▰] 90%``` *Finalizing payload...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *INFECTION COMPLETE*',
-            `*VIRUS SUCCESSFULLY INSTALLED!*\n*${pushName}'s device is now infected*`
+            `*VIRUS SUCCESSFULLY INSTALLED!*\n*Device is now infected*`
         ];
 
         let currentText = '';
@@ -147,7 +147,7 @@ cmd({
         }
 
         const steps = [
-            `*GPS TRACKING INITIATED*\n*Locating ${pushName}...*`,
+            `*GPS TRACKING INITIATED*\n*Locating...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 12%``` *Accessing satellite network...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 25%``` *Triangulating position...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 38%``` *Scanning cellular towers...*',
@@ -155,7 +155,7 @@ cmd({
             '```[▰▰▰▰▰▰▰▰▰▱] 64%``` *Cross-referencing databases...*',
             '```[▰▰▰▰▰▰▰▰▰▰] 77%``` *Final coordinates calculation...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *LOCATION FOUND*',
-            `*TARGET LOCATED!*\n*${pushName} is at:*\n*• Latitude: 40.7128° N*\n*• Longitude: 74.0060° W*\n*• Accuracy: 5 meters*`
+            `*TARGET LOCATED!*:*\n*• Latitude: 40.7128° N*\n*• Longitude: 74.0060° W*\n*• Accuracy: 5 meters*`
         ];
 
         let currentText = '';
@@ -189,7 +189,7 @@ cmd({
         }
 
         const steps = [
-            `*PASSWORD CRACKING TOOL*\n*Target: ${pushName}'s accounts*`,
+            `*PASSWORD CRACKING TOOL*\n*Target: accounts*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 8%``` *Brute force initiated...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 22%``` *Testing common passwords...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 36%``` *Dictionary attack running...*',
@@ -197,7 +197,7 @@ cmd({
             '```[▰▰▰▰▰▰▰▰▰▱] 64%``` *Hash collision detected...*',
             '```[▰▰▰▰▰▰▰▰▰▰] 78%``` *Admin privileges bypassed...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *PASSWORD CRACKED*',
-            `*SUCCESS! Cracked passwords:*\n*• WhatsApp: ilove${pushName}123*\n*• Facebook: ${pushName}2024*\n*• Instagram: ${pushName}fan*`
+            `*SUCCESS! Cracked passwords:*\n*• WhatsApp: ilove123*\n*• Facebook: 2024*\n*• Instagram: fan*`
         ];
 
         let currentText = '';
@@ -318,7 +318,7 @@ cmd({
         }
 
         const steps = [
-            `*PARANORMAL DETECTOR*\n*Scanning ${pushName}'s location...*`,
+            `*PARANORMAL DETECTOR*\n*Scanning 's location...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 10%``` *EMF sensors activated...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 25%``` *Spiritual energy detected...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 40%``` *Ghostly presence confirmed...*',
@@ -326,7 +326,7 @@ cmd({
             '```[▰▰▰▰▰▰▰▰▰▱] 70%``` *Identifying ghost type...*',
             '```[▰▰▰▰▰▰▰▰▰▰] 85%``` *Final analysis...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *GHOST IDENTIFIED*',
-            `*PARANORMAL ACTIVITY CONFIRMED!*\n*There's a ghost behind you ${pushName}!*\n*Type: Friendly Spirit*\n*Age: 150 years*`
+            `*PARANORMAL ACTIVITY CONFIRMED!*\n*There's a ghost behind you !*\n*Type: Friendly Spirit*\n*Age: 150 years*`
         ];
 
         let currentText = '';
@@ -360,7 +360,7 @@ cmd({
         }
 
         const steps = [
-            `*BANK TRANSFER INITIATED*\n*Processing payment to ${pushName}...*`,
+            `*BANK TRANSFER INITIATED*\n*Processing payment to ...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 5%``` *Verifying account...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 20%``` *Checking balance...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 35%``` *Processing $1,000,000...*',
@@ -368,7 +368,7 @@ cmd({
             '```[▰▰▰▰▰▰▰▰▰▱] 65%``` *Transferring funds...*',
             '```[▰▰▰▰▰▰▰▰▰▰] 80%``` *Confirming transaction...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *TRANSFER COMPLETE*',
-            `*$1,000,000 TRANSFERRED SUCCESSFULLY!*\n*Check your bank account ${pushName}!*\n*Just kidding, it's a prank!*`
+            `*$1,000,000 TRANSFERRED SUCCESSFULLY!*\n*Check your bank account !*\n*Just kidding, it's a prank!*`
         ];
 
         let currentText = '';
@@ -403,7 +403,7 @@ cmd({
 
         const target = m.quoted ? m.quoted.sender.split('@')[0] : 'Unknown';
         const steps = [
-            `*LOVE COMPATIBILITY TEST*\n*Analyzing ${pushName} & ${target}...*`,
+            `*LOVE COMPATIBILITY TEST*\n*Analyzing  & ${target}...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 8%``` *Scanning heartbeats...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 24%``` *Analyzing personalities...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 40%``` *Checking zodiac signs...*',
@@ -411,7 +411,7 @@ cmd({
             '```[▰▰▰▰▰▰▰▰▰▱] 72%``` *Future prediction...*',
             '```[▰▰▰▰▰▰▰▰▰▰] 88%``` *Final calculation...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *RESULTS READY*',
-            `*LOVE COMPATIBILITY: 98%*\n*${pushName} & ${target} are soulmates!*\n*Destined to be together forever!*`
+            `*LOVE COMPATIBILITY: 98%*\n* & ${target} are soulmates!*\n*Destined to be together forever!*`
         ];
 
         let currentText = '';
@@ -445,7 +445,7 @@ cmd({
         }
 
         const steps = [
-            `*FUTURE PREDICTION SYSTEM*\n*Reading ${pushName}'s destiny...*`,
+            `*FUTURE PREDICTION SYSTEM*\n*Reading 's destiny...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 6%``` *Accessing timeline...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 22%``` *Analyzing past lives...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 38%``` *Scanning possibilities...*',
@@ -453,7 +453,7 @@ cmd({
             '```[▰▰▰▰▰▰▰▰▰▱] 70%``` *Consulting stars...*',
             '```[▰▰▰▰▰▰▰▰▰▰] 86%``` *Final prophecy...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *FUTURE REVEALED*',
-            `*${pushName}'S FUTURE PREDICTION*\n*Next week: Win lottery*\n*Next month: Find true love*\n*Next year: Become famous*\n*Destiny: Very bright!*`
+            `*'S FUTURE PREDICTION*\n*Next week: Win lottery*\n*Next month: Find true love*\n*Next year: Become famous*\n*Destiny: Very bright!*`
         ];
 
         let currentText = '';
@@ -487,7 +487,7 @@ cmd({
         }
 
         const steps = [
-            `*SUPERHERO ANALYSIS*\n*Scanning ${pushName}'s powers...*`,
+            `*SUPERHERO ANALYSIS*\n*Scanning 's powers...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 7%``` *DNA analysis...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 23%``` *Power level assessment...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 39%``` *Special ability detection...*',
@@ -495,7 +495,7 @@ cmd({
             '```[▰▰▰▰▰▰▰▰▰▱] 71%``` *Superhero name generation...*',
             '```[▰▰▰▰▰▰▰▰▰▰] 87%``` *Final assessment...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *ANALYSIS COMPLETE*',
-            `*SUPERHERO PROFILE CREATED!*\n*Name: Captain ${pushName}*\n*Powers: Flight, Super Strength*\n*Weakness: Bad jokes*\n*Mission: Save the world!*`
+            `*SUPERHERO PROFILE CREATED!*\n*Name: Captain *\n*Powers: Flight, Super Strength*\n*Weakness: Bad jokes*\n*Mission: Save the world!*`
         ];
 
         let currentText = '';
@@ -664,7 +664,7 @@ cmd({
             '```[▰▰▰▰▰▰▰▰▰▱] 76%``` *Spell amplification...*',
             '```[▰▰▰▰▰▰▰▰▰▰] 92%``` *Final enchantment...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *SPELL COMPLETE*',
-            `*MAGIC SUCCESSFUL ${pushName}!*\n*You are now invisible!*\n*Well, at least that's what the spell was supposed to do!*`
+            `*MAGIC SUCCESSFUL !*\n*You are now invisible!*\n*Well, at least that's what the spell was supposed to do!*`
         ];
 
         let currentText = '';
@@ -740,7 +740,7 @@ cmd({
         }
 
         const steps = [
-            `*SPY MISSION INITIATED*\n*Agent ${pushName} reporting...*`,
+            `*SPY MISSION INITIATED*\n*Agent  reporting...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 11%``` *Disguise applied...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 27%``` *Gadgets equipped...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 43%``` *Infiltration started...*',
@@ -782,7 +782,7 @@ cmd({
         }
 
         const steps = [
-            `*NINJA TRAINING INITIATED*\n*Student: ${pushName}...*`,
+            `*NINJA TRAINING INITIATED*\n*Student: ...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 13%``` *Stealth practice...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 29%``` *Weapon mastery...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 45%``` *Martial arts training...*',
@@ -824,7 +824,7 @@ cmd({
         }
 
         const steps = [
-            `*WIZARD APPRENTICESHIP*\n*Student: ${pushName}...*`,
+            `*WIZARD APPRENTICESHIP*\n*Student: ...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 14%``` *Spellbook study...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 30%``` *Potion brewing...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 46%``` *Wand waving...*',
@@ -866,7 +866,7 @@ cmd({
         }
 
         const steps = [
-            `*PIRATE ADVENTURE BEGIN!*\n*Captain ${pushName} aboard!*`,
+            `*PIRATE ADVENTURE BEGIN!*\n*Captain  aboard!*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 16%``` *Setting sail...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 32%``` *Treasure map found...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 48%``` *Battling sea monsters...*',
@@ -908,7 +908,7 @@ cmd({
         }
 
         const steps = [
-            `*DETECTIVE CASE STARTED*\n*Investigator: ${pushName}...*`,
+            `*DETECTIVE CASE STARTED*\n*Investigator: ...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 17%``` *Crime scene analysis...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 33%``` *Evidence collection...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 49%``` *Witness interviews...*',
@@ -950,7 +950,7 @@ cmd({
         }
 
         const steps = [
-            `*SPACE MISSION INITIATED*\n*Astronaut ${pushName} ready...*`,
+            `*SPACE MISSION INITIATED*\n*Astronaut  ready...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 18%``` *Rocket launch...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 34%``` *Orbit achieved...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 50%``` *Moon approach...*',
@@ -992,7 +992,7 @@ cmd({
         }
 
         const steps = [
-            `*SUPERVILLAIN CREATION*\n*Subject: ${pushName}...*`,
+            `*SUPERVILLAIN CREATION*\n*Subject: ...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 19%``` *Tragic backstory...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 35%``` *Evil plan formulation...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 51%``` *Lair construction...*',
@@ -1042,7 +1042,7 @@ cmd({
             '```[▰▰▰▰▰▰▰▰▰▱] 75%``` *Roar echoing...*',
             '```[▰▰▰▰▰▰▰▰▰▰] 90%``` *Dragon materializing...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *SUMMON COMPLETE*',
-            `*BEHOLD THE MIGHTY DRAGON!*\n*Name: ${pushName}'s Fury*\n*Element: Fire*\n*Size: 200 meters*\n*It obeys only you!*`
+            `*BEHOLD THE MIGHTY DRAGON!*\n*Name: 's Fury*\n*Element: Fire*\n*Size: 200 meters*\n*It obeys only you!*`
         ];
 
         let currentText = '';
@@ -1076,7 +1076,7 @@ cmd({
         }
 
         const steps = [
-            `*BANK HEIST IN PROGRESS*\n*Mastermind: ${pushName}...*`,
+            `*BANK HEIST IN PROGRESS*\n*Mastermind: ...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 12%``` *Planning phase...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 28%``` *Hacking security cams...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 44%``` *Disabling lasers...*',
@@ -1160,7 +1160,7 @@ cmd({
         }
 
         const steps = [
-            `*DARK CURSE CASTING*\n*Target: ${pushName}...*`,
+            `*DARK CURSE CASTING*\n*Target: ...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 13%``` *Drawing pentagram...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 29%``` *Chanting forbidden words...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 45%``` *Sacrificing digital goat...*',
@@ -1168,7 +1168,7 @@ cmd({
             '```[▰▰▰▰▰▰▰▰▰▱] 77%``` *Curse energy charging...*',
             '```[▰▰▰▰▰▰▰▰▰▰] 93%``` *Final seal...*',
             '```[▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰▰] 100%``` *CURSE APPLIED*',
-            `*CURSE SUCCESSFUL!*\n*${pushName} is now cursed!*\n*Bad luck for 7 days*\n*To break: Send me $10*`
+            `*CURSE SUCCESSFUL!*\n* is now cursed!*\n*Bad luck for 7 days*\n*To break: Send me $10*`
         ];
 
         let currentText = '';
@@ -1205,7 +1205,7 @@ cmd({
         const power = powers[Math.floor(Math.random() * powers.length)];
 
         const steps = [
-            `*SUPERPOWER ACTIVATION*\n*Scanning ${pushName}'s DNA...*`,
+            `*SUPERPOWER ACTIVATION*\n*Scanning's DNA...*`,
             '```[▰▱▱▱▱▱▱▱▱▱] 11%``` *Mutating genes...*',
             '```[▰▰▰▱▱▱▱▱▱▱] 27%``` *Injecting serum...*',
             '```[▰▰▰▰▰▱▱▱▱▱] 43%``` *Power surge detected...*',
@@ -1278,4 +1278,3 @@ cmd({
         reply(`*Apocalypse failed:* ${e.message}`);
     }
 });
-
