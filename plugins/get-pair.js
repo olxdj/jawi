@@ -103,7 +103,7 @@ cmd({
     alias: ["deploykhan", "deploybot", "setupbot"],
     react: "🚀",
     desc: "Deploy KHAN-MD bot with session ID",
-    category: "bot",
+    category: "owner",
     use: ".deploy IK~your_session_id_here",
     filename: __filename
 }, async (conn, mek, m, { from, quoted, body, isCmd, command, args, q, isGroup, senderNumber, reply }) => {
