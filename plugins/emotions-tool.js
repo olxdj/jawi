@@ -2,6 +2,43 @@ const { cmd, commands } = require("../command");
 const { sleep } = require("../lib/functions");
 const config = require("../config");
 
+cmd({
+    pattern: "chumi",
+    desc: "Displays kissing emoji animation",
+    category: "tools",
+    react: "💋",
+    filename: __filename
+}, async (conn, mek, m, { from, reply, isCreator }) => {
+    try {
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
+        const emojiMessages = [
+            "🥵", "❤️", "💋", "😫", "🤤", 
+            "😋", "🥵", "🥶", "🙊", "😻", 
+            "🙈", "💋", "🫂", "🫀", "👅", 
+            "👄", "💋"
+        ];
+
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
+        for (const line of emojiMessages) {
+            currentText = line;
+            await sleep(1000);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
+        }
+    } catch (e) {
+        reply(`❌ *Error!* ${e.message}`);
+    }
+});
+
 // 12. LOADING Command
 cmd({
     pattern: "loading",
