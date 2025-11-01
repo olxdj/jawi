@@ -7,7 +7,7 @@ cmd({
     alias: ['short', 'shorturl'],
     react: "🫧",
     desc: "Makes URL tiny.",
-    category: "convert",
+    category: "tools",
     use: "<url>",
     filename: __filename,
 },
