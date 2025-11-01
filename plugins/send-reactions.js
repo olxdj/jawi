@@ -1015,7 +1015,6 @@ cmd(
 cmd(
     {
         pattern: "kiss",
-        alias: ["chumi"], 
         desc: "Send a kiss reaction GIF.",
         category: "fun",
         react: "💋",
