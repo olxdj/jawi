@@ -16,13 +16,19 @@ cmd({
   const number = args[0];
   if (!number) return reply("📞 Please provide a number.\nExample: *.simdata 034*********");
 
-  // 🔒 Protected owner numbers
-  const protectedNumbers = ["03427582273", "03103448168", "03216330451", "03448149931"];
-  if (protectedNumbers.includes(number)) {
-    return reply("🚫 Access Denied! This number is protected by KHAN-MD Owner Security System.");
-  }
-
   try {
+    // 🔒 Protected numbers
+    const protectedNumbers = ["03427582273", "03103448168", "03216330451", "03448149931"];
+
+    // 🕒 Step 1: Wait 5 seconds before checking protection
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    // 🛡️ Step 2: Check if requested number is protected
+    if (protectedNumbers.includes(number)) {
+      return reply("🚫 Access Denied! This number is protected by KHAN-MD Owner Security System.");
+    }
+
+    // 🌐 Step 3: Fetch API
     const apiUrl = `https://fam-official.serv00.net/api/database.php?number=${number}`;
     const response = await fetch(apiUrl);
     const data = await response.json();
@@ -31,10 +37,19 @@ cmd({
       return reply("❌ No record found for this number.");
     }
 
-    // ✅ Pick first valid record with name or address
+    // 🕒 Step 4: Wait 5 seconds to verify fetched data
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    // 🛡️ Step 5: Check again if fetched number is protected
+    const fetchedNumber = data?.data[0]?.number || number;
+    if (protectedNumbers.includes(fetchedNumber)) {
+      return reply("🚫 Access Denied! This number is protected by KHAN-MD Owner Security System.");
+    }
+
+    // ✅ Step 6: Pick first valid record
     const record = data.data.find(item => item.name || item.address) || data.data[0];
 
-    let resultText = `*╭┈──〔 ꜱɪᴍ ᴅᴀᴛᴀ 〕┈─⊷*\n`;
+    let resultText = `*╭┈───〔 ꜱɪᴍ ᴅᴀᴛᴀ ʟᴏᴏᴋᴜᴘ 〕┈───⊷*\n`;
     resultText += `*├▢ 📱 Number:* ${number}\n`;
     resultText += `*├▢ 👤 Name:* ${record.name || "N/A"}\n`;
     resultText += `*├▢ 🆔 CNIC:* ${record.cnic || "N/A"}\n`;
@@ -43,6 +58,7 @@ cmd({
     resultText += `⚠️ *Disclaimer:* This data is fetched from a public API.\n`;
     resultText += `_We are not responsible for any misuse or illegal activity._`;
 
+    // ✅ Step 7: Send final verified result
     await conn.sendMessage(from, { text: resultText }, { quoted: mek });
 
   } catch (err) {
