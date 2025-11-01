@@ -1,6 +1,8 @@
-const { cmd } = require("../command");
+const { cmd, commands } = require("../command");
 const { sleep } = require("../lib/functions");
+const config = require("../config");
 
+// 2. FING Command
 cmd({
     pattern: "fing",
     alias: ['fingering', 'hath', 'ungli', 'touch', 'moan'],
@@ -8,11 +10,12 @@ cmd({
     category: "tools",
     react: "👅",
     filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
+}, async (conn, mek, m, { from, reply, isCreator }) => {
     try {
-        const loadingMessage = await conn.sendMessage(from, { text: '👀 Starting... 🍑💦' });
-        
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
         const animationFrames = [
             "👆🏻------🍑", 
             "👆🏻-----🍑", 
@@ -28,40 +31,38 @@ async (conn, mek, m, { from, reply }) => {
             "💦🍑💦 *Awf 🥵👅*"
         ];
 
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
         for (const frame of animationFrames) {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // 1 second delay
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: loadingMessage.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: frame,
-                        },
-                    },
-                },
-                {}
-            );
+            currentText = frame;
+            await sleep(1000);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
     } catch (e) {
-        console.log(e);
         reply(`❌ *Error!* ${e.message}`);
     }
 });
 
+// 3. MUTH Command
 cmd({
     pattern: "muth",
     alias: ["handjob", "hand"],
-    desc: "Displays a simple handjob animation",
+    desc: "Displays a simple handjob animation (owner only)",
     category: "fun",
     react: "✊",
     filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
+}, async (conn, mek, m, { from, reply, isCreator }) => {
     try {
-        const loadingMessage = await conn.sendMessage(from, { text: '✊ Starting...' });
-        
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
         const animationFrames = [
             "✊ 🍌",
             "✊🍌",
@@ -71,38 +72,37 @@ async (conn, mek, m, { from, reply }) => {
             "😵‍💫 Done!"
         ];
 
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
         for (const frame of animationFrames) {
-            await sleep(800); // 0.8 second delay
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: loadingMessage.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: frame,
-                        },
-                    },
-                },
-                {}
-            );
+            currentText = frame;
+            await sleep(800);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
     } catch (e) {
-        console.log(e);
         reply(`❌ Error: ${e.message}`);
     }
 });
 
+// 4. HAPPY Command
 cmd({
     pattern: "happy",
     desc: "Displays a dynamic edit msg for fun.",
     category: "tools",
     react: "😂",
     filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
+}, async (conn, mek, m, { from, reply, isCreator }) => {
     try {
-        const loadingMessage = await conn.sendMessage(from, { text: '😂' });
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
         const emojiMessages = [
             "😃", "😄", "😁", "😊", "😎", "🥳",
             "😸", "😹", "🌞", "🌈", "😃", "😄",
@@ -110,38 +110,37 @@ async (conn, mek, m, { from, reply }) => {
             "🌞", "🌈", "😃", "😄", "😁", "😊"
         ];
 
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
         for (const line of emojiMessages) {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Delay for 1 second
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: loadingMessage.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: line,
-                        },
-                    },
-                },
-                {}
-            );
+            currentText = line;
+            await sleep(1000);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
     } catch (e) {
-        console.log(e);
         reply(`❌ *Error!* ${e.message}`);
     }
 });
 
+// 5. HEART Command
 cmd({
     pattern: "heart",
     desc: "Displays a dynamic edit msg for fun.",
     category: "tools",
     react: "❤️",
     filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
+}, async (conn, mek, m, { from, reply, isCreator }) => {
     try {
-        const loadingMessage = await conn.sendMessage(from, { text: '🖤' });
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
         const emojiMessages = [
             "💖", "💗", "💕", "🩷", "💛", "💚",
             "🩵", "💙", "💜", "🖤", "🩶", "🤍",
@@ -149,150 +148,146 @@ async (conn, mek, m, { from, reply }) => {
             "♥️", "💟", "❤️‍🩹", "❤️"
         ];
 
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
         for (const line of emojiMessages) {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Delay for 1 second
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: loadingMessage.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: line,
-                        },
-                    },
-                },
-                {}
-            );
+            currentText = line;
+            await sleep(1000);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
     } catch (e) {
-        console.log(e);
         reply(`❌ *Error!* ${e.message}`);
     }
 });
 
+// 6. ANGRY Command
 cmd({
     pattern: "angry",
     desc: "Displays a dynamic edit msg for fun.",
     category: "tools",
     react: "🤡",
     filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
+}, async (conn, mek, m, { from, reply, isCreator }) => {
     try {
-        const loadingMessage = await conn.sendMessage(from, { text: '👽' });
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
         const emojiMessages = [
             "😡", "😠", "🤬", "😤", "😾", "😡",
             "😠", "🤬", "😤", "😾"
         ];
 
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
         for (const line of emojiMessages) {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Delay for 1 second
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: loadingMessage.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: line,
-                        },
-                    },
-                },
-                {}
-            );
+            currentText = line;
+            await sleep(1000);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
     } catch (e) {
-        console.log(e);
         reply(`❌ *Error!* ${e.message}`);
     }
 });
 
+// 7. SAD Command
 cmd({
     pattern: "sad",
     desc: "Displays a dynamic edit msg for fun.",
     category: "tools",
     react: "😶",
     filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
+}, async (conn, mek, m, { from, reply, isCreator }) => {
     try {
-        const loadingMessage = await conn.sendMessage(from, { text: '😔' });
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
         const emojiMessages = [
             "🥺", "😟", "😕", "😖", "😫", "🙁",
             "😩", "😥", "😓", "😪", "😢", "😔",
             "😞", "😭", "💔", "😭", "😿"
         ];
 
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
         for (const line of emojiMessages) {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Delay for 1 second
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: loadingMessage.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: line,
-                        },
-                    },
-                },
-                {}
-            );
+            currentText = line;
+            await sleep(1000);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
     } catch (e) {
-        console.log(e);
         reply(`❌ *Error!* ${e.message}`);
     }
 });
 
+// 8. SHY Command
 cmd({
     pattern: "shy",
     desc: "Displays a dynamic edit msg for fun.",
     category: "tools",
     react: "🧐",
     filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
+}, async (conn, mek, m, { from, reply, isCreator }) => {
     try {
-        const loadingMessage = await conn.sendMessage(from, { text: '🧐' });
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
         const emojiMessages = [
             "😳", "😊", "😶", "🙈", "🙊",
             "😳", "😊", "😶", "🙈", "🙊"
         ];
 
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
         for (const line of emojiMessages) {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Delay for 1 second
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: loadingMessage.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: line,
-                        },
-                    },
-                },
-                {}
-            );
+            currentText = line;
+            await sleep(1000);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
     } catch (e) {
-        console.log(e);
         reply(`❌ *Error!* ${e.message}`);
     }
 });
 
+// 9. MOON Command
 cmd({
     pattern: "moon",
     desc: "Displays a dynamic edit msg for fun.",
     category: "tools",
     react: "🌚",
     filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
+}, async (conn, mek, m, { from, reply, isCreator }) => {
     try {
-        const loadingMessage = await conn.sendMessage(from, { text: '🌝' });
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
         const emojiMessages = [
             "🌗", "🌘", "🌑", "🌒", "🌓", "🌔",
             "🌕", "🌖", "🌗", "🌘", "🌑", "🌒",
@@ -302,103 +297,96 @@ async (conn, mek, m, { from, reply }) => {
             "🌕", "🌖", "🌝🌚"
         ];
 
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
         for (const line of emojiMessages) {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Delay for 1 second
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: loadingMessage.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: line,
-                        },
-                    },
-                },
-                {}
-            );
+            currentText = line;
+            await sleep(1000);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
     } catch (e) {
-        console.log(e);
         reply(`❌ *Error!* ${e.message}`);
     }
 });
 
+// 10. CONFUSED Command
 cmd({
     pattern: "confused",
     desc: "Displays a dynamic edit msg for fun.",
     category: "tools",
     react: "🤔",
     filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
+}, async (conn, mek, m, { from, reply, isCreator }) => {
     try {
-        const loadingMessage = await conn.sendMessage(from, { text: '🤔' });
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
         const emojiMessages = [
             "😕", "😟", "😵", "🤔", "😖", 
             "😲", "😦", "🤷", "🤷‍♂️", "🤷‍♀️"
         ];
 
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
         for (const line of emojiMessages) {
-            await new Promise(resolve => setTimeout(resolve, 1000)); // Delay for 1 second
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: loadingMessage.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: line,
-                        },
-                    },
-                },
-                {}
-            );
+            currentText = line;
+            await sleep(1000);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
     } catch (e) {
-        console.log(e);
         reply(`❌ *Error!* ${e.message}`);
     }
 });
 
-
+// 11. NIKAL Command
 cmd({
     pattern: "nikal",
     desc: "Displays a dynamic edit msg for fun.",
     category: "tools",
     react: "🗿",
     filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
+}, async (conn, mek, m, { from, reply, isCreator }) => {
     try {
-        const loadingMessage = await conn.sendMessage(from, { text: 'KHANX-AI🗿' });
-        
-        // Define the ASCII art messages
+        if (!isCreator) {
+            return await conn.sendMessage(from, { text: "*This is an owner command.*" }, { quoted: mek });
+        }
+
         const asciiMessages = [
-            "⠀⠀⠀⣠⣶⡾⠏⠉⠙⠳⢦⡀⠀⠀⠀⢠⠞⠉⠙⠲⡀⠀\n ⠀⣴⠿⠏⠀⠀⠀⠀⠀     ⢳⡀⠀⡏⠀⠀⠀   ⠀  ⢷\n⢠⣟⣋⡀⢀⣀⣀⡀⠀⣀⡀   ⣧⠀⢸⠀⠀⠀  ⠀    ⡇\n⢸⣯⡭⠁⠸⣛⣟⠆⡴⣻⡲     ⣿  ⣸   Nikal   ⡇\n ⣟⣿⡭⠀⠀⠀⠀⠀⢱⠀⠀      ⣿  ⢹⠀          ⡇\n  ⠙⢿⣯⠄⠀⠀⠀__⠀   ⠀   ⡿ ⠀⡇⠀⠀⠀⠀    ⡼\n⠀⠀⠀⠹⣶⠆⠀⠀⠀⠀⠀⡴⠃⠀   ⠘⠤⣄⣠⠞⠀\n⠀⠀⠀⠀⢸⣷⡦⢤⡤⢤⣞⣁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⣤⣴⣿⣏⠁⠀⠀⠸⣏⢯⣷⣖⣦⡀⠀⠀⠀⠀⠀⠀\n⢀⣾⣽⣿⣿⣿⣿⠛⢲⣶⣾⢉⡷⣿⣿⠵⣿⠀⠀⠀⠀⠀⠀\n⣼⣿⠍⠉⣿⡭⠉⠙⢺⣇⣼⡏⠀⠀ ⠀⣄⢸⠀⠀⠀⠀⠀⠀`", "⠀⠀⠀⣠⣶⡾⠏⠉⠙⠳⢦⡀⠀⠀⠀⢠⠞⠉⠙⠲⡀⠀\n ⠀⣴⠿⠏⠀⠀⠀⠀⠀  ⠀  ⢳⡀⠀⡏⠀⠀⠀   ⠀  ⢷\n⢠⣟⣋⡀⢀⣀⣀⡀⠀⣀⡀   ⣧⠀⢸⠀⠀⠀       ⡇\n⢸⣯⡭⠁⠸⣛⣟⠆⡴⣻⡲     ⣿  ⣸   Lavde   ⡇\n ⣟⣿⡭⠀⠀⠀⠀⠀⢱⠀⠀      ⣿  ⢹⠀          ⡇\n  ⠙⢿⣯⠄⠀⠀|__|⠀⠀   ⡿ ⠀⡇⠀⠀⠀⠀    ⡼\n⠀⠀⠀⠹⣶⠆⠀⠀⠀⠀⠀⡴⠃⠀   ⠘⠤⣄⣠⠞⠀\n⠀⠀⠀⠀⢸⣷⡦⢤⡤⢤⣞⣁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⣤⣴⣿⣏⠁⠀⠀⠸⣏⢯⣷⣖⣦⡀⠀⠀⠀⠀⠀⠀\n⢀⣾⣽⣿⣿⣿⣿⠛⢲⣶⣾⢉⡷⣿⣿⠵⣿⠀⠀⠀⠀⠀⠀\n⣼⣿⠍⠉⣿⡭⠉⠙⢺⣇⣼⡏⠀⠀ ⠀⣄⢸⠀⠀⠀⠀⠀⠀`", "⠀⠀⠀⣠⣶⡾⠏⠉⠙⠳⢦⡀⠀⠀⠀⢠⠞⠉⠙⠲⡀⠀\n ⠀⣴⠿⠏⠀⠀     ⠀   ⢳⡀⠀⡏⠀⠀    ⠀  ⢷\n⢠⣟⣋⡀⢀⣀⣀⡀⠀⣀⡀   ⣧⠀⢸⠀⠀⠀⠀      ⡇\n⢸⣯⡭⠁⠸⣛⣟⠆⡴⣻⡲    ⣿  ⣸   Pehli   ⡇\n ⣟⣿⡭⠀⠀⠀⠀⠀⢱⠀⠀     ⣿  ⢹⠀           ⡇\n  ⠙⢿⣯⠄⠀⠀(P)⠀⠀     ⡿ ⠀⡇⠀⠀⠀⠀    ⡼\n⠀⠀⠀⠹⣶⠆⠀⠀⠀⠀⠀⡴⠃⠀   ⠘⠤⣄⣠⠞⠀\n⠀⠀⠀⠀⢸⣷⡦⢤⡤⢤⣞⣁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⣤⣴⣿⣏⠁⠀⠀⠸⣏⢯⣷⣖⣦⡀⠀⠀⠀⠀⠀⠀\n⢀⣾⣽⣿⣿⣿⣿⠛⢲⣶⣾⢉⡷⣿⣿⠵⣿⠀⠀⠀⠀⠀⠀\n⣼⣿⠍⠉⣿⡭⠉⠙⢺⣇⣼⡏⠀⠀ ⠀⣄⢸⠀⠀⠀⠀⠀⠀`", "⠀⠀⠀⣠⣶⡾⠏⠉⠙⠳⢦⡀⠀⠀⠀⢠⠞⠉⠙⠲⡀⠀\n ⠀⣴⠿⠏⠀⠀     ⠀   ⢳⡀⠀⡏⠀⠀    ⠀  ⢷\n⢠⣟⣋⡀⢀⣀⣀⡀⠀⣀⡀   ⣧⠀⢸⠀   ⠀     ⡇\n⢸⣯⡭⠁⠸⣛⣟⠆⡴⣻⡲    ⣿  ⣸  Fursat  ⡇\n ⣟⣿⡭⠀⠀⠀⠀⠀⢱⠀        ⣿  ⢹⠀          ⡇\n  ⠙⢿⣯⠄⠀⠀⠀__ ⠀  ⠀   ⡿ ⠀⡇⠀⠀⠀⠀    ⡼\n⠀⠀⠀⠹⣶⠆⠀⠀⠀⠀⠀⡴⠃⠀   ⠘⠤⣄⣠⠞⠀\n⠀⠀⠀⠀⢸⣷⡦⢤⡤⢤⣞⣁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⣤⣴⣿⣏⠁⠀⠀⠸⣏⢯⣷⣖⣦⡀⠀⠀⠀⠀⠀⠀\n⢀⣾⣽⣿⣿⣿⣿⠛⢲⣶⣾⢉⡷⣿⣿⠵⣿⠀⠀⠀⠀⠀⠀\n⣼⣿⠍⠉⣿⡭⠉⠙⢺⣇⣼⡏⠀⠀ ⠀⣄⢸⠀⠀⠀⠀⠀⠀`", "⠀⠀⠀⣠⣶⡾⠏⠉⠙⠳⢦⡀⠀⠀⠀⢠⠞⠉⠙⠲⡀⠀\n ⠀⣴⠿⠏⠀⠀⠀⠀⠀      ⢳⡀⠀⡏⠀⠀    ⠀  ⢷\n⢠⣟⣋⡀⢀⣀⣀⡀⠀⣀⡀   ⣧⠀⢸⠀⠀ ⠀      ⡇\n⢸⣯⡭⠁⠸⣛⣟⠆⡴⣻⡲    ⣿  ⣸  Meeee   ⡇\n ⣟⣿⡭⠀⠀⠀⠀⠀⢱⠀⠀       ⣿  ⢹⠀          ⡇\n  ⠙⢿⣯⠄⠀⠀|__| ⠀    ⡿ ⠀⡇⠀⠀⠀⠀    ⡼\n⠀⠀⠀⠹⣶⠆⠀⠀⠀⠀⠀⡴⠃⠀   ⠘⠤⣄⣠⠞⠀\n⠀⠀⠀⠀⢸⣷⡦⢤⡤⢤⣞⣁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⣤⣴⣿⣏⠁⠀⠀⠸⣏⢯⣷⣖⣦⡀⠀⠀⠀⠀⠀⠀\n⢀⣾⣽⣿⣿⣿⣿⠛⢲⣶⣾⢉⡷⣿⣿⠵⣿⠀⠀⠀⠀⠀⠀\n⣼⣿⠍⠉⣿⡭⠉⠙⢺⣇⣼⡏⠀⠀ ⠀⣄⢸⠀⠀⠀⠀⠀⠀`", "⠀⠀⠀⣠⣶⡾⠏⠉⠙⠳⢦⡀⠀⠀⠀⢠⠞⠉⠙⠲⡀⠀\n ⠀⣴⠿⠏⠀⠀⠀⠀   ⠀  ⠀⢳⡀⠀⡏⠀⠀       ⢷\n⢠⣟⣋⡀⢀⣀⣀⡀⠀⣀⡀   ⣧⠀⢸⠀  ⠀       ⡇\n⢸⣯⡭⠁⠸⣛⣟⠆⡴⣻⡲   ⣿  ⣸   Nikal   ⡇\n ⣟⣿⡭⠀⠀⠀⠀⠀⢱⠀       ⣿  ⢹⠀           ⡇\n  ⠙⢿⣯⠄⠀⠀lodu⠀⠀   ⡿ ⠀⡇⠀⠀⠀⠀   ⡼\n⠀⠀⠀⠹⣶⠆⠀⠀⠀⠀⠀  ⡴⠃⠀   ⠘⠤⣄⣠⠞⠀\n⠀⠀⠀⠀⢸⣷⡦⢤⡤⢤⣞⣁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⣤⣴⣿⣏⠁⠀⠀⠸⣏⢯⣷⣖⣦⡀⠀⠀⠀⠀⠀⠀\n⢀⣾⣽⣿⣿⣿⣿⠛⢲⣶⣾⢉⡷⣿⣿⠵⣿⠀⠀⠀⠀⠀⠀\n⣼⣿⠍⠉⣿⡭⠉⠙⢺⣇⣼⡏⠀⠀ ⠀⣄⢸⠀"
+            "⠀⠀⠀⣠⣶⡾⠏⠉⠙⠳⢦⡀⠀⠀⠀⢠⠞⠉⠙⠲⡀⠀\n ⠀⣴⠿⠏⠀⠀⠀⠀⠀     ⢳⡀⠀⡏⠀⠀⠀   ⠀  ⢷\n⢠⣟⣋⡀⢀⣀⣀⡀⠀⣀⡀   ⣧⠀⢸⠀⠀⠀  ⠀    ⡇\n⢸⣯⡭⠁⠸⣛⣟⠆⡴⣻⡲     ⣿  ⣸   Nikal   ⡇\n ⣟⣿⡭⠀⠀⠀⠀⠀⢱⠀⠀      ⣿  ⢹⠀          ⡇\n  ⠙⢿⣯⠄⠀⠀__⠀   ⠀   ⡿ ⠀⡇⠀⠀⠀⠀    ⡼\n⠀⠀⠀⠹⣶⠆⠀⠀⠀⠀⠀⡴⠃⠀   ⠘⠤⣄⣠⠞⠀\n⠀⠀⠀⠀⢸⣷⡦⢤⡤⢤⣞⣁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⣤⣴⣿⣏⠁⠀⠀⠸⣏⢯⣷⣖⣦⡀⠀⠀⠀⠀⠀⠀\n⢀⣾⣽⣿⣿⣿⣿⠛⢲⣶⣾⢉⡷⣿⣿⠵⣿⠀⠀⠀⠀⠀⠀\n⣼⣿⠍⠉⣿⡭⠉⠙⢺⣇⣼⡏⠀⠀ ⠀⣄⢸⠀⠀⠀⠀⠀⠀",
+            "⠀⠀⠀⣠⣶⡾⠏⠉⠙⠳⢦⡀⠀⠀⠀⢠⠞⠉⠙⠲⡀⠀\n ⠀⣴⠿⠏⠀⠀⠀⠀⠀  ⠀  ⢳⡀⠀⡏⠀⠀⠀   ⠀  ⢷\n⢠⣟⣋⡀⢀⣀⣀⡀⠀⣀⡀   ⣧⠀⢸⠀⠀⠀       ⡇\n⢸⣯⡭⠁⠸⣛⣟⠆⡴⣻⡲     ⣿  ⣸   Lavde   ⡇\n ⣟⣿⡭⠀⠀⠀⠀⠀⢱⠀⠀      ⣿  ⢹⠀          ⡇\n  ⠙⢿⣯⠄⠀⠀|__|⠀⠀   ⡿ ⠀⡇⠀⠀⠀⠀    ⡼\n⠀⠀⠀⠹⣶⠆⠀⠀⠀⠀⠀⡴⠃⠀   ⠘⠤⣄⣠⠞⠀\n⠀⠀⠀⠀⢸⣷⡦⢤⡤⢤⣞⣁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⣤⣴⣿⣏⠁⠀⠀⠸⣏⢯⣷⣖⣦⡀⠀⠀⠀⠀⠀⠀\n⢀⣾⣽⣿⣿⣿⣿⠛⢲⣶⣾⢉⡷⣿⣿⠵⣿⠀⠀⠀⠀⠀⠀\n⣼⣿⠍⠉⣿⡭⠉⠙⢺⣇⣼⡏⠀⠀ ⠀⣄⢸⠀⠀⠀⠀⠀⠀",
+            "⠀⠀⠀⣠⣶⡾⠏⠉⠙⠳⢦⡀⠀⠀⠀⢠⠞⠉⠙⠲⡀⠀\n ⠀⣴⠿⠏⠀⠀     ⠀   ⢳⡀⠀⡏⠀⠀    ⠀  ⢷\n⢠⣟⣋⡀⢀⣀⣀⡀⠀⣀⡀   ⣧⠀⢸⠀⠀⠀⠀      ⡇\n⢸⣯⡭⠁⠸⣛⣟⠆⡴⣻⡲    ⣿  ⣸   Pehli   ⡇\n ⣟⣿⡭⠀⠀⠀⠀⠀⢱⠀⠀     ⣿  ⢹⠀           ⡇\n  ⠙⢿⣯⠄⠀⠀(P)⠀⠀     ⡿ ⠀⡇⠀⠀⠀⠀    ⡼\n⠀⠀⠀⠹⣶⠆⠀⠀⠀⠀⠀⡴⠃⠀   ⠘⠤⣄⣠⠞⠀\n⠀⠀⠀⠀⢸⣷⡦⢤⡤⢤⣞⣁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⣤⣴⣿⣏⠁⠀⠀⠸⣏⢯⣷⣖⣦⡀⠀⠀⠀⠀⠀⠀\n⢀⣾⣽⣿⣿⣿⣿⠛⢲⣶⣾⢉⡷⣿⣿⠵⣿⠀⠀⠀⠀⠀⠀\n⣼⣿⠍⠉⣿⡭⠉⠙⢺⣇⣼⡏⠀⠀ ⠀⣄⢸⠀⠀⠀⠀⠀⠀",
+            "⠀⠀⠀⣠⣶⡾⠏⠉⠙⠳⢦⡀⠀⠀⠀⢠⠞⠉⠙⠲⡀⠀\n ⠀⣴⠿⠏⠀⠀     ⠀   ⢳⡀⠀⡏⠀⠀    ⠀  ⢷\n⢠⣟⣋⡀⢀⣀⣀⡀⠀⣀⡀   ⣧⠀⢸⠀   ⠀     ⡇\n⢸⣯⡭⠁⠸⣛⣟⠆⡴⣻⡲    ⣿  ⣸  Fursat  ⡇\n ⣟⣿⡭⠀⠀⠀⠀⠀⢱⠀        ⣿  ⢹⠀          ⡇\n  ⠙⢿⣯⠄⠀⠀⠀__ ⠀  ⠀   ⡿ ⠀⡇⠀⠀⠀⠀    ⡼\n⠀⠀⠀⠹⣶⠆⠀⠀⠀⠀⠀⡴⠃⠀   ⠘⠤⣄⣠⠞⠀\n⠀⠀⠀⠀⢸⣷⡦⢤⡤⢤⣞⣁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⣤⣴⣿⣏⠁⠀⠀⠸⣏⢯⣷⣖⣦⡀⠀⠀⠀⠀⠀⠀\n⢀⣾⣽⣿⣿⣿⣿⠛⢲⣶⣾⢉⡷⣿⣿⠵⣿⠀⠀⠀⠀⠀⠀\n⣼⣿⠍⠉⣿⡭⠉⠙⢺⣇⣼⡏⠀⠀ ⠀⣄⢸⠀⠀⠀⠀⠀⠀",
+            "⠀⠀⠀⣠⣶⡾⠏⠉⠙⠳⢦⡀⠀⠀⠀⢠⠞⠉⠙⠲⡀⠀\n ⠀⣴⠿⠏⠀⠀⠀⠀⠀      ⢳⡀⠀⡏⠀⠀    ⠀  ⢷\n⢠⣟⣋⡀⢀⣀⣀⡀⠀⣀⡀   ⣧⠀⢸⠀⠀ ⠀      ⡇\n⢸⣯⡭⠁⠸⣛⣟⠆⡴⣻⡲    ⣿  ⣸  Meeee   ⡇\n ⣟⣿⡭⠀⠀⠀⠀⠀⢱⠀⠀       ⣿  ⢹⠀          ⡇\n  ⠙⢿⣯⠄⠀⠀|__| ⠀    ⡿ ⠀⡇⠀⠀⠀⠀    ⡼\n⠀⠀⠀⠹⣶⠆⠀⠀⠀⠀⠀⡴⠃⠀   ⠘⠤⣄⣠⠞⠀\n⠀⠀⠀⠀⢸⣷⡦⢤⡤⢤⣞⣁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⣤⣴⣿⣏⠁⠀⠀⠸⣏⢯⣷⣖⣦⡀⠀⠀⠀⠀⠀⠀\n⢀⣾⣽⣿⣿⣿⣿⠛⢲⣶⣾⢉⡷⣿⣿⠵⣿⠀⠀⠀⠀⠀⠀\n⣼⣿⠍⠉⣿⡭⠉⠙⢺⣇⣼⡏⠀⠀ ⠀⣄⢸⠀⠀⠀⠀⠀⠀",
+            "⠀⠀⠀⣠⣶⡾⠏⠉⠙⠳⢦⡀⠀⠀⠀⢠⠞⠉⠙⠲⡀⠀\n ⠀⣴⠿⠏⠀⠀⠀⠀   ⠀  ⠀⢳⡀⠀⡏⠀⠀       ⢷\n⢠⣟⣋⡀⢀⣀⣀⡀⠀⣀⡀   ⣧⠀⢸⠀  ⠀       ⡇\n⢸⣯⡭⠁⠸⣛⣟⠆⡴⣻⡲   ⣿  ⣸   Nikal   ⡇\n ⣟⣿⡭⠀⠀⠀⠀⠀⢱⠀       ⣿  ⢹⠀           ⡇\n  ⠙⢿⣯⠄⠀⠀lodu⠀⠀   ⡿ ⠀⡇⠀⠀⠀⠀   ⡼\n⠀⠀⠀⠹⣶⠆⠀⠀⠀⠀⠀  ⡴⠃⠀   ⠘⠤⣄⣠⠞⠀\n⠀⠀⠀⠀⢸⣷⡦⢤⡤⢤⣞⣁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀\n⠀⢀⣤⣴⣿⣏⠁⠀⠀⠸⣏⢯⣷⣖⣦⡀⠀⠀⠀⠀⠀⠀\n⢀⣾⣽⣿⣿⣿⣿⠛⢲⣶⣾⢉⡷⣿⣿⠵⣿⠀⠀⠀⠀⠀⠀\n⣼⣿⠍⠉⣿⡭⠉⠙⢺⣇⣼⡏⠀⠀ ⠀⣄⢸⠀"
         ];
 
-        // Send the initial loading message
+        let currentText = '';
+        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+
         for (const asciiMessage of asciiMessages) {
-            await new Promise(resolve => setTimeout(resolve, 500)); // Delay for 500ms second
-            await conn.relayMessage(
-                from,
-                {
-                    protocolMessage: {
-                        key: loadingMessage.key,
-                        type: 14,
-                        editedMessage: {
-                            conversation: asciiMessage,
-                        },
-                    },
-                },
-                {}
-            );
+            currentText = asciiMessage;
+            await sleep(500);
+            const protocolMsg = {
+                key: sentMessage.key,
+                type: 0xe,
+                editedMessage: { conversation: currentText }
+            };
+            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
         }
     } catch (e) {
-        console.log(e);
         reply(`❌ *Error!* ${e.message}`);
     }
 });
-
-// > JawadTechX 
