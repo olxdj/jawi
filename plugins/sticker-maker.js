@@ -75,7 +75,7 @@ cmd({
     pattern: "attp",
     desc: "Convert text to a GIF sticker.",
     react: "✨",
-    category: "convert", 
+    category: "tools", 
     use: ".attp HI",
     filename: __filename,
 }, async (conn, mek, m, { args, reply }) => {
