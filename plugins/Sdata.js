@@ -5,7 +5,7 @@ const config = require('../config');
 cmd({
   pattern: "simdata",
   alias: ["sdata", "siminfo"],
-  react: "📡",
+  react: "🗯️",
   desc: "Fetch SIM data by number (Owner only).",
   category: "utility",
   filename: __filename
@@ -31,16 +31,14 @@ cmd({
       return reply("❌ No record found for this number.");
     }
 
-    let resultText = `*╭┈───〔 ꜱɪᴍ ᴅᴀᴛᴀ ʟᴏᴏᴋᴜᴘ 〕┈───⊷*\n`;
+    // ✅ Pick first valid record with name or address
+    const record = data.data.find(item => item.name || item.address) || data.data[0];
+
+    let resultText = `*╭┈──〔 ꜱɪᴍ ᴅᴀᴛᴀ 〕┈─⊷*\n`;
     resultText += `*├▢ 📱 Number:* ${number}\n`;
-
-    data.data.forEach((item, index) => {
-      resultText += `*├▢ 👤 Name:* ${item.name || "N/A"}\n`;
-      resultText += `*├▢ 🆔 CNIC:* ${item.cnic || "N/A"}\n`;
-      resultText += `*├▢ 🏠 Address:* ${item.address || "N/A"}\n`;
-      if (index < data.data.length - 1) resultText += `*├─────────────*\n`;
-    });
-
+    resultText += `*├▢ 👤 Name:* ${record.name || "N/A"}\n`;
+    resultText += `*├▢ 🆔 CNIC:* ${record.cnic || "N/A"}\n`;
+    resultText += `*├▢ 🏠 Address:* ${record.address || "N/A"}\n`;
     resultText += `*╰─────────────*\n\n`;
     resultText += `⚠️ *Disclaimer:* This data is fetched from a public API.\n`;
     resultText += `_We are not responsible for any misuse or illegal activity._`;
