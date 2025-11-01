@@ -1,6 +1,5 @@
 const config = require('../config');
 const { cmd, commands } = require('../command');
-const { sleep } = require("../lib/functions");
 
 cmd({
     pattern: "ping",
@@ -57,58 +56,37 @@ async (conn, mek, m, { from, quoted, sender, reply }) => {
 
 cmd({
     pattern: "ping2",
-    desc: "Check bot's response time with progress bar",
+    desc: "Check bot's response time.",
     category: "main",
     react: "⚡",
     filename: __filename
 },
 async (conn, mek, m, { from, reply }) => {
     try {
-        const start = new Date().getTime();
+        const startTime = Date.now();
 
-        const progressSteps = [
-            "```[▱▱▱▱▱] 0%```",
-            "```[▰▱▱▱▱] 20%```",
-            "```[▰▰▰▱▱] 40%```",
-            "```[▰▰▰▰▱] 60%```",
-            "```[▰▰▰▰▰] 80%```\n\n",
-            "```[▰▰▰▰▰] 100%```\n\n"
-        ];
+        // Send temporary message
+        const sent = await conn.sendMessage(from, { text: '⚙️ *Testing Speed...*' });
 
-        let currentText = '';
-        const sentMessage = await conn.sendMessage(from, { text: currentText }, { quoted: mek });
+        // Simulate short delay to make it natural
+        await new Promise(resolve => setTimeout(resolve, 700));
 
-        for (const step of progressSteps) {
-            currentText = step;
-            await sleep(500);
-            const protocolMsg = {
-                key: sentMessage.key,
-                type: 0xe,
-                editedMessage: { conversation: currentText }
-            };
-            await conn.relayMessage(from, { protocolMessage: protocolMsg }, {});
-        }
+        const endTime = Date.now();
+        const ping = endTime - startTime;
 
-        const end = new Date().getTime();
-        const responseTime = (end - start) / 1000;
+        // Fancy ping display
+        let speedText = `
+*╭┈───〔 ⚡ Kʜᴀɴ-ᴍᴅ Pɪɴɢ 〕───⊷*
+*├▢ 📶 Response:* ${ping} ms
+*├▢ 🧠 Status:* ${ping <= 200 ? 'Ultra Fast 🚀' : ping <= 600 ? 'Normal ⚙️' : 'Slight Delay 🐢'}
+*├▢ 💫 Mode:* Online & Stable
+*╰───────────────⊷*
+        `;
 
-        // Text emojis for the final message
-        const textEmojis = ['🔥', '⚡', '🚀', '💨', '🎯', '🎉', '🌟', '💥', '🕐', '💎', '🏆', '🎶', '🌠', '🌀', '🔱', '🛡️', '✨'];
-        
-        // Select random text emoji
-        const textEmoji = textEmojis[Math.floor(Math.random() * textEmojis.length)];
-
-        currentText = `> *ᴋʜᴀɴ-ᴍᴅ sᴘᴇᴇᴅ:* ${responseTime.toFixed(2)}ᴍs ${textEmoji}`;
-        
-        const finalMsg = {
-            key: sentMessage.key,
-            type: 0xe,
-            editedMessage: { conversation: currentText }
-        };
-        await conn.relayMessage(from, { protocolMessage: finalMsg }, {});
+        await conn.sendMessage(from, { text: speedText.trim() }, { quoted: sent });
 
     } catch (e) {
-        console.error("Error in ping2 command:", e);
-        reply(`❌ *Test Failed:* ${e.message}`);
+        console.log(e);
+        reply(`⚠️ Error: ${e.message}`);
     }
 });
