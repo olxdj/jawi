@@ -65,26 +65,28 @@ async (conn, mek, m, { from, reply }) => {
     try {
         const startTime = Date.now();
 
-        // Send temporary message
-        const sent = await conn.sendMessage(from, { text: '⚙️ *Testing Speed...*' });
-
-        // Simulate short delay to make it natural
-        await new Promise(resolve => setTimeout(resolve, 700));
+        // Simulated natural processing delay
+        await new Promise(resolve => setTimeout(resolve, 500));
 
         const endTime = Date.now();
         const ping = endTime - startTime;
 
-        // Fancy ping display
-        let speedText = `
+        // Speed category
+        let status;
+        if (ping < 1000) status = "⚡ *Fast & Responsive*";
+        else if (ping < 1400) status = "⚙️ *Normal Speed*";
+        else status = "🐢 *Slow Response*";
+
+        // Stylish formatted output
+        const msg = `
 *╭┈───〔 ⚡ Kʜᴀɴ-ᴍᴅ Pɪɴɢ 〕───⊷*
 *├▢ 📶 Response:* ${ping} ms
-*├▢ 🧠 Status:* ${ping <= 200 ? 'Ultra Fast 🚀' : ping <= 600 ? 'Normal ⚙️' : 'Slight Delay 🐢'}
-*├▢ 💫 Mode:* Online & Stable
+*├▢ 🧠 Status:* ${status}
+*├▢ 💫 Mode:* Active & Stable
 *╰───────────────⊷*
         `;
 
-        await conn.sendMessage(from, { text: speedText.trim() }, { quoted: sent });
-
+        await conn.sendMessage(from, { text: msg.trim() }, { quoted: mek });
     } catch (e) {
         console.log(e);
         reply(`⚠️ Error: ${e.message}`);
