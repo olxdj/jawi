@@ -79,7 +79,7 @@ async (conn, mek, m, { from, reply }) => {
 
         // Stylish formatted output
         const msg = `
-*╭┈───〔 ⚡ Kʜᴀɴ-ᴍᴅ Pɪɴɢ 〕───⊷*
+*╭┈──〔 ⚡ Kʜᴀɴ-ᴍᴅ Pɪɴɢ 〕─⊷*
 *├▢ 📶 Response:* ${ping} ms
 *├▢ 🧠 Status:* ${status}
 *├▢ 💫 Mode:* Active & Stable
