@@ -6,7 +6,7 @@ cmd({
   alias: ["couplepp", "couplepic", "couple"],
   react: "💑",
   desc: "Get matching couples profile pictures.",
-  category: "media",
+  category: "utility",
   use: ".cpp",
   filename: __filename
 }, async (conn, m, store, { from, args, reply }) => {
