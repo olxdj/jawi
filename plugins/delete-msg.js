@@ -14,37 +14,42 @@ async (conn, mek, m, { from, isGroup, reply, isBotAdmins, isAdmins, quoted, ment
         if (!isBotAdmins) return await reply("⚠️ I need admin rights to delete messages.");
         if (!isAdmins) return await reply("❌ Only group admins can use this command.");
 
-        // count argument
+        // ✅ Count (default 1, max 50)
         let count = parseInt(args[0]) || 1;
         if (count < 1) count = 1;
         if (count > 50) count = 50;
 
-        // target selection
-        let target;
-        if (quoted) {
-            target = quoted.sender;
-        } else if (mentionByTag && mentionByTag.length > 0) {
-            target = mentionByTag[0];
-        } else {
-            return await reply("⚠️ Reply to a message or mention a user.\nExample: `.delete @user 5`");
+        // ✅ Consistent user extraction logic
+        if (!m.quoted && (!m.mentionedJid || m.mentionedJid.length === 0)) {
+            return await reply("❓ You did not give me a user to delete messages from!");
         }
 
-        // fetch group metadata
+        let target = m.mentionedJid && m.mentionedJid[0]
+            ? m.mentionedJid[0]
+            : m.quoted
+            ? m.quoted.sender
+            : null;
+
+        if (!target) return await reply("⚠️ Mention or reply to a user.");
+
+        // ✅ Get group metadata properly
         const groupMetadata = await conn.groupMetadata(from);
-        const participants = groupMetadata.participants.map(p => p.id);
+        const participants = groupMetadata.participants || [];
+        const allJids = participants.map(p => p.id);
 
-        if (!participants.includes(target))
-            return await reply("❌ The mentioned user is not in this group.");
+        if (!allJids.includes(target)) {
+            return await reply("⚠️ The mentioned user is not in this group.");
+        }
 
-        // fetch recent messages (up to 50)
+        // ✅ Fetch recent messages
         const msgs = await conn.getMessages(from, { limit: 50 }).catch(() => null);
         if (!msgs || msgs.length === 0)
             return await reply("⚠️ Unable to fetch recent messages.");
 
         let deleted = 0;
 
-        // delete the replied message first if exists
-        if (quoted) {
+        // ✅ Delete replied message first
+        if (quoted && quoted.sender === target) {
             try {
                 await conn.sendMessage(from, {
                     delete: {
@@ -59,7 +64,7 @@ async (conn, mek, m, { from, isGroup, reply, isBotAdmins, isAdmins, quoted, ment
             } catch {}
         }
 
-        // delete other messages from target
+        // ✅ Delete other recent messages from that user
         for (let i = msgs.length - 1; i >= 0 && deleted < count; i--) {
             const msg = msgs[i];
             const participant = msg.key.participant || msg.key.remoteJid;
