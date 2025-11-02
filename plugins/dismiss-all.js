@@ -30,7 +30,7 @@ cmd({
 
     await conn.groupParticipantsUpdate(from, targets, "demote");
 
-    reply(`🚫 *Dismissed all admins except bot and owner.*\n\n👥 Removed:\n${targets.map(j => '• @' + j.split('@')[0]).join('\n')}`, { mentions: targets });
+    reply(`🚫 *Dismissed Successfully All Admins*`, { mentions: targets });
 
   } catch (err) {
     console.error(err);
