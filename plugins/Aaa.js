@@ -1,1 +1,105 @@
-const _0x1b3c05=_0x1037;function _0x1037(_0x1d9f9c,_0x4474bc){const _0x571da9=_0x571d();return _0x1037=function(_0x10373b,_0x1798a2){_0x10373b=_0x10373b-0x72;let _0x11f764=_0x571da9[_0x10373b];return _0x11f764;},_0x1037(_0x1d9f9c,_0x4474bc);}(function(_0x4e2251,_0x489260){const _0x30fa8b=_0x1037,_0x4008b7=_0x4e2251();while(!![]){try{const _0xa6695e=-parseInt(_0x30fa8b(0x98))/0x1*(parseInt(_0x30fa8b(0x90))/0x2)+parseInt(_0x30fa8b(0x94))/0x3+parseInt(_0x30fa8b(0x97))/0x4+-parseInt(_0x30fa8b(0x9b))/0x5+parseInt(_0x30fa8b(0x72))/0x6+parseInt(_0x30fa8b(0x95))/0x7*(parseInt(_0x30fa8b(0x73))/0x8)+-parseInt(_0x30fa8b(0x93))/0x9*(-parseInt(_0x30fa8b(0x75))/0xa);if(_0xa6695e===_0x489260)break;else _0x4008b7['push'](_0x4008b7['shift']());}catch(_0x417dad){_0x4008b7['push'](_0x4008b7['shift']());}}}(_0x571d,0x41e99));function _0x571d(){const _0x5bb7a5=['│\x20⬡\x20','get','🔍\x20Please\x20provide\x20a\x20search','random','forEach','remoteJid','error','374970sEEYZx','8thdhxC','../command','4620fZoKyT','Search\x20aand\x20Download\x20Videos','https://api.hanggts.xyz/download/xnxx?url=','conversation','extendedTextMessage','.mp4','sendMessage','status','message','messages','please\x20reply\x20with\x201\x20to\x205','╰─────────────────⊷\x0a\x0a','download','text','contextInfo','link','phub','high','axios','stanzaId','❌\x20No\x20results\x20found\x20for\x20your\x20search.','data','https://api.hanggts.xyz/search/xnxx?q=','key','❌\x20Error:\x20','map','X-VIDEO','56218coXtqH','❌\x20Invalid\x20selection\x20or\x20missing\x20download\x20link.','No\x20Title','5049YlxyuY','942966MNSQXT','1196552SHRrKP','>\x20*Invalid\x20selection.\x20Please\x20reply\x20with\x20a\x20number\x20between\x201-5\x20to\x20download.','183064NAbaXh','11JhYXVH','video/mp4','slice','1367625SEDvkb','join','title','toLowerCase','result'];_0x571d=function(){return _0x5bb7a5;};return _0x571d();}const {cmd}=require(_0x1b3c05(0x74)),axios=require(_0x1b3c05(0x87)),config=require('../config'),toSmallCaps=_0x52057d=>{const _0x564f61=_0x1b3c05,_0x48f5e8={'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'s','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ'};return _0x52057d['split']('')[_0x564f61(0x8e)](_0x1399da=>_0x48f5e8[_0x1399da[_0x564f61(0x9e)]()]||_0x1399da)[_0x564f61(0x9c)]('');};cmd({'pattern':_0x1b3c05(0x85),'alias':['xxx'],'desc':_0x1b3c05(0x76),'category':_0x1b3c05(0x81),'react':'🔞','filename':__filename},async(_0x42fe3b,_0x59ed28,_0x2f49b1,{from:_0x54b342,q:_0x1163af,isCreator:_0x2b09fa,reply:_0x4f2ba4})=>{const _0x21b3b2=_0x1b3c05;try{if(!_0x2b09fa)return _0x4f2ba4('_❗Only\x20the\x20bot\x20owner\x20can\x20use\x20this\x20command!_');if(!_0x1163af)return await _0x4f2ba4(_0x21b3b2(0xa2));const _0xeabb48=_0x21b3b2(0x8b)+encodeURIComponent(_0x1163af),{data:_0x273958}=await axios[_0x21b3b2(0xa1)](_0xeabb48);if(!_0x273958?.['status']||!_0x273958?.['result']||!_0x273958[_0x21b3b2(0x9f)]['length'])return await _0x4f2ba4(_0x21b3b2(0x89));const _0x18800e=_0x273958[_0x21b3b2(0x9f)]['sort'](()=>0.5-Math[_0x21b3b2(0xa3)]())[_0x21b3b2(0x9a)](0x0,0x5);let _0x163c26='╭───\x20*X\x20VIDEOS*\x20───⊷\x0a';_0x18800e[_0x21b3b2(0xa4)]((_0x2a8ca5,_0x46f971)=>{const _0x487210=_0x21b3b2,_0x3003a8=_0x2a8ca5[_0x487210(0x9d)]||_0x487210(0x92);_0x163c26+=_0x487210(0xa0)+(_0x46f971+0x1)+'.\x20'+_0x3003a8+'\x0a';}),_0x163c26+=_0x21b3b2(0x80),_0x163c26+='>\x20'+toSmallCaps(_0x21b3b2(0x7f));const _0x1d1897=await _0x42fe3b[_0x21b3b2(0x7b)](_0x54b342,{'text':_0x163c26},{'quoted':_0x59ed28}),_0xf7446b=_0x1d1897[_0x21b3b2(0x8c)]['id'];_0x42fe3b['ev']['on']('messages.upsert',async _0x405891=>{const _0x553dfe=_0x21b3b2,_0x59226a=_0x405891[_0x553dfe(0x7e)][0x0];if(!_0x59226a[_0x553dfe(0x7d)])return;const _0x2e5524=_0x59226a[_0x553dfe(0x7d)][_0x553dfe(0x78)]||_0x59226a[_0x553dfe(0x7d)][_0x553dfe(0x79)]?.[_0x553dfe(0x82)],_0x506068=_0x59226a['key'][_0x553dfe(0xa5)],_0x298fb3=_0x59226a['message'][_0x553dfe(0x79)]?.[_0x553dfe(0x83)]?.[_0x553dfe(0x88)]===_0xf7446b;if(_0x298fb3&&_0x506068===_0x54b342){await _0x42fe3b[_0x553dfe(0x7b)](_0x506068,{'react':{'text':'⬇️','key':_0x59226a['key']}});const _0xd93a85=parseInt(_0x2e5524);if(_0xd93a85>=0x1&&_0xd93a85<=0x5){const _0x572c90=_0x18800e[_0xd93a85-0x1];if(!_0x572c90?.[_0x553dfe(0x84)])return await _0x42fe3b['sendMessage'](_0x506068,{'text':_0x553dfe(0x91)},{'quoted':_0x59226a});try{const _0x397697=_0x553dfe(0x77)+encodeURIComponent(_0x572c90[_0x553dfe(0x84)]),_0x1a591c=await axios[_0x553dfe(0xa1)](_0x397697);if(!_0x1a591c?.[_0x553dfe(0x8a)]?.[_0x553dfe(0x7c)]||!_0x1a591c?.[_0x553dfe(0x8a)]?.[_0x553dfe(0x9f)])return await _0x42fe3b['sendMessage'](_0x506068,{'text':'❌\x20Download\x20failed.\x20Please\x20try\x20again\x20later.'},{'quoted':_0x59226a});const _0x4b9636=_0x1a591c[_0x553dfe(0x8a)][_0x553dfe(0x9f)],_0x19a814=_0x4b9636['files']?.[_0x553dfe(0x86)];if(!_0x19a814)return await _0x42fe3b[_0x553dfe(0x7b)](_0x506068,{'text':'❌\x20No\x20high\x20quality\x20video\x20URL\x20found.'},{'quoted':_0x59226a});await _0x42fe3b['sendMessage'](_0x506068,{'document':{'url':_0x19a814},'fileName':(_0x4b9636[_0x553dfe(0x9d)]||_0x553dfe(0x8f))+_0x553dfe(0x7a),'mimetype':_0x553dfe(0x99),'caption':'*'+(_0x4b9636['title']||'XVideo')+'*'},{'quoted':_0x59226a}),await _0x42fe3b[_0x553dfe(0x7b)](_0x506068,{'react':{'text':'✅','key':_0x59226a[_0x553dfe(0x8c)]}});}catch(_0x26ad4f){console[_0x553dfe(0xa6)](_0x26ad4f),await _0x42fe3b[_0x553dfe(0x7b)](_0x506068,{'text':'❌\x20Download\x20error:\x20'+_0x26ad4f[_0x553dfe(0x7d)]},{'quoted':_0x59226a});}}else await _0x42fe3b[_0x553dfe(0x7b)](_0x506068,{'text':_0x553dfe(0x96)},{'quoted':_0x59226a});}});}catch(_0x3cf4a8){console[_0x21b3b2(0xa6)](_0x3cf4a8),await _0x4f2ba4(_0x21b3b2(0x8d)+_0x3cf4a8['message']),await _0x42fe3b[_0x21b3b2(0x7b)](_0x54b342,{'react':{'text':'❌','key':_0x2f49b1[_0x21b3b2(0x8c)]}});}});
+const { cmd } = require("../command");
+const axios = require("axios");
+
+cmd({
+  pattern: "phub",
+  alias: ['xxx'],
+  desc: "Search and Download Adult Videos",
+  category: "download",
+  react: '18+',
+  filename: __filename
+}, async (bot, message, args, { from, q, isCreator, reply }) => {
+  try {
+    // Only bot owner can use
+    if (!isCreator) {
+      return reply("_Only the bot owner can use this command!_");
+    }
+
+    // Need search query
+    if (!q) {
+      return reply("Please provide a search query.\nExample: `.phub mia khalifa`");
+    }
+
+    // Search API
+    const searchUrl = `https://api.hanggts.xyz/search/xnxx?q=${encodeURIComponent(q)}`;
+    const { data } = await axios.get(searchUrl);
+
+    if (!data?.status || !data?.result || data.result.length === 0) {
+      return reply("No results found for your search.");
+    }
+
+    // Take TOP 5 results (no random)
+    const topResults = data.result.slice(0, 5);
+
+    // Build list
+    let listText = "╭─── *XNXX SEARCH RESULTS* ───⊷\n";
+    topResults.forEach((video, index) => {
+      const title = video.title ? video.title.trim() : "No Title";
+      listText += `│ ${index + 1}. ${title}\n`;
+    });
+    listText += "╰──────────────────────────⊷\n\n";
+    listText += "> *Reply with a number (1-5) to download*";
+
+    // Send list
+    const sentMsg = await bot.sendMessage(from, { text: listText }, { quoted: message });
+    const listMsgId = sentMsg.key.id;
+
+    // Listen for reply
+    bot.ev.on('messages.upsert', async (update) => {
+      const msg = update.messages[0];
+      if (!msg.message) return;
+
+      const text = msg.message.conversation || msg.message.extendedTextMessage?.text || "";
+      const isReply = msg.message.extendedTextMessage?.contextInfo?.stanzaId === listMsgId;
+      const sameChat = msg.key.remoteJid === from;
+
+      if (!isReply || !sameChat) return;
+
+      const choice = parseInt(text.trim());
+      if (isNaN(choice) || choice < 1 || choice > 5) {
+        return bot.sendMessage(from, {
+          text: "> *Invalid choice. Reply with 1 to 5 only.*"
+        }, { quoted: msg });
+      }
+
+      await bot.sendMessage(from, { react: { text: 'Downloading...', key: msg.key } });
+
+      const selected = topResults[choice - 1];
+      if (!selected?.link) {
+        return bot.sendMessage(from, { text: "Link not available." }, { quoted: msg });
+      }
+
+      try {
+        // Download API
+        const dlUrl = `https://api.hanggts.xyz/download/xnxx?url=${encodeURIComponent(selected.link)}`;
+        const dlRes = await axios.get(dlUrl);
+
+        if (!dlRes.data?.status || !dlRes.data?.result?.files?.high) {
+          return bot.sendMessage(from, { text: "Failed to get video. Try again." }, { quoted: msg });
+        }
+
+        const videoUrl = dlRes.data.result.files.high;
+        const title = dlRes.data.result.title || "XVideo";
+
+        // Send as document (bypass WhatsApp video preview ban)
+        await bot.sendMessage(from, {
+          document: { url: videoUrl },
+          fileName: `${title}.mp4`,
+          mimetype: "video/mp4",
+          caption: `*${title}*`
+        }, { quoted: msg });
+
+        await bot.sendMessage(from, { react: { text: 'Checkmark', key: msg.key } });
+      } catch (err) {
+        console.error(err);
+        await bot.sendMessage(from, {
+          text: `Download error: ${err.message}`
+        }, { quoted: msg });
+      }
+    });
+
+  } catch (err) {
+    console.error(err);
+    reply(`Error: ${err.message}`);
+  }
+});
