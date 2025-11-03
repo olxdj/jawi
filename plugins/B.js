@@ -14,7 +14,7 @@ cmd({
     if (!q) return reply("⚙️ Usage: `.caty <category>`\n\nExample:\n.caty download");
 
     const category = q.trim().toLowerCase();
-    const pluginDir = path.join(__dirname, "../plugin");
+    const pluginDir = path.join(__dirname, "../plugins");
     const outFile = path.join(__dirname, `../merged_${category}.js`);
 
     if (!fs.existsSync(pluginDir)) return reply("❌ Plugin folder nahi milia!");
