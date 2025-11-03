@@ -4,47 +4,53 @@ const path = require("path");
 const AdmZip = require("adm-zip");
 
 cmd({
-  pattern: "pak",
-  desc: "Replace '../command' path in all plugin files and export as plugin.zip",
+  pattern: "caty",
+  desc: "Merge all plugin files from a specific category and send as zip.",
   category: "owner",
-  react: "📦",
+  react: "🗂️",
   filename: __filename
 },
-async (conn, mek, m, { from, q, reply, sender, isCreator }) => {
+async (conn, mek, m, { from, q, reply, isCreator }) => {
   try {
-    // Creator restriction
-    if (!isCreator) return reply("❌ Only owner can use this command!");
+    if (!isCreator) return reply("❌ Sirf owner use kar sakda ae!");
+    if (!q) return reply("⚙️ Usage: `.caty <category>`\n\nExample:\n.caty download");
 
-    if (!q) return reply("⚙️ Usage: `.setpath \"../lib.newpath\"`\n\nExample:\n.setpath \"../lib.ok\"");
-
-    const newPath = q.trim().replace(/['"]+/g, ""); // remove extra quotes
+    const category = q.trim().replace(/['"]+/g, "");
     const pluginDir = path.join(__dirname, "../plugins");
     const tempDir = path.join(__dirname, "../temp_plugins");
     const zipPath = path.join(__dirname, "../plugin.zip");
 
     if (!fs.existsSync(pluginDir)) return reply("❌ Plugin folder not found!");
 
-    // Create temp directory
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir);
 
-    const pluginFiles = fs.readdirSync(pluginDir).filter(file => file.endsWith(".js"));
-    let replacedCount = 0;
+    const pluginFiles = fs.readdirSync(pluginDir).filter(f => f.endsWith(".js"));
+    let mergedImports = new Set();
+    let mergedCode = "";
 
     for (const file of pluginFiles) {
       const filePath = path.join(pluginDir, file);
-      let content = fs.readFileSync(filePath, "utf8");
+      const content = fs.readFileSync(filePath, "utf8");
 
-      // Replace both ' and " versions
-      const updated = content
-        .replace(/require\(["']\.\.\/command["']\)/g, `require("${newPath}")`);
-
-      if (updated !== content) replacedCount++;
-
-      const newFilePath = path.join(tempDir, file);
-      fs.writeFileSync(newFilePath, updated, "utf8");
+      // match category: "xyz" OR category: 'xyz'
+      if (content.includes(`category: "${category}"`) || content.includes(`category: '${category}'`)) {
+        const importLines = content.match(/^const .*require\(.*\);$/gm);
+        if (importLines) importLines.forEach(line => mergedImports.add(line));
+        const codeWithoutImports = content.replace(/^const .*require\(.*\);$/gm, "").trim();
+        mergedCode += `\n\n// ===== File: ${file} =====\n${codeWithoutImports}`;
+      }
     }
 
-    // Zip all modified files
+    if (!mergedCode) {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+      return reply(`⚠️ Koi "${category}" category wala plugin nahi milia!`);
+    }
+
+    const finalContent = `${Array.from(mergedImports).join("\n")}\n${mergedCode}`;
+    const mergedFilePath = path.join(tempDir, `merged_${category}.js`);
+    fs.writeFileSync(mergedFilePath, finalContent, "utf8");
+
+    // zip create
     const zip = new AdmZip();
     zip.addLocalFolder(tempDir);
     zip.writeZip(zipPath);
@@ -52,11 +58,11 @@ async (conn, mek, m, { from, q, reply, sender, isCreator }) => {
     await conn.sendMessage(from, {
       document: fs.readFileSync(zipPath),
       mimetype: "application/zip",
-      fileName: "plugin.zip",
-      caption: `✅ *Path successfully replaced in ${replacedCount} files!*\n📦 *plugin.zip created and sent.*\n\n> Path used: \`${newPath}\``
+      fileName: `merged_${category}.zip`,
+      caption: `✅ *${category}* category ke sab plugins ek file me merge kar diye gaye hain.\n📦 *plugin.zip created and sent.*`
     }, { quoted: mek });
 
-    // Clean up
+    // cleanup
     fs.rmSync(tempDir, { recursive: true, force: true });
     fs.unlinkSync(zipPath);
 
