@@ -4,7 +4,7 @@ const path = require("path");
 
 cmd({
   pattern: "caty",
-  desc: "Merge all plugin files of a given category into one file.",
+  desc: "Merge all plugin files of a given category into one file (supports ' or \").",
   category: "owner",
   react: "🗂️",
   filename: __filename
@@ -28,15 +28,17 @@ cmd({
       const filePath = path.join(pluginDir, file);
       const content = fs.readFileSync(filePath, "utf8");
 
-      // Match category
-      if (content.includes(`category: "${category}"`)) {
+      // Match category (supports both " and ')
+      const regex = new RegExp(`category:\\s*["']${category}["']`, "i");
+
+      if (regex.test(content)) {
         // Collect all require lines
         const requireMatches = content.match(/^const\s+.*require\(.*\);/gm);
         if (requireMatches) {
           requireMatches.forEach(line => requireLines.add(line));
         }
 
-        // Extract cmd parts only
+        // Extract cmd blocks only
         const cmdBlocks = content.match(/cmd\([\s\S]*?\}\);/gm);
         if (cmdBlocks) {
           cmdBlocks.forEach(block => {
@@ -47,7 +49,7 @@ cmd({
     }
 
     if (!allCode.trim()) {
-      return reply(`❌ Koi plugin category "${category}" nahi mili.`);
+      return reply(`❌ Koi plugin category "${category}" nahi mili (na " me, na ' me).`);
     }
 
     // Merge unique require lines + cmd blocks
