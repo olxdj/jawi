@@ -18,7 +18,7 @@ async (conn, mek, m, { from, q, reply, sender, isCreator }) => {
     if (!q) return reply("⚙️ Usage: `.setpath \"../lib.newpath\"`\n\nExample:\n.setpath \"../lib.ok\"");
 
     const newPath = q.trim().replace(/['"]+/g, ""); // remove extra quotes
-    const pluginDir = path.join(__dirname, "../plugin");
+    const pluginDir = path.join(__dirname, "../plugins");
     const tempDir = path.join(__dirname, "../temp_plugins");
     const zipPath = path.join(__dirname, "../plugin.zip");
 
