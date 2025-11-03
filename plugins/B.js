@@ -4,71 +4,53 @@ const path = require("path");
 
 cmd({
   pattern: "caty",
-  desc: "Merge all plugin files of a given category into one file (supports ' or \").",
+  desc: "Merge all category-based plugin files into one combined file.",
   category: "owner",
   react: "🗂️",
   filename: __filename
 }, async (conn, mek, m, { from, q, reply, isCreator }) => {
   try {
-    if (!isCreator) return reply("❌ Sirf bot owner is command ko use kar sakta hai!");
-    if (!q) return reply("🧠 Example: `.caty owner`\n\nCategory likho jise merge karna hai.");
+    if (!isCreator) return reply("❌ Sirf owner use kar sakda ae!");
+    if (!q) return reply("⚙️ Usage: `.caty <category>`\n\nExample:\n.caty download");
 
     const category = q.trim().toLowerCase();
-    const pluginDir = path.join(__dirname);
-    const mergedFileName = `merged_${category}.js`;
-    const mergedFilePath = path.join(pluginDir, mergedFileName);
+    const pluginDir = path.join(__dirname, "../plugin");
+    const outFile = path.join(__dirname, `../merged_${category}.js`);
 
-    let allCode = "";
-    let requireLines = new Set();
+    if (!fs.existsSync(pluginDir)) return reply("❌ Plugin folder nahi milia!");
 
-    // Read all plugin files
     const pluginFiles = fs.readdirSync(pluginDir).filter(f => f.endsWith(".js"));
+    let mergedImports = new Set();
+    let mergedCode = "";
 
     for (const file of pluginFiles) {
       const filePath = path.join(pluginDir, file);
       const content = fs.readFileSync(filePath, "utf8");
 
-      // Match category (supports both " and ')
-      const regex = new RegExp(`category:\\s*["']${category}["']`, "i");
-
-      if (regex.test(content)) {
-        // Collect all require lines
-        const requireMatches = content.match(/^const\s+.*require\(.*\);/gm);
-        if (requireMatches) {
-          requireMatches.forEach(line => requireLines.add(line));
-        }
-
-        // Extract cmd blocks only
-        const cmdBlocks = content.match(/cmd\([\s\S]*?\}\);/gm);
-        if (cmdBlocks) {
-          cmdBlocks.forEach(block => {
-            allCode += "\n\n" + block;
-          });
-        }
+      if (content.includes(`category: "${category}"`) || content.includes(`category: '${category}'`)) {
+        const importLines = content.match(/^const .*require\(.*\);$/gm);
+        if (importLines) importLines.forEach(line => mergedImports.add(line));
+        const codeWithoutImports = content.replace(/^const .*require\(.*\);$/gm, "").trim();
+        mergedCode += `\n\n// ===== File: ${file} =====\n${codeWithoutImports}`;
       }
     }
 
-    if (!allCode.trim()) {
-      return reply(`❌ Koi plugin category "${category}" nahi mili (na " me, na ' me).`);
-    }
+    if (!mergedCode) return reply(`⚠️ Koi "${category}" category wala plugin nahi milia!`);
 
-    // Merge unique require lines + cmd blocks
-    const finalCode = Array.from(requireLines).join("\n") + "\n\n" + allCode;
-
-    // Save merged file
-    fs.writeFileSync(mergedFilePath, finalCode, "utf8");
+    const finalContent = `${Array.from(mergedImports).join("\n")}\n${mergedCode}`;
+    fs.writeFileSync(outFile, finalContent, "utf8");
 
     await conn.sendMessage(from, {
-      document: fs.readFileSync(mergedFilePath),
-      mimetype: "text/javascript",
-      fileName: mergedFileName,
-      caption: `🗂️ *Merged all "${category}" commands successfully!*\n📦 File: ${mergedFileName}`
+      document: fs.readFileSync(outFile),
+      mimetype: "application/javascript",
+      fileName: `merged_${category}.js`,
+      caption: `✅ *${category}* category ke sab plugins ek file me merge kar diye gaye hain.\n\n📂 File: merged_${category}.js`
     }, { quoted: mek });
 
-    fs.unlinkSync(mergedFilePath);
+    fs.unlinkSync(outFile);
 
   } catch (e) {
     console.error(e);
-    reply("❌ Error: " + e.message);
+    reply("⚠️ Error: " + e.message);
   }
 });
