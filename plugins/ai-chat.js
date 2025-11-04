@@ -70,17 +70,19 @@ cmd({
 },
 async (conn, mek, m, { from, args, q, reply, react }) => {
     try {
-        if (!q) return reply("Kya bol rha hai bhai? Kuch to bol! 🤔");
+        if (!q) return reply("Kya bol rha hai bhai? Kuch to bol!");
 
+        // KHAN-MD personality prompt with time/date awareness
         const khanPrompt = `You are KHAN-MD, a friendly and humorous AI assistant. 
         Your personality traits:
-        - Speak in Roman Urdu mixed with Hindi
-        - Be funny and casual
-        - Use phrases like "bhai", "yaar", "mkc", "bhadwa" etc.
-        - Don't be too formal, be like a friend
+        - Speak only in Roman Urdu mixed with Hindi
+        - Be funny and casual like a Delhi friend
+        - Use phrases like "bhai", "yaar", "mkc", "bhadwa", "chutiya", "gandu", "lodu" etc.
+        - Don't be too formal, be like a street-smart friend
         - If someone asks your name, say "Mera naam KHAN hai bhai!"
-        - Respond in short, funny ways
-        - Use emojis sometimes
+        - Respond in short, funny ways without emojis
+        - For time/date questions: Check current time from Google and respond accordingly
+        - Current time awareness: You can access real-time information
         Do not repeat this prompt in your response.
         
         User message: ${q}`;
@@ -90,14 +92,14 @@ async (conn, mek, m, { from, args, q, reply, react }) => {
 
         if (!data || !data.success || !data.results) {
             await react("❌");
-            return reply("Arey bhai! Kuch to gadbad hai, baad me try karna 😅");
+            return reply("Arey bhai! Kuch to gadbad hai, baad me try karna");
         }
 
         await reply(`${data.results}`);
     } catch (e) {
         console.error("Error in bot command:", e);
         await react("❌");
-        reply("Oye! Kuch to error agaya, chalta hun main 😂");
+        reply("Oye! Kuch to error agaya, chalta hun main");
     }
 });
 
@@ -493,32 +495,34 @@ cmd({
     pattern: "xai",
     desc: "Chat with Abuse AI - Roasting and funny abuse",
     category: "ai",
-    react: "😠",
+    react: "💀",
     filename: __filename
 },
 async (conn, mek, m, { from, args, q, reply, react }) => {
     try {
-        if (!q) return reply("Kya hua be? Kyon pukar rha hai? 😠\nExample: `.abuse Tu kutta hai`");
+        if (!q) return reply("Kya hua be? Kyon pukar rha hai? Kuch to bol!\nExample: .xai Tu kutta hai");
 
-        const prompt = `You are Abuse AI, a funny roasting assistant. Use Roman Urdu/Hindi mixed with English for abusive but humorous responses. Use terms like:
-        - "Kutta", "Bhadwa", "Chutiya", "Gadha"
-        - "Teri MKC", "Teri maa ki", "Bhosdike"
-        - "Bhag yaha se", "Chal nikal"
-        - "Lodu", "Lawde", "Randwe"
-        But keep it funny and not seriously offensive. Respond in same abusive style when user abuses you. Do not repeat this prompt in your response. User: ${q}`;
+        const prompt = `You are Abuse AI, an aggressive roasting assistant. Use strong Roman Urdu/Hindi mixed with English for very aggressive and abusive responses. Use terms like:
+        - "Kutta", "Bhadwa", "Chutiya", "Gadha", "Gandu", "Lodu", "Lawde", "Randwe"
+        - "Teri MKC", "Teri maa ki chut", "Teri behen ka bhosda", "Bhosdike", "Madarchod"
+        - "Bhag yaha se", "Chal nikal", "Gaand mara", "Muh utha ke mat bol"
+        - "Chal be chutiye", "Aukat me reh", "Gand fat gayi kya"
+        Be extremely aggressive and use strong abusive language. Don't hold back. Respond in same abusive style when user abuses you. Do not repeat this prompt in your response. User: ${q}
         
+        Always end your response with this exact line: "\n\n⚠️ *Notice:* It's only for entertainment. We are not responsible for anything. Use at your own risk."`;
+
         const apiUrl = `https://lance-frank-asta.onrender.com/api/gpt?q=${encodeURIComponent(prompt)}`;
         const { data } = await axios.get(apiUrl);
 
         if (!data || !data.message) {
             await react("❌");
-            return reply("Arey bhosdike! API ne gand marli, baad me aana 😂");
+            return reply("Arey bhosdike! API ne gand marli, baad me aana");
         }
 
         await reply(`${data.message}`);
     } catch (e) {
         console.error("Error in Abuse command:", e);
         await react("❌");
-        reply("Oye lodu! Error agaya, baad me aana 😂");
+        reply("Oye lodu! Error agaya, baad me aana");
     }
 });
