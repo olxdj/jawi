@@ -2,6 +2,89 @@ const { cmd } = require('../command');
 const axios = require('axios');
 
 cmd({
+    pattern: "deepseek",
+    desc: "Chat with Think-Deeper AI model",
+    category: "ai",
+    react: "🤔",
+    filename: __filename
+},
+async (conn, mek, m, { from, args, q, reply, react }) => {
+    try {
+        if (!q) return reply("Please provide a message for the Think AI.\nExample: `.think What is consciousness?`");
+
+        const apiUrl = `https://api.xyro.site/ai/copilot?text=${encodeURIComponent(q)}&model=think-deeper`;
+        const { data } = await axios.get(apiUrl);
+
+        if (!data || !data.status || !data.data || !data.data.text) {
+            await react("❌");
+            return reply("Think AI failed to respond. Please try again later.");
+        }
+
+        await reply(`${data.data.text}`);
+    } catch (e) {
+        console.error("Error in Think AI command:", e);
+        await react("❌");
+        reply("An error occurred while communicating with the Think AI.");
+    }
+});
+
+// Command 2: gpt-5 model
+cmd({
+    pattern: "gpt5",
+    desc: "Chat with GPT-5 AI model",
+    category: "ai",
+    react: "🚀",
+    filename: __filename
+},
+async (conn, mek, m, { from, args, q, reply, react }) => {
+    try {
+        if (!q) return reply("Please provide a message for GPT-5.\nExample: `.gpt5 Explain quantum computing`");
+
+        const apiUrl = `https://api.xyro.site/ai/copilot?text=${encodeURIComponent(q)}&model=gpt-5`;
+        const { data } = await axios.get(apiUrl);
+
+        if (!data || !data.status || !data.data || !data.data.text) {
+            await react("❌");
+            return reply("GPT-5 failed to respond. Please try again later.");
+        }
+
+        await reply(`${data.data.text}`);
+    } catch (e) {
+        console.error("Error in GPT-5 command:", e);
+        await react("❌");
+        reply("An error occurred while communicating with GPT-5.");
+    }
+});
+
+// Command 3: default model
+cmd({
+    pattern: "copilot",
+    desc: "Chat with Copilot AI model",
+    category: "ai",
+    react: "👨‍💻",
+    filename: __filename
+},
+async (conn, mek, m, { from, args, q, reply, react }) => {
+    try {
+        if (!q) return reply("Please provide a message for Copilot AI.\nExample: `.copilot Help me with coding`");
+
+        const apiUrl = `https://api.xyro.site/ai/copilot?text=${encodeURIComponent(q)}&model=default`;
+        const { data } = await axios.get(apiUrl);
+
+        if (!data || !data.status || !data.data || !data.data.text) {
+            await react("❌");
+            return reply("Copilot AI failed to respond. Please try again later.");
+        }
+
+        await reply(`${data.data.text}`);
+    } catch (e) {
+        console.error("Error in Copilot AI command:", e);
+        await react("❌");
+        reply("An error occurred while communicating with Copilot AI.");
+    }
+});
+
+cmd({
     pattern: "ai",
     desc: "Chat with an AI model",
     category: "ai",
