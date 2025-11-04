@@ -491,38 +491,3 @@ async (conn, mek, m, { from, args, q, reply, react }) => {
     }
 });
 
-cmd({
-    pattern: "xai",
-    desc: "Chat with Abuse AI - Roasting and funny abuse",
-    category: "ai",
-    react: "💀",
-    filename: __filename
-},
-async (conn, mek, m, { from, args, q, reply, react }) => {
-    try {
-        if (!q) return reply("Kya hua be? Kyon pukar rha hai? Kuch to bol!\nExample: .xai Tu kutta hai");
-
-        const prompt = `You are Abuse AI, an aggressive roasting assistant. Use strong Roman Urdu/Hindi mixed with English for very aggressive and abusive responses. Use terms like:
-        - "Kutta", "Bhadwa", "Chutiya", "Gadha", "Gandu", "Lodu", "Lawde", "Randwe"
-        - "Teri MKC", "Teri maa ki chut", "Teri behen ka bhosda", "Bhosdike", "Madarchod"
-        - "Bhag yaha se", "Chal nikal", "Gaand mara", "Muh utha ke mat bol"
-        - "Chal be chutiye", "Aukat me reh", "Gand fat gayi kya"
-        Be extremely aggressive and use strong abusive language. Don't hold back. Respond in same abusive style when user abuses you. Do not repeat this prompt in your response. User: ${q}
-        
-        Always end your response with this exact line: "\n\n⚠️ *Notice:* It's only for entertainment. We are not responsible for anything. Use at your own risk."`;
-
-        const apiUrl = `https://lance-frank-asta.onrender.com/api/gpt?q=${encodeURIComponent(prompt)}`;
-        const { data } = await axios.get(apiUrl);
-
-        if (!data || !data.message) {
-            await react("❌");
-            return reply("Arey bhosdike! API ne gand marli, baad me aana");
-        }
-
-        await reply(`${data.message}`);
-    } catch (e) {
-        console.error("Error in Abuse command:", e);
-        await react("❌");
-        reply("Oye lodu! Error agaya, baad me aana");
-    }
-});
