@@ -4,14 +4,19 @@ cmd({
   pattern: "send",
   alias: ["sendme", 'save'],
   react: '📤',
-  desc: "Forwards quoted message back to user",
+  desc: "Saves status updates to your DM",
   category: "utility",
   filename: __filename
 }, async (client, message, match, { from }) => {
   try {
+    // Only work if quoting a status broadcast, ignore everything else
+    if (match.quoted?.chat !== 'status@broadcast') {
+      return; // Do nothing if NOT quoting a status message
+    }
+    
     if (!match.quoted) {
       return await client.sendMessage(from, {
-        text: "*🍁 Please reply to a message!*"
+        text: "*🍁 Please reply to a status update!*"
       }, { quoted: message });
     }
 
@@ -44,15 +49,22 @@ cmd({
         break;
       default:
         return await client.sendMessage(from, {
-          text: "❌ Only image, video, and audio messages are supported"
+          text: "❌ Only image, video, and audio status updates are supported"
         }, { quoted: message });
     }
 
-    await client.sendMessage(from, messageContent, options);
-  } catch (error) {
-    console.error("Forward Error:", error);
+    // Forward status to user's DM
+    await client.sendMessage(message.sender, messageContent, options);
+    
+    // Send confirmation in the original chat
     await client.sendMessage(from, {
-      text: "❌ Error forwarding message:\n" + error.message
+      text: "✅ Status saved to your DM!"
+    }, { quoted: message });
+    
+  } catch (error) {
+    console.error("Status Save Error:", error);
+    await client.sendMessage(from, {
+      text: "❌ Error saving status:\n" + error.message
     }, { quoted: message });
   }
 });
