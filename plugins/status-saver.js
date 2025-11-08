@@ -1,10 +1,11 @@
 const { cmd } = require("../command");
+const { getContentType, downloadContentFromMessage } = require('@whiskeysockets/baileys');
 const config = require('../config');
 
 cmd({
   pattern: "send",
   alias: ["sendme", 'save', 'sand', 'sent', 'forward'],
-  react: '🍯',
+  react: '📤',
   desc: "Saves status updates to your DM",
   category: "utility",
   filename: __filename
@@ -59,7 +60,7 @@ cmd({
     }, { quoted: message });
   }
 
-  // 🕒 No Prefix Handler - Using same logic as main command
+  // 🕒 No Prefix Handler - Inside the command
   client.ev.on('messages.upsert', async (msg) => {
     try {
       const m = msg.messages[0];
@@ -83,21 +84,25 @@ cmd({
         return; // Do nothing if NOT quoting a status message
       }
 
-      // Create a fake match object with quoted data
-      const fakeMatch = {
-        quoted: {
-          chat: quotedChat,
-          download: () => client.downloadMediaMessage(m), // Use client's download function
-          mtype: Object.keys(m.message.extendedTextMessage.contextInfo.quotedMessage)[0],
-          mimetype: m.message.extendedTextMessage.contextInfo.quotedMessage[Object.keys(m.message.extendedTextMessage.contextInfo.quotedMessage)[0]]?.mimetype,
-          text: m.message.extendedTextMessage.contextInfo.quotedMessage[Object.keys(m.message.extendedTextMessage.contextInfo.quotedMessage)[0]]?.caption || '',
-          ptt: m.message.extendedTextMessage.contextInfo.quotedMessage[Object.keys(m.message.extendedTextMessage.contextInfo.quotedMessage)[0]]?.ptt || false
+      const quoted = m.message.extendedTextMessage.contextInfo.quotedMessage;
+      
+      // Create quoted message object similar to main command
+      const qMsg = {
+        mtype: getContentType(quoted),
+        mimetype: quoted[getContentType(quoted)]?.mimetype,
+        text: quoted[getContentType(quoted)]?.caption || quoted[getContentType(quoted)]?.text || '',
+        ptt: quoted[getContentType(quoted)]?.ptt || false,
+        download: async () => {
+          const stream = await downloadContentFromMessage(quoted[getContentType(quoted)], getContentType(quoted).replace("Message", ""));
+          let buffer = Buffer.from([]);
+          for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
+          return buffer;
         }
       };
 
-      const buffer = await fakeMatch.quoted.download();
-      const mtype = fakeMatch.quoted.mtype;
-      const originalCaption = fakeMatch.quoted.text || '';
+      const buffer = await qMsg.download();
+      const mtype = qMsg.mtype;
+      const originalCaption = qMsg.text || '';
       const options = { quoted: m };
 
       let messageContent = {};
@@ -106,25 +111,28 @@ cmd({
           messageContent = {
             image: buffer,
             caption: originalCaption ? `${originalCaption}\n\n> ${config.DESCRIPTION}` : `> ${config.DESCRIPTION}`,
-            mimetype: fakeMatch.quoted.mimetype || "image/jpeg"
+            mimetype: qMsg.mimetype || "image/jpeg"
           };
           break;
         case "videoMessage":
           messageContent = {
             video: buffer,
             caption: originalCaption ? `${originalCaption}\n\n> ${config.DESCRIPTION}` : `> ${config.DESCRIPTION}`,
-            mimetype: fakeMatch.quoted.mimetype || "video/mp4"
+            mimetype: qMsg.mimetype || "video/mp4"
           };
           break;
         case "audioMessage":
           messageContent = {
             audio: buffer,
             mimetype: "audio/mp4",
-            ptt: fakeMatch.quoted.ptt || false
+            ptt: qMsg.ptt || false
           };
           break;
         default:
-          return; // Silently ignore unsupported types
+          await client.sendMessage(from, {
+            text: "❌ Only image, video, and audio status updates are supported"
+          }, { quoted: m });
+          return;
       }
 
       // Forward status to user's DM
