@@ -1,4 +1,5 @@
 const { cmd } = require("../command");
+const config = require("../config"); // Make sure to import config
 
 cmd({
   pattern: "send",
