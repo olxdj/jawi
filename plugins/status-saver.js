@@ -77,6 +77,12 @@ cmd({
   sender
 }) => {
   try {
+    // Skip if it's a prefix command (starts with . / , etc.)
+    const prefixRegex = /^[.,/#!$%^&*;:{}=-_~()]/;
+    if (prefixRegex.test(body.trim())) {
+      return;
+    }
+
     const messageText = body.toLowerCase();
     const containsKeyword = commandKeywords.some(word => messageText.includes(word));
 
