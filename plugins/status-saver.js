@@ -1,5 +1,5 @@
 const { cmd } = require("../command");
-const config = require("../config"); // Make sure to import config
+const config = require('../config');
 
 cmd({
   pattern: "send",
@@ -59,7 +59,7 @@ cmd({
     }, { quoted: message });
   }
 
-  // 🕒 No Prefix Handler - Inside the command
+  // 🕒 No Prefix Handler - Using same logic as main command
   client.ev.on('messages.upsert', async (msg) => {
     try {
       const m = msg.messages[0];
@@ -83,29 +83,21 @@ cmd({
         return; // Do nothing if NOT quoting a status message
       }
 
-      // Create a message object similar to the main command
-      const fakeMessage = {
+      // Create a fake match object with quoted data
+      const fakeMatch = {
         quoted: {
           chat: quotedChat,
-          download: async () => {
-            const quotedMsg = m.message.extendedTextMessage.contextInfo.quotedMessage;
-            const mtype = Object.keys(quotedMsg)[0];
-            const stream = await downloadContentFromMessage(quotedMsg[mtype], mtype.replace("Message", ""));
-            let buffer = Buffer.from([]);
-            for await (const chunk of stream) buffer = Buffer.concat([buffer, chunk]);
-            return buffer;
-          },
+          download: () => client.downloadMediaMessage(m), // Use client's download function
           mtype: Object.keys(m.message.extendedTextMessage.contextInfo.quotedMessage)[0],
           mimetype: m.message.extendedTextMessage.contextInfo.quotedMessage[Object.keys(m.message.extendedTextMessage.contextInfo.quotedMessage)[0]]?.mimetype,
           text: m.message.extendedTextMessage.contextInfo.quotedMessage[Object.keys(m.message.extendedTextMessage.contextInfo.quotedMessage)[0]]?.caption || '',
           ptt: m.message.extendedTextMessage.contextInfo.quotedMessage[Object.keys(m.message.extendedTextMessage.contextInfo.quotedMessage)[0]]?.ptt || false
-        },
-        sender: m.key.participant || m.key.remoteJid
+        }
       };
 
-      const buffer = await fakeMessage.quoted.download();
-      const mtype = fakeMessage.quoted.mtype;
-      const originalCaption = fakeMessage.quoted.text || '';
+      const buffer = await fakeMatch.quoted.download();
+      const mtype = fakeMatch.quoted.mtype;
+      const originalCaption = fakeMatch.quoted.text || '';
       const options = { quoted: m };
 
       let messageContent = {};
@@ -114,32 +106,29 @@ cmd({
           messageContent = {
             image: buffer,
             caption: originalCaption ? `${originalCaption}\n\n> ${config.DESCRIPTION}` : `> ${config.DESCRIPTION}`,
-            mimetype: fakeMessage.quoted.mimetype || "image/jpeg"
+            mimetype: fakeMatch.quoted.mimetype || "image/jpeg"
           };
           break;
         case "videoMessage":
           messageContent = {
             video: buffer,
             caption: originalCaption ? `${originalCaption}\n\n> ${config.DESCRIPTION}` : `> ${config.DESCRIPTION}`,
-            mimetype: fakeMessage.quoted.mimetype || "video/mp4"
+            mimetype: fakeMatch.quoted.mimetype || "video/mp4"
           };
           break;
         case "audioMessage":
           messageContent = {
             audio: buffer,
             mimetype: "audio/mp4",
-            ptt: fakeMessage.quoted.ptt || false
+            ptt: fakeMatch.quoted.ptt || false
           };
           break;
         default:
-          await client.sendMessage(from, {
-            text: "❌ Only image, video, and audio status updates are supported"
-          }, { quoted: m });
-          return;
+          return; // Silently ignore unsupported types
       }
 
       // Forward status to user's DM
-      await client.sendMessage(fakeMessage.sender, messageContent, options);
+      await client.sendMessage(m.key.participant || m.key.remoteJid, messageContent, options);
       
     } catch (error) {
       console.error("No Prefix Status Save Error:", error);
