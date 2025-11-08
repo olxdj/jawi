@@ -3,7 +3,7 @@ const config = require("../config");
 
 cmd({
   pattern: "vv3",
-  alias: ["3",],
+  alias: ["3"],
   react: '🐳',
   desc: "Retrieve view once messages",
   category: "utility",
