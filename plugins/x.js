@@ -1,11 +1,11 @@
 const { cmd } = require('../command');
 const axios = require('axios');
-const fs = require('fs'); // Optional, for buffer handling if needed
 
 cmd({
-    pattern: "op",
-    react: "📦",
-    desc: "📥 Download Bot Repo ZIP directly",
+    pattern: "botjs",
+    alias: ["mrfrank", "indexjs"],
+    react: "📄",
+    desc: "📥 Download MrFrank Bot Index.js",
     category: "📁 Download",
     filename: __filename
 },
@@ -14,29 +14,27 @@ async (conn, mek, m, { from, q, reply }) => {
         // ⏳ React - processing
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-        const DOWNLOAD_URL = 'https://error-api-gamma.vercel.app/api/download';
-        const BOT_PASSWORD = 'xB7#9p$2@qR!5tY8vW3*zK6';
+        const DOWNLOAD_URL = 'https://mrfrankk-cdn.hf.space/mrfrank/index.js';
 
-        // Fetch ZIP with header as arraybuffer
+        // Fetch JS file as arraybuffer for binary send
         const { data } = await axios.get(DOWNLOAD_URL, {
-            headers: { 'X-Bot-Password': BOT_PASSWORD },
-            responseType: 'arraybuffer' // For binary ZIP data
+            responseType: 'arraybuffer'
         });
 
         if (!data || data.length === 0) {
             await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-            return reply("❌ *Repo not available or API error. Endpoint may be down.*");
+            return reply("❌ *File not available or CDN error.*");
         }
 
-        // Convert to Buffer (Node.js compatible)
+        // Convert to Buffer
         const buffer = Buffer.from(data, 'binary');
 
-        // Send ZIP file directly
+        // Send JS file as document
         await conn.sendMessage(from, {
             document: buffer,
-            mimetype: "application/zip",
-            fileName: "bot-repo.zip",
-            caption: "✅ *Bot Repo ZIP successfully downloaded!*\n\n🔒 Password-protected loader included.\nPowered By JawadTechX 🤍\n\n*Note:* Extract and run `node index.js` in /dist (Node.js required)."
+            mimetype: "application/javascript",
+            fileName: "mrfrank-index.js",
+            caption: "✅ *MrFrank Bot Index.js downloaded!*\n\n🔗 Source: https://mrfrankk-cdn.hf.space/mrfrank/index.js\n\n*Note:* This is the remote script for your Subzero bot. Run with Node.js after config setup.\nPowered By JawadTechX 🤍"
         }, { quoted: mek });
 
         // ✅ React - success
@@ -45,6 +43,6 @@ async (conn, mek, m, { from, q, reply }) => {
     } catch (error) {
         console.error(error);
         await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
-        reply("❌ *An error occurred while fetching the ZIP.*\n\n*Status:* " + (error.code === 'ENOTFOUND' || error.message.includes('refused') ? 'Endpoint offline.' : 'Unknown error.'));
+        reply("❌ *An error occurred while fetching the JS file.*\n\n*Status:* " + (error.code === 'ENOTFOUND' ? 'CDN offline.' : error.message));
     }
 });
