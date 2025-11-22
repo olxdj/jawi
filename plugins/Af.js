@@ -1,43 +1,87 @@
+const fs = require('fs');
 const { cmd } = require('../command');
 
-// Created By JawadTechX
 cmd({
-  pattern: "debugmsg",
-  alias: ["debug", "msginfo", "inspect"],
-  desc: "Show full JSON structure of replied message",
+  pattern: "debug",
+  alias: ["dbg", "inspect", "raw"],
+  react: "🛰️",
+  desc: "Ultimate debug tool to inspect any WhatsApp message structure",
   category: "tools",
-  react: "🧩",
   filename: __filename
-},
-async (conn, mek, m, { reply }) => {
+}, async (conn, m) => {
   try {
 
-    // Command works ONLY on reply
-    if (!m.quoted) {
-      return reply("🔍 *Reply to any message to inspect its JSON structure.*");
-    }
+    // RAW incoming message
+    const raw = m.message ? m.message : m;
 
-    // Safely convert m.quoted to JSON
-    let structure;
-    try {
-      structure = JSON.stringify(m.quoted, null, 4);
-    } catch {
-      structure = "Error converting quoted message to JSON.";
-    }
+    // RAW quoted message
+    const quoted = m.quoted && m.quoted.message ? m.quoted.message : null;
 
-    // Convert JSON to buffer
-    const buffer = Buffer.from(structure, "utf-8");
+    // Auto Detect message type
+    let msgType = m.mtype || "unknown";
 
-    // Send as a text file (WhatsApp won't allow long plain text)
+    // Protocol Detection
+    let protocol = raw?.protocolMessage?.type || null;
+
+    // Reaction Message
+    let reaction = raw?.reactionMessage || null;
+
+    // Forwarded
+    let isForwarded = m.message?.extendedTextMessage?.contextInfo?.isForwarded || false;
+
+    // Ephemeral
+    let ephemeral = raw?.ephemeralMessage ? true : false;
+
+    // List / Buttons / Carousel
+    let uiDetect = {
+      hasButtons: !!raw?.buttonsMessage,
+      hasList: !!raw?.listMessage,
+      hasCarousel: !!raw?.carouselMessage,
+      hasInteractive: !!raw?.interactiveMessage
+    };
+
+    // Construct final debug data
+    const debugData = {
+      id: m.id,
+      chat: m.chat,
+      sender: m.sender,
+      fromMe: m.fromMe,
+      isGroup: m.isGroup,
+      messageType: msgType,
+      protocolMessage: protocol,
+      reactionMessage: reaction,
+      forwarded: isForwarded,
+      ephemeral: ephemeral,
+      UI: uiDetect,
+      raw_message: raw,
+      quoted_message: quoted
+    };
+
+    // Stringify
+    const finalString = JSON.stringify(debugData, null, 2);
+
+    // Save as file
+    const filePath = './debug.json';
+    fs.writeFileSync(filePath, finalString);
+
+    // Send text output
     await conn.sendMessage(m.chat, {
-      document: buffer,
-      mimetype: "application/json",
-      fileName: "quoted-message-debug.json",
-      caption: "🧩 *Quoted Message Structure Dump* \nHere is the full JSON structure of `m.quoted`."
-    }, { quoted: mek });
+      text: "🛰 *KHAN-MD Debug Report*\n\n```" + finalString + "```"
+    }, { quoted: m });
 
-  } catch (e) {
-    console.log("DEBUG ERROR:", e);
-    reply("❌ Error occurred while generating debug info.\n" + e.message);
+    // Send file
+    await conn.sendMessage(m.chat, {
+      document: fs.readFileSync(filePath),
+      mimetype: 'application/json',
+      fileName: 'debug.json'
+    }, { quoted: m });
+
+    // Clean
+    fs.unlinkSync(filePath);
+
+  } catch (err) {
+    await conn.sendMessage(m.chat, {
+      text: "❌ Error:\n```" + err + "```"
+    });
   }
 });
