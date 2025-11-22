@@ -1,40 +1,43 @@
 const { cmd } = require('../command');
 
+// Created By JawadTechX
 cmd({
-    pattern: "structure",
-    alias: ["msgstruct", "debug", "raw", "json"],
-    desc: "Get complete Baileys message structure as JSON",
-    category: "debug",
-    react: "🔍",
-    filename: __filename
+  pattern: "debugmsg",
+  alias: ["debug", "msginfo", "inspect"],
+  desc: "Show full JSON structure of replied message",
+  category: "tools",
+  react: "🧩",
+  filename: __filename
 },
-async (conn, mek, m, { from, reply, react }) => {
-    try {
-        await react("📊");
-        
-        // Create clean JSON string without circular references
-        const cleanMessage = JSON.parse(JSON.stringify(mek, (key, value) => {
-            // Handle Buffer objects
-            if (value && value.type === 'Buffer') {
-                return `[Buffer: ${value.data.length} bytes]`;
-            }
-            return value;
-        }, 2));
+async (conn, mek, m, { reply }) => {
+  try {
 
-        const jsonString = JSON.stringify(cleanMessage, null, 2);
-        
-        // Send as file
-        await conn.sendMessage(from, {
-            document: Buffer.from(jsonString, 'utf-8'),
-            fileName: `message-structure-${Date.now()}.json`,
-            mimetype: 'application/json'
-        }, { quoted: mek });
-
-        await react("✅");
-
-    } catch (error) {
-        console.error("Error in structure command:", error);
-        await react("❌");
-        await reply("Error generating message structure");
+    // Command works ONLY on reply
+    if (!m.quoted) {
+      return reply("🔍 *Reply to any message to inspect its JSON structure.*");
     }
+
+    // Safely convert m.quoted to JSON
+    let structure;
+    try {
+      structure = JSON.stringify(m.quoted, null, 4);
+    } catch {
+      structure = "Error converting quoted message to JSON.";
+    }
+
+    // Convert JSON to buffer
+    const buffer = Buffer.from(structure, "utf-8");
+
+    // Send as a text file (WhatsApp won't allow long plain text)
+    await conn.sendMessage(m.chat, {
+      document: buffer,
+      mimetype: "application/json",
+      fileName: "quoted-message-debug.json",
+      caption: "🧩 *Quoted Message Structure Dump* \nHere is the full JSON structure of `m.quoted`."
+    }, { quoted: mek });
+
+  } catch (e) {
+    console.log("DEBUG ERROR:", e);
+    reply("❌ Error occurred while generating debug info.\n" + e.message);
+  }
 });
